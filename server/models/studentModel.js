@@ -41,7 +41,7 @@ const studentSchema = new Schema(
   { timestamps: true }
 );
 
-studentSchema.statics.signUpStudent = async function (data) {
+studentSchema.statics.registerStudent = async function (data) {
   const {
     profileDetails,
     firstName,
@@ -75,13 +75,8 @@ studentSchema.statics.signUpStudent = async function (data) {
     throw new Error("All fields must be filled.");
   }
 
-  const baseUser = await User.registerUserCredentials({
-    email: data.email,
-    role: "Student",
-  });
-
   const verifyEmail = await this.findOne({ email });
-  if (verifyEmail && baseUser) {
+  if (verifyEmail) {
     throw new Error("This email already exists");
   }
 
@@ -89,10 +84,19 @@ studentSchema.statics.signUpStudent = async function (data) {
   if (verifyPlateNo) {
     throw new Error("This plate number is already registered");
   }
+  const verifyPhoneNo = await this.findOne({ "motorDetails.plateNo": phoneNo });
+  if (verifyPhoneNo) {
+    throw new Error("This phone number is already registered");
+  }
 
-  const password = generatePassword();
+  const baseUser = await User.registerUserCredentials({
+    email: data.email,
+    role: "Student",
+  });
 
-  const user = await this.create({
+  const generatedPassword = generatePassword();
+
+  const student = await this.create({
     userId: baseUser._id,
     profileDetails,
     name: {
@@ -102,7 +106,7 @@ studentSchema.statics.signUpStudent = async function (data) {
     },
     studentNo,
     email,
-    password,
+    password: generatedPassword,
     course,
     yearLevel,
     phoneNo,
@@ -114,11 +118,11 @@ studentSchema.statics.signUpStudent = async function (data) {
     },
   });
 
-  if (!user) {
+  if (!student) {
     throw new Error("Failed to create an account");
   }
 
-  return user;
+  return { student, generatedPassword };
 };
 
 studentSchema.statics.signInStudent = async function (data) {

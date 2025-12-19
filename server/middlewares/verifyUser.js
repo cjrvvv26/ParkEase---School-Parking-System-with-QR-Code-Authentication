@@ -13,7 +13,7 @@ const verifyUser = (cookieName = "token") => {
         if (err) {
           return res
             .status(401)
-            .json({ error: "Invalid or already expired token" });
+            .json({ error: "Invalid or already expired token" + cookieName });
         }
 
         req.id = decoded.id;
@@ -24,5 +24,4 @@ const verifyUser = (cookieName = "token") => {
     }
   };
 };
-
 module.exports = verifyUser;

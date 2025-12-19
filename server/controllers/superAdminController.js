@@ -210,9 +210,7 @@ exports.registerStudent = async (req, res) => {
     const { id } = req;
 
     const isSuperAdmin = await SuperAdmin.findById(id);
-
     if (!isSuperAdmin) return res.status(403).json("Access denied");
-
     const data = req.body;
 
     if (req.file) {
@@ -234,21 +232,17 @@ exports.registerStudent = async (req, res) => {
       sendAccountDetails(
         student.email,
         firstName,
-        student.firstName + " " + student.middleName + " " + student.lastName,
+        student.name.firstName +
+          " " +
+          student.name.middleName +
+          " " +
+          student.name.lastName,
         generatedPassword
       );
       sendEmailVerification(student.email, firstName.split(" ")[0], emailToken);
-      const token = generateToken(student._id);
-      res.cookie("student_token", token, {
-        httpOnly: true,
-        sameSite: "strict",
-        secure: false,
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      });
 
       res.status(200).json({
         message: "Account is successfully created",
-        token,
         student,
         emailToken,
       });
