@@ -1,0 +1,30 @@
+ParkEase
+
+👤 Users:
+👨‍💻 Super admin - Website (MERN stack)
+👮‍♂️👨‍🎓 Security guard & Students- Mobile (React Native)
+
+🟩 Estimated slots = 40
+
+👨‍🎓 Student:
+1. If email isn't verified:
+   ❌ Not allowed to subscribe in premium plan (exclusive slot)
+   🔃 Add refresh token
+   📩 Once registered, the default password can be view in gmail
+
+TO DO LISTS
+====== Dec 17, 2025 ======
+- EmailEditor email verification redirect design must be rendered in another folder not in admin folder.
+✅ Student email verification url must be {baseUrl}:{PORT}/verify-email/token={a token only for email verification (JWT)}
+
+====== Dec 18, 2025 ======
+✅ Improve Security Guard schema
+✅ Improve Security Guard CRUD
+✅ Also has an email verification
+- have an account recovery also the student
+✅ Guard generated password will be display in gmail and can modify password.
+
+====== Dec 19, 2025 ======
+- Improve Super Admin account (CRUD) & schema
+- Add notifications in account creation in all Users
+- Record activity logs in account CRUD
