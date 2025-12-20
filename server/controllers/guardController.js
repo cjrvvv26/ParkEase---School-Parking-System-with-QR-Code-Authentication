@@ -5,48 +5,6 @@ const sendEmailVerification = require("../emails/emailVerification");
 const sendAccountDetails = require("../emails/accountDetails");
 const cloudinary = require("../utils/cloudinary");
 
-//Security sign up controller
-exports.signUpSecurity = async (req, res) => {
-  try {
-    const data = req.body;
-
-    const { user, generatedPassword } = await Security.signUpSecurity(data);
-
-    if (user) {
-      const token = generateToken(user._id);
-      res.cookie("guard_token", token, {
-        httpOnly: true,
-        sameSite: "strict",
-        secure: false,
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      });
-
-      const emailToken = generateEmailToken(user._id, (role = "Guard"));
-      const formattedFirstName =
-        user.name.firstName.charAt(0).toUpperCase() +
-        user.name.firstName.slice(1);
-      formattedFirstName.split(" ")[0];
-      //send account details in gmail
-      await sendAccountDetails(
-        user.email,
-        formattedFirstName,
-        user.name.firstName +
-          " " +
-          user.name.middleName +
-          " " +
-          user.name.lastName,
-        generatedPassword
-      );
-      await sendEmailVerification(user.email, formattedFirstName, emailToken);
-      res
-        .status(200)
-        .json({ message: "Account is successfully created", token, user });
-    }
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-};
-
 //Security sign in controller
 exports.signInSecurity = async (req, res) => {
   try {

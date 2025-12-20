@@ -12,7 +12,6 @@ const sendEmailVerification = require("../emails/emailVerification");
 const cloudinary = require("../utils/cloudinary");
 
 // ACCOUNT CONTROLLERS
-
 //Continue with google account (login/register)
 exports.userContinueGoogle = async (req, res) => {
   try {
@@ -202,6 +201,14 @@ exports.verifyUserSession = async (req, res) => {
   }
 };
 
+//Update account information
+exports.updateSuperAdminData = async (req, res) => {
+  try {
+    const { id } = req;
+    const superAdmin = await SuperAdmin.findById();
+  } catch (error) {}
+};
+
 //USER REGISTRATION CONTROLLERS
 
 //Register student controller
@@ -251,6 +258,44 @@ exports.registerStudent = async (req, res) => {
     if (req.file?.filename) {
       await cloudinary.uploader.destroy(req.file.filename);
     }
+    res.status(400).json({ error: error.message });
+  }
+};
+
+//Register security guard controller
+exports.registerGuard = async (req, res) => {
+  try {
+    const { id } = req;
+    const data = req.body;
+
+    const isSuperAdmin = await SuperAdmin.findById(id);
+    if (!isSuperAdmin) return res.status(403).json("Access denied");
+
+    const { user, generatedPassword } = await Security.registerGuard(data);
+
+    if (user) {
+      const emailToken = generateEmailToken(user._id, (role = "Guard"));
+      const formattedFirstName =
+        user.name.firstName.charAt(0).toUpperCase() +
+        user.name.firstName.slice(1);
+      formattedFirstName.split(" ")[0];
+      //send account details in gmail
+      await sendAccountDetails(
+        user.email,
+        formattedFirstName,
+        user.name.firstName +
+          " " +
+          user.name.middleName +
+          " " +
+          user.name.lastName,
+        generatedPassword
+      );
+      await sendEmailVerification(user.email, formattedFirstName, emailToken);
+      res
+        .status(200)
+        .json({ message: "Account is successfully created", token, user });
+    }
+  } catch (error) {
     res.status(400).json({ error: error.message });
   }
 };

@@ -37,7 +37,7 @@ const securitySchema = new Schema(
   { timestamps: true }
 );
 
-securitySchema.statics.signUpSecurity = async function (data) {
+securitySchema.statics.registerGuard = async function (data) {
   const {
     profileDetails,
     firstName,

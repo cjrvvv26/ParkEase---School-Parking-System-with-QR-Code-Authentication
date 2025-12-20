@@ -15,7 +15,7 @@ const verifyUser = (cookieName = "token") => {
             .status(401)
             .json({ error: "Invalid or already expired token" + cookieName });
         }
-
+        //On this early stage I must find who is the user that's trying to make a request (find in users collection)
         req.id = decoded.id;
         next();
       });
