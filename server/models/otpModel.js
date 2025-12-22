@@ -36,10 +36,10 @@ otpSchema.statics.registerOtp = async function ({ email, otp, type }) {
   return storeTempCredentials;
 };
 
-otpSchema.statics.verifyOtp = async function (email, inputOtp) {
-  let user = await this.findOne({ email, otp: inputOtp });
+otpSchema.statics.verifyOtp = async function (email, otp) {
+  let user = await this.findOne({ email, otp });
   if (!user) {
-    throw new Error("Invalid or expired OTP");
+    throw new Error("Invalid or expired OTP" + email + otp);
   }
   return user;
 };

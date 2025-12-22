@@ -5,21 +5,15 @@ const guardController = require("../controllers/guardController");
 const upload = require("../middlewares/uploadImage");
 
 //HTTP METHODS (API ENDPOINTS)
-
+router.use(verifyUser("guard_token"));
 //GET
-
+router.get("/me", guardController.getGuardData);
 //POST
 router.post("/auth/login", guardController.signInSecurity);
-router.post(
-  "/auth/register",
-  upload.single("profileDetails"),
-  guardController.signUpSecurity
-);
 
 //PATCH
 router.patch(
   "/me",
-  verifyUser("guard_token"),
   upload.single("profileDetails"),
   guardController.updateGuardData
 );

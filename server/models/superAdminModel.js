@@ -37,9 +37,9 @@ superAdminSchema.statics.signUpSuperAdmin = async function (email) {
   }
 
   const user = await User.findOne({ email });
-  const superAdmin = await User.findOne({ email });
+  const superAdmin = await this.findOne({ email });
 
-  if (user && superAdmin) {
+  if (user || superAdmin) {
     throw new Error("This email already exists");
   }
 
@@ -96,19 +96,21 @@ superAdminSchema.statics.verifyUserOTP = async function (email, type) {
 superAdminSchema.statics.continueWithGoogle = async function (data, type) {
   const { sub, name, email, picture } = data;
 
-  //checks in database if the email already exists
-  let user = await User.findOne({ email });
-  const superAdminUser = await this.findOne({ email });
+  // Check both the base User record and the superAdmin document
+  const baseUser = await User.findOne({ email });
+  const superAdmin = await this.findOne({ email });
 
-  if (user && type === "register" && superAdminUser) {
-    throw new Error("This account was already registered");
+  if (type === "login") {
+    // For login, both a base user (with role) and a superAdmin record should exist
+    if (!baseUser || !superAdmin) {
+      throw new Error("This email doesn't exist in database.");
+    }
+  } else if (type === "register") {
+    // For register, neither record should already exist
+    if (baseUser || superAdmin) {
+      throw new Error("This account was already registered");
+    }
   }
-
-  if (!user && type === "login") {
-    throw new Error("This email doesn't exist in database.");
-  }
-
-  return user;
 };
 
 //Sign in manually

@@ -175,6 +175,20 @@ studentSchema.statics.updateStudentData = async function (id, data) {
   return user;
 };
 
+studentSchema.statics.getStudentData = async function (id) {
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new Error("Invalid ID");
+  }
+
+  const user = await this.findOne({ userId: id });
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  return user;
+};
+
 const studentModel = mongoose.model("student", studentSchema);
 
 module.exports = studentModel;

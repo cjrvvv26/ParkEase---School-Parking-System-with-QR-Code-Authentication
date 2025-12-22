@@ -1,20 +1,20 @@
 const jwt = require("jsonwebtoken");
 
-const generateToken = (id, role) => {
+const generateToken = (id, role = "Super admin") => {
   let expiration = "1d";
 
   switch (role) {
-    case "student":
+    case "Student":
       expiration = "7d";
       break;
-    case "security":
+    case "Guard":
       expiration = "3d";
       break;
-    default:
+    case "Super admin":
       expiration = "1d";
   }
 
-  return jwt.sign({ id }, process.env.SECRET, {
+  return jwt.sign({ id, role }, process.env.SECRET, {
     expiresIn: expiration,
   });
 };

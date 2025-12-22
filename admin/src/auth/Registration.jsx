@@ -27,16 +27,20 @@ export default function Registration() {
 
   const register = useGoogleLogin({
     onSuccess: async (response) => {
-      const { access_token } = response;
-      const data = await fetchData("/super-admin/auth/google", {
-        method: "POST",
-        data: { access_token, type: "register" },
-      });
-      console.log(data);
-      navigate("/otp-verification");
-      sessionStorage.setItem("otp_access", "true");
-      sessionStorage.setItem("otp_type", "register");
-      sessionStorage.setItem("email", data.email);
+      try {
+        const { access_token } = response;
+        const data = await fetchData("/super-admin/auth/google", {
+          method: "POST",
+          data: { access_token, type: "register" },
+        });
+        console.log(data);
+        navigate("/otp-verification");
+        sessionStorage.setItem("otp_access", "true");
+        sessionStorage.setItem("otp_type", "register");
+        sessionStorage.setItem("email", data.email);
+      } catch (error) {
+        console.log(error);
+      }
     },
     onError: (err) => {
       console.log(err);
@@ -44,23 +48,23 @@ export default function Registration() {
   });
 
   return (
-    <div className='min-h-screen w-full text-sm text-gray-900 bg-white flex flex-col gap-5 items-center justify-center'>
-      <div className='flex flex-col gap-3 items-center mb-5'>
-        <h1 className='font-bold text-3xl'>Sign Up</h1>
+    <div className="min-h-screen w-full text-sm text-gray-900 bg-white flex flex-col gap-5 items-center justify-center">
+      <div className="flex flex-col gap-3 items-center mb-5">
+        <h1 className="font-bold text-3xl">Sign Up</h1>
         <h2>to continue to your Super Admin Account.</h2>
       </div>
-      <div className='flex flex-col gap-5 w-[450px]'>
-        <div className='flex-col gap-1 flex'>
+      <div className="flex flex-col gap-5 w-[450px]">
+        <div className="flex-col gap-1 flex">
           <input
-            type='text'
+            type="text"
             value={email}
             onChange={(e) => {
               setEmail(e.target.value);
             }}
-            className='p-4 rounded-lg ring ring-gray-400 hover:ring-2 hover:ring-blue-400 focus:ring-2 focus:ring-blue-400 outline-none w-full'
-            placeholder='Enter email address'
+            className="p-4 rounded-lg ring ring-gray-400 hover:ring-2 hover:ring-blue-400 focus:ring-2 focus:ring-blue-400 outline-none w-full"
+            placeholder="Enter email address"
           />
-          <p className='text-xs text-red-500'>
+          <p className="text-xs text-red-500">
             {error === "All fields must be filled" &&
               "Invalid email address" &&
               error}
@@ -76,12 +80,12 @@ export default function Registration() {
           {loading ? "Verifying" : "Continue"}
         </button>
 
-        <div className='border-t relative border-gray-400 w-full'>
-          <p className='px-4 absolute bg-white text-gray-400 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2'>
+        <div className="border-t relative border-gray-400 w-full">
+          <p className="px-4 absolute bg-white text-gray-400 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
             OR
           </p>
         </div>
-        <div className='flex flex-col gap-1'>
+        <div className="flex flex-col gap-1">
           <button
             disabled={loading}
             onClick={() => register()}
@@ -92,19 +96,19 @@ export default function Registration() {
             {!loading && (
               <img
                 src={GoogleIcon}
-                alt='Google Icon'
-                className='object-contain h-5 w-5'
+                alt="Google Icon"
+                className="object-contain h-5 w-5"
               />
             )}
             <p>{loading ? "Verifying" : "Continue with Google"}</p>
           </button>
-          <p className='text-xs text-red-500'>
+          <p className="text-xs text-red-500">
             {error !== "All fields must be filled" && error}
           </p>
         </div>
-        <p className='text-gray-400 text-center'>
+        <p className="text-gray-400 text-center">
           Already have an account?{" "}
-          <Link to='/sign-in' className='hover:underline text-purple-500'>
+          <Link to="/sign-in" className="hover:underline text-purple-500">
             Sign in
           </Link>
         </p>

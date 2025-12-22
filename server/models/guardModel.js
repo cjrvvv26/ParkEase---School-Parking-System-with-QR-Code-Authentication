@@ -156,7 +156,7 @@ securitySchema.statics.getSecurityData = async function (id) {
   if (!mongoose.Types.ObjectId.isValid(id))
     throw new Error("Invalid Object ID");
 
-  const guard = await this.findById(id);
+  const guard = await this.findOne({ userId: id });
 
   if (!guard) throw new Error("User not found");
 

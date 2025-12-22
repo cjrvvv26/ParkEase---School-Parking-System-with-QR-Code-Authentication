@@ -51,7 +51,7 @@ exports.signInStudent = async (req, res) => {
     const student = await Student.signInStudent(data);
 
     if (student) {
-      const token = generateToken(student._id);
+      const token = generateToken(student.userId, "Student");
       res.cookie("student_token", token, {
         httpOnly: true,
         sameSite: "strict",
@@ -81,13 +81,9 @@ exports.signOutStudent = async (req, res) => {
 //Update student data
 exports.updateStudentData = async (req, res) => {
   try {
-    const { id } = req;
+    const { _id } = req.user;
     const data = req.body;
-    const currentUser = await Student.findById(id);
-
-    if (!currentUser) {
-      res.status(401).json({ error: "User not found" });
-    }
+    const currentUser = await Student.getStudentData(_id);
 
     if (req.file) {
       const { path, filename } = req.file;
@@ -99,7 +95,7 @@ exports.updateStudentData = async (req, res) => {
         public_id: filename,
       };
     }
-    const user = await Student.updateStudentData(id, data);
+    const user = await Student.updateStudentData(currentUser._id, data);
     res
       .status(200)
       .json({ message: "Information was successfully updated", user });
@@ -111,14 +107,11 @@ exports.updateStudentData = async (req, res) => {
   }
 };
 
-//Verify student session
-exports.verifyStudentSession = async (req, res) => {
+//Verify student session and use this to get student data
+exports.getStudentData = async (req, res) => {
   try {
-    const { id } = req;
-    const user = await Student.findById(id);
-    if (!user) {
-      return res.status(400).json({ message: "Session expired" });
-    }
+    const { _id } = req.user;
+    const user = await Student.getStudentData(_id);
     res.status(200).json({ message: "Sucessfully login", user });
   } catch (error) {
     res.status(500).json({ error: message });
@@ -128,9 +121,9 @@ exports.verifyStudentSession = async (req, res) => {
 //Request in mobile app email verification
 exports.emailVerificationRequest = async (req, res) => {
   try {
-    const { student_token } = req.cookie;
+    const { _id } = req.user;
 
-    const student = await Student.findById(student_token.id);
+    const student = await Student.findOne({ userId: _id });
     if (!student) {
       return res.status(401).json({ error: "User not found" });
     }

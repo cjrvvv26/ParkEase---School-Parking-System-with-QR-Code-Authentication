@@ -20,11 +20,17 @@ router.delete(
 );
 
 //PROTECTED ENDPOINTS
-router.use(verifyUser());
+router.use(verifyUser(), superAdminController.superAdminVerification);
 
 //GET
 router.get("/me", superAdminController.verifyUserSession);
 
+//PATCH
+router.patch(
+  "/me",
+  upload.single("profileDetails"),
+  superAdminController.updateSuperAdminData
+);
 //POST (USER REGISTRATIONS)
 router.post(
   "/register-student",
@@ -36,5 +42,8 @@ router.post(
   upload.single("profileDetails"),
   superAdminController.registerGuard
 );
+
+//DELETE
+router.delete("/me", superAdminController.signOutSuperAdmin);
 
 module.exports = router;

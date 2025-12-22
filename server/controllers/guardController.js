@@ -1,18 +1,15 @@
-const Security = require("../models/guardModel");
-const generateEmailToken = require("../utils/generateEmailJWT");
+const Guard = require("../models/guardModel");
 const generateToken = require("../utils/generateToken");
-const sendEmailVerification = require("../emails/emailVerification");
-const sendAccountDetails = require("../emails/accountDetails");
 const cloudinary = require("../utils/cloudinary");
 
 //Security sign in controller
 exports.signInSecurity = async (req, res) => {
   try {
     const data = req.body;
-    const user = await Security.signInSecurity(data);
+    const user = await Guard.signInSecurity(data);
 
     if (user) {
-      const token = generateToken(user._id);
+      const token = generateToken(user.userId, "Guard");
       res.cookie("guard_token", token, {
         httpOnly: true,
         sameSite: "strict",
@@ -30,10 +27,10 @@ exports.signInSecurity = async (req, res) => {
 //Update guard data controller
 exports.updateGuardData = async (req, res) => {
   try {
-    const { id } = req;
+    const { _id } = req.user;
 
     const data = req.body;
-    const currentGuard = await Security.getSecurityData(id);
+    const currentGuard = await Guard.getSecurityData(_id);
 
     if (req.file) {
       const { path, filename } = req.file;
@@ -50,7 +47,7 @@ exports.updateGuardData = async (req, res) => {
       };
     }
 
-    const guard = await Security.updateGuardData(id, data);
+    const guard = await Security.updateGuardData(currentGuard._id, data);
 
     res
       .status(200)
@@ -66,8 +63,8 @@ exports.updateGuardData = async (req, res) => {
 //Use this to verify guard session and get data by id
 exports.getGuardData = async (req, res) => {
   try {
-    const { id } = req;
-    const guard = await Guard.getSecurityData(id);
+    const { _id } = req.user;
+    const guard = await Guard.getSecurityData(_id);
     res.status(200).json({ message: "Successfully fetched data", guard });
   } catch (error) {
     res.status(401).json({ error: error.message });

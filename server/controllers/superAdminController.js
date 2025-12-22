@@ -33,6 +33,7 @@ exports.userContinueGoogle = async (req, res) => {
 
     //If the google data is verified then it returns the info
     const { email } = googleUser.data;
+
     //Then checks in database if the email already exists
     await SuperAdmin.continueWithGoogle(googleUser.data, type);
     const hasOtp = await Otp.findOne({ email });
@@ -73,7 +74,7 @@ exports.signUpSuperAdmin = async (req, res) => {
       sendEmailOTP(email, otp);
       await Otp.registerOtp({ email, otp, type: "register" });
 
-      res.status(200).json({ message: "OTP is successfully sent" });
+      res.status(200).json({ message: "OTP is successfully sent", email });
     }
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -84,11 +85,10 @@ exports.signUpSuperAdmin = async (req, res) => {
 exports.verifyUserOTP = async (req, res) => {
   try {
     const { email, inputOtp } = req.body;
-    await Otp.verifyOtp(email, inputOtp);
-    const userOtp = await Otp.findOne({ email, otp: inputOtp });
+    const userOtp = await Otp.verifyOtp(email, inputOtp);
     const user = await SuperAdmin.verifyUserOTP(email, userOtp.type);
     if (user) {
-      const generatedToken = generateToken(user._id);
+      const generatedToken = generateToken(user.userId);
       res.cookie("token", generatedToken, {
         httpOnly: true,
         sameSite: "strict",
@@ -185,14 +185,13 @@ exports.cancelOtpVerification = async (req, res) => {
 //Verify user session by cookie w/ JWT
 exports.verifyUserSession = async (req, res) => {
   try {
-    const id = req.id;
-    id.toString();
-    if (!mongoose.Types.ObjectId.isValid(id)) {
+    const { _id } = req.user;
+    if (!mongoose.Types.ObjectId.isValid(_id)) {
       throw new Error("Invalid Object Id");
     }
-    const user = await SuperAdmin.findById(id);
+    const user = await SuperAdmin.findOne({ userId: _id });
     if (!user) {
-      throw new Error("User not found " + id);
+      throw new Error("User not found ");
     }
 
     res.status(200).json({ message: "Successfully fetch data", user });
@@ -204,11 +203,59 @@ exports.verifyUserSession = async (req, res) => {
 //Update account information
 exports.updateSuperAdminData = async (req, res) => {
   try {
-    const { id } = req;
-    const superAdmin = await SuperAdmin.findById();
-  } catch (error) {}
+    const { _id } = req.user;
+    const data = req.body;
+    const currentUser = await SuperAdmin.findOne({ userId: _id });
+
+    if (req.file) {
+      const { path, filename } = req.file;
+
+      if (currentUser.profileDetails?.public_id) {
+        await cloudinary.uploader.destroy(currentUser.profileDetails.public_id);
+      }
+      console.log(path, filename);
+
+      data.profileDetails = {
+        url: path,
+        public_id: filename,
+      };
+    }
+
+    const user = await SuperAdmin.updateSuperAdminData(currentUser._id, data);
+    res
+      .status(200)
+      .json({ message: "Information was successfully updated", user });
+  } catch (error) {
+    if (req.file) {
+      await cloudinary.uploader.destroy(req.file.filename);
+    }
+    res.status(400).json({ error: error.message });
+  }
 };
 
+//Verify if the user is super admin
+exports.superAdminVerification = (req, res, next) => {
+  try {
+    const role = req.user?.role;
+    if (role !== "Super admin") {
+      return res.status(403).json({ error: "Access denied" });
+    }
+
+    next();
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+};
+
+//Sign out controller
+exports.signOutSuperAdmin = (req, res) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: false,
+    sameSite: "strict",
+  });
+  res.status(200).json({ message: "Successfully signed out" });
+};
 //USER REGISTRATION CONTROLLERS
 
 //Register student controller
