@@ -193,12 +193,13 @@ export default function Header() {
           className="flex gap-2 relative select-none items-center hover:bg-gray-100 duration-75 cursor-pointer p-2 rounded-xl"
         >
           {/* Basic Info */}
-          {
-            // <img
-            //   src={Me}
-            //   alt=""
-            //   className="h-10 w-10 object-cover rounded-full"
-            // />
+          {user.profileDetails?.url ? (
+            <img
+              src={user.profileDetails.url}
+              alt=""
+              className="h-10 w-10 object-cover rounded-full"
+            />
+          ) : (
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
@@ -211,7 +212,7 @@ export default function Header() {
                 clipRule="evenodd"
               />
             </svg>
-          }
+          )}
           <div className="flex flex-col">
             <h2 className="text-nowrap font-medium">{user.name}</h2>
             <p className="text-gray-400 text-xs">{user.email}</p>
