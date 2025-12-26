@@ -25,6 +25,38 @@ TO DO LISTS
 ✅ Guard generated password will be display in gmail and can modify password.
 
 ====== Dec 19, 2025 ======
-- Improve Super Admin account (CRUD) & schema
+✅ Improve Super Admin account (CRUD) & schema
 - Add notifications in account creation in all Users
 - Record activity logs in account CRUD
+
+===== Dec 22, 2025 ======
+✅ Repository transferred
+✅ Backend issues fixed
+
+===== Dec 26, 2025 ======
+✅ Added slot API
+- Add services (business logic) for system scalability
+- Improve MVC architecture
+- Add super admin profile design
+
+===== Dec 27, 2025 ======
+- Finalize schema & API
+
+===== Dec 28, 2025 ======
+- Frontend data fetching
+
+===== Dec 29 & 30, 2025 ======
+- Frontend finalization
+- Add services (business logic) for scalability and readability of code
+
+===== Dec 31, 2025 ======
+- Start Mobile App Design & Navigations
+
+===== Jan 2 & 3, 2025 =====
+- Improve mobile design
+
+===== Jan 4, 2025 =====
+- Start data fetching
+
+FUTURE SYSTEM IMPROVEMENT
+- MAP EDITOR FOR SUPER ADMIN
