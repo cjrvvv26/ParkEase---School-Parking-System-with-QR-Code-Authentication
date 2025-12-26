@@ -8,6 +8,7 @@ const guardRouters = require("./routers/guardRouter");
 const studentRouters = require("./routers/studentRouter");
 const motorRouters = require("./routers/motorAiRouter");
 const userRouters = require("./routers/userRouter");
+const slotRouters = require("./routers/slotRouter");
 const app = express();
 
 //Middlewares
@@ -27,6 +28,7 @@ app.use("/guard", guardRouters);
 app.use("/student", studentRouters);
 app.use("/motor", motorRouters);
 app.use("/user", userRouters);
+app.use("/slot", slotRouters);
 
 //Initialize Server
 const initializeServer = async () => {
