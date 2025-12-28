@@ -23,6 +23,7 @@ import Settings from "./pages/Settings";
 import AddStudent from "./pages/AddStudent";
 import AddGuard from "./pages/AddGuard";
 import EmailEditor from "./EmailEditor";
+import Profile from "./pages/Profile";
 
 export default function App() {
   const { fetchData } = useFetch();
@@ -129,6 +130,10 @@ export default function App() {
             {
               path: "parking",
               element: <Parking />,
+            },
+            {
+              path: "account-details",
+              element: <Profile />,
             },
           ],
         },
