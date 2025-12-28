@@ -3,27 +3,27 @@ const { Schema } = mongoose;
 
 const userSchema = new Schema(
   {
-    role: { type: String, enum: ["Super admin", "Student", "Guard"] },
-    email: { type: String, required: [true, "Email is required"] },
+    profileDetails: {
+      url: String,
+      public_id: String,
+    },
+    username: { type: String, required: true },
+    email: { type: String, required: true },
+    role: {
+      type: String,
+      enum: ["super admin", "student", "guard"],
+      required: true,
+    },
+    status: {
+      type: String,
+      enum: ["active", "offline"],
+      default: "active",
+      required: true,
+    },
+    emailVerified: { type: Boolean, default: false, required: true },
+    lastActive: Date,
   },
   { timestamps: true }
 );
 
-userSchema.statics.registerUserCredentials = async function (data) {
-  const { email, role } = data;
-  if (!email || !role) {
-    throw new Error("Something went wrong with user credentials");
-  }
-
-  let user = await this.findOne({ email });
-  if (user) {
-    throw new Error("This email is already exists.");
-  }
-
-  user = await this.create({ email, role });
-
-  return user;
-};
-
-const userModel = mongoose.model("user", userSchema);
-module.exports = userModel;
+module.exports = mongoose.model("user", userSchema);

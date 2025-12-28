@@ -1,7 +1,6 @@
-const express = require("express");
-const router = express.Router();
-const motorAiController = require("../controllers/motorAiController");
+const router = require("express").Router();
+const motorController = require("../controllers/motorAiController");
 
-router.post("/image", motorAiController.customizePrompt);
+router.get("/image", motorController.getMotorcycleImage);
 
 module.exports = router;

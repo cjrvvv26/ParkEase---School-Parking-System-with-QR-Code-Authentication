@@ -43,7 +43,7 @@ export default function EmailConfirmation() {
 
         const handleOtpVerification = async () => {
           try {
-            const data = await fetchData("super-admin/auth/verify-otp", {
+            const data = await fetchData("auth/register/verify-otp", {
               method: "POST",
               data: { email, inputOtp: convertedOtp, type: otpType },
             });
@@ -55,6 +55,7 @@ export default function EmailConfirmation() {
           } catch (error) {
             setOtp(new Array(6).fill(""));
             newOtp = [...otp];
+            console.log(error.response.data.error);
           }
         };
         handleOtpVerification();

@@ -1,19 +1,6 @@
-const nodemailer = require("nodemailer");
-
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.GMAIL_EMAIL,
-    pass: process.env.GMAIL_APP_PASSWORD,
-  },
-});
-
-const sendAccountDetails = async (to, firstName, name, password) => {
-  const message = {
-    from: `"ParkEase - URSC Motor Parking System" <${process.env.GMAIL_EMAIL}>`,
-    to,
-    subject: "Your ParkEase Account Details",
-    html: `
+module.exports = ({ firstName, name, password }) => ({
+  subject: "Your ParkEase Account Details",
+  html: `
     <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -172,8 +159,4 @@ const sendAccountDetails = async (to, firstName, name, password) => {
 </html>
 
     `,
-  };
-  return await transporter.sendMail(message);
-};
-
-module.exports = sendAccountDetails;
+});

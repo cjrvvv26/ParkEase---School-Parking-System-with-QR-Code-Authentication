@@ -1,19 +1,6 @@
-const nodemailer = require("nodemailer");
-
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.GMAIL_EMAIL,
-    pass: process.env.GMAIL_APP_PASSWORD,
-  },
-});
-
-const sendEmailOTP = async (to, otp) => {
-  const messageOptions = {
-    from: `"ParkEase - URSC Motor Parking System" <${process.env.GMAIL_EMAIL}>`,
-    to,
-    subject: "Your OTP Code",
-    html: `<div style="font-family: Arial, sans-serif; max-width: 400px; margin: auto;">
+module.exports = ({ otp }) => ({
+  subject: "Your OTP Code",
+  html: `<div style="font-family: Arial, sans-serif; max-width: 400px; margin: auto;">
   <div style="width: 100%; margin-bottom: 12px; text-align: center;">
     <h1 style="font-weight: bold; font-size: 18px; color: #8b5cf6; margin: 0;">
       ParkEase
@@ -50,9 +37,4 @@ const sendEmailOTP = async (to, otp) => {
 </div>
 
 `,
-  };
-
-  return await transporter.sendMail(messageOptions);
-};
-
-module.exports = sendEmailOTP;
+});

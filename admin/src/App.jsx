@@ -23,11 +23,7 @@ import Settings from "./pages/Settings";
 import AddStudent from "./pages/AddStudent";
 import AddGuard from "./pages/AddGuard";
 import EmailEditor from "./EmailEditor";
-<<<<<<< HEAD
 import Profile from "./pages/Profile";
-=======
-import Profile from "./Profile";
->>>>>>> f268050195b49cc4ce799cf26d8470326cf5872b
 
 export default function App() {
   const { fetchData } = useFetch();

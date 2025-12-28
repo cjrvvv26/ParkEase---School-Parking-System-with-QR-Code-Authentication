@@ -29,7 +29,7 @@ export default function Registration() {
     onSuccess: async (response) => {
       try {
         const { access_token } = response;
-        const data = await fetchData("/super-admin/auth/google", {
+        const data = await fetchData("auth/google", {
           method: "POST",
           data: { access_token, type: "register" },
         });
