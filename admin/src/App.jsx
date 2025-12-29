@@ -37,6 +37,7 @@ export default function App() {
           method: "GET",
           timeout: 5000,
         });
+        console.log(data);
 
         dispatch(login(data));
       } catch (error) {

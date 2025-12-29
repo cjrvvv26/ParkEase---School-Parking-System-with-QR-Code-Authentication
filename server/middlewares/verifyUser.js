@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 
-exports.verifyUser = (cookie = "token") => {
+const verifyUser = (cookie = "token") => {
   return (req, res, next) => {
     const token = req.cookies?.[cookie];
 
@@ -16,3 +16,5 @@ exports.verifyUser = (cookie = "token") => {
     });
   };
 };
+
+module.exports = verifyUser;

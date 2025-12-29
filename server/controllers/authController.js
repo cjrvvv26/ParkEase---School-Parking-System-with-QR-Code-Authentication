@@ -1,4 +1,5 @@
 const Otp = require("../models/otpModel");
+const User = require("../models/userModel");
 const { sendOtp } = require("../emails/index");
 const otpService = require("../services/otpServices");
 const authService = require("../services/authServices");
@@ -44,7 +45,7 @@ exports.verifyUserOtp = async (req, res) => {
     const { email, inputOtp, type } = req.body;
     const user = await otpService.verifyOtp(email, inputOtp, type);
 
-    const token = generateToken(user.email, user.role);
+    const token = generateToken(user._id, user.role);
 
     res.cookie("token", token, {
       httpOnly: true,
