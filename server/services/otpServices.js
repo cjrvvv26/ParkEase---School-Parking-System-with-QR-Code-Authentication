@@ -80,3 +80,12 @@ exports.verifyOtp = async (email, otp, type) => {
     return findUser;
   }
 };
+
+exports.updateOtpRecord = async ({ id, otp }) => {
+  const hashedOtp = await bcrypt.hash(otp, 10);
+
+  await Otp.findByIdAndUpdate(id, {
+    otp: hashedOtp,
+    expiresAt: Date.now() + 5 * 60 * 1000,
+  });
+};

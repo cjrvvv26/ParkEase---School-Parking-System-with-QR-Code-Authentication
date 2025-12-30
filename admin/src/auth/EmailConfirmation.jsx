@@ -12,8 +12,9 @@ export default function EmailConfirmation() {
   const [email, setEmail] = useState(null);
   const [otpType, setOtpType] = useState(null);
   const inputRef = useRef([]);
-  const { error, loading, fetchData } = useFetch();
+  const { error, setError, loading, fetchData } = useFetch();
   const [cancel, setCancel] = useState(false);
+  const [timer, setTimer] = useState(60);
   const dispatch = useDispatch();
   //Check if the user already input email
   useEffect(() => {
@@ -24,6 +25,15 @@ export default function EmailConfirmation() {
       navigate("/sign-up");
     }
   }, []);
+
+  useEffect(() => {
+    if (timer === 0) return;
+
+    const interval = setInterval(() => {
+      setTimer((prev) => prev - 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [timer]);
 
   //Handle digit updates
   const handleChange = (value, index) => {
@@ -81,11 +91,13 @@ export default function EmailConfirmation() {
   //Handle resend otp
   const handleResendOtp = async () => {
     try {
-      const data = await fetchData("super-admin/auth/resend-otp", {
+      const data = await fetchData("/auth/resend-otp", {
         method: "POST",
-        data: { email, otpType },
+        data: { email, type: otpType },
       });
       console.log(data);
+      setError("");
+      setTimer(60);
     } catch (error) {
       console.log(error.response);
     }
@@ -135,12 +147,14 @@ export default function EmailConfirmation() {
           ))}
         </div>
         <button
-          disabled={loading}
+          // disabled={timer > 0}
           onClick={handleResendOtp}
           className={`${
-            !loading ? "bg-violet-500" : "bg-gray-400"
+            timer <= 0
+              ? "bg-violet-500 hover:bg-violet-400"
+              : "bg-gray-400 hover:bg-gray-500"
           } p-4 w-full mb-1 rounded-lg 
-text-white hover:bg-violet-400 duration-75 flex items-center gap-2 justify-center`}
+text-white duration-75 flex items-center gap-2 justify-center`}
         >
           {loading ? (
             <p className="text-white">Sending...</p>
@@ -166,7 +180,12 @@ text-white hover:bg-violet-400 duration-75 flex items-center gap-2 justify-cente
           )}
         </button>
         <div className="w-full mb-5">
-          <p className="text-xs text-red-500 text-left  ">{error}</p>
+          <p className="text-xs text-red-500 text-left">{error}</p>
+          {timer > 0 && (
+            <p className="text-xs text-gray-400 text-left">
+              You can resend otp in: {timer}
+            </p>
+          )}
         </div>
         <button
           disabled={cancel}

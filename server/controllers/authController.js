@@ -59,3 +59,35 @@ exports.verifyUserOtp = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+exports.resendOtp = async (req, res) => {
+  try {
+    const { email, type } = req.body;
+    const oldRecord = await Otp.findOne({ email, type });
+
+    if (!oldRecord) {
+      return res.status(404).json({ error: "No OTP request found" });
+    }
+
+    //simple resend cooldown
+    const now = Date.now();
+
+    if (now - oldRecord.updatedAt.getTime() < 60 * 1000) {
+      throw new Error("Please wait before requesting another OTP");
+    }
+
+    const otp = otpGenerator.generate(6, {
+      lowerCaseAlphabets: false,
+      upperCaseAlphabets: false,
+      specialChars: false,
+    });
+
+    await otpService.updateOtpRecord({ id: oldRecord._id, otp });
+
+    await sendOtp(oldRecord.email, otp);
+
+    res.status(200).json({ message: "OTP was successfully resend" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
