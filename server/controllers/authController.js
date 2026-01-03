@@ -1,10 +1,68 @@
 const Otp = require("../models/otpModel");
 const User = require("../models/userModel");
-const { sendOtp } = require("../emails/index");
+const { sendOtp, sendAccountDetails } = require("../emails/index");
 const otpService = require("../services/otpServices");
 const authService = require("../services/authServices");
 const generateToken = require("../utils/generateToken");
+const session = require("../utils/setSession");
 const otpGenerator = require("otp-generator");
+
+exports.localSignIn = async (req, res) => {
+  try {
+    const data = req.body;
+
+    const payload = await authService.localSignIn(data);
+
+    const otp = otpGenerator.generate(6, {
+      lowerCaseAlphabets: false,
+      upperCaseAlphabets: false,
+      specialChars: false,
+    });
+
+    await otpService.registerOtp({
+      email: payload.email,
+      payload,
+      otp,
+      type: "login",
+    });
+
+    await sendOtp(payload.email, otp);
+
+    res
+      .status(200)
+      .json({ message: "Successfully sent OTP", email: payload.email });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+//Signed in after otp verification
+exports.verifyLocalOtp = async () => {
+  try {
+    const { email, inputOtp, type } = req.body;
+
+    const user = await otpService.verifyOtp(email, inputOtp, type);
+
+    if (!user) {
+      return res.status(401).json({ error: "Failed to fetch user data" });
+    }
+
+    const token = generateToken(viewModel._id, viewModel.role);
+
+    const { tokenName, expiredAt } = session(viewModel.role);
+
+    res.cookie(tokenName, token, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "strict",
+      expiredAt,
+    });
+
+    res.status(200).json({ message: "Successfully sign in", user });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 
 //Only sends email in gmail and stores payload in otp
 exports.authWithGoogle = async (req, res) => {
@@ -13,8 +71,13 @@ exports.authWithGoogle = async (req, res) => {
     const payload =
       type === "register"
         ? await authService.superAdminSignUpWithGoogle(access_token)
-        : type === "login" &&
-          (await authService.signInWithGoogle(access_token));
+        : type === "login"
+        ? await authService.signInWithGoogle(access_token)
+        : null;
+
+    if (!payload) {
+      return res.status(401).json({ error: "Authentication type not found" });
+    }
 
     const otp = otpGenerator.generate(6, {
       lowerCaseAlphabets: false,
@@ -39,22 +102,49 @@ exports.authWithGoogle = async (req, res) => {
   }
 };
 
-//Create user after otp verification
+//Verify super admin otp verification
 exports.verifyUserOtp = async (req, res) => {
   try {
     const { email, inputOtp, type } = req.body;
-    const user = await otpService.verifyOtp(email, inputOtp, type);
+    let viewModel = null;
+    let generatedPassword = null;
 
-    const token = generateToken(user._id, user.role);
+    if (type === "login") {
+      const user = await otpService.verifyOtp(email, inputOtp, type);
+      viewModel = user;
+    } else if (type === "register") {
+      const result = await otpService.verifyOtp(email, inputOtp, type);
+      viewModel = result.viewModel;
+      generatedPassword = result.generatedPassword;
+    }
 
-    res.cookie("token", token, {
+    if (!viewModel) {
+      return res.status(401).json({ error: "Failed to fetch user data" });
+    }
+
+    const token = generateToken(viewModel._id, viewModel.role);
+
+    const { tokenName, expiredAt } = session(viewModel.role);
+
+    res.cookie(tokenName, token, {
       httpOnly: true,
-      sameSite: "strict",
       secure: false,
-      expiredAt: 24 * 60 * 60 * 1000,
+      sameSite: "strict",
+      expiredAt,
     });
 
-    res.status(200).json({ message: "OTP verified successfully", user });
+    if (type === "register") {
+      await sendAccountDetails({
+        firstName: viewModel.name.split(" ")[0],
+        username: viewModel.username,
+        to: viewModel.email,
+        password: generatedPassword,
+      });
+    }
+
+    res
+      .status(200)
+      .json({ message: "Your account is now verified", user: viewModel });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -87,6 +177,24 @@ exports.resendOtp = async (req, res) => {
     await sendOtp(oldRecord.email, otp);
 
     res.status(200).json({ message: "OTP was successfully resend" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.signOutUser = async (req, res) => {
+  try {
+    const { user } = req;
+
+    const { tokenName } = session(user.role);
+
+    res.clearCookie(tokenName, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "strict",
+    });
+
+    res.status(200).json({ message: "Signed out successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

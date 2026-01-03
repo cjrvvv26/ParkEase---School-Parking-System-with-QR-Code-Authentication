@@ -1,12 +1,18 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
+import { logout } from "../features/authSlice";
+import useFetch from "../hooks/useFetch";
+import { useNavigate } from "react-router-dom";
 
 export default function Header() {
   const [showSettings, setShowSettings] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
+  const { error, setError, fetchData } = useFetch();
   const { user } = useSelector((state) => state.auth);
-  console.log(user);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const floatFeatures = [
     {
@@ -71,6 +77,17 @@ export default function Header() {
           />
         </svg>
       ),
+      action: async () => {
+        try {
+          await fetchData("/super-admin/sign-out", {
+            method: "DELETE",
+          });
+          dispatch(logout());
+          navigate("/sign-in");
+        } catch (error) {
+          setError(error.response.data.error);
+        }
+      },
     },
   ];
 
@@ -277,6 +294,9 @@ export default function Header() {
                 {floatFeatures.map((feature, index) => (
                   <Link
                     to={feature.path}
+                    onClick={async () => {
+                      if (feature.action) await feature.action();
+                    }}
                     key={index}
                     className="flex items-center gap-3 py-4 px-4 hover:bg-violet-500 hover:text-white"
                   >

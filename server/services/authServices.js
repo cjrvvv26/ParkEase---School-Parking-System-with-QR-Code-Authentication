@@ -1,6 +1,8 @@
 const User = require("../models/userModel");
+const SuperAdmin = require("../models/superAdminModel");
+const Student = require("../models/studentModel");
+const Guard = require("../models/guardModel");
 const bcrypt = require("bcrypt");
-const generatePassword = require("../utils/generatePassword");
 const generateDefaultName = require("../utils/generateDefaultName");
 const axios = require("axios");
 
@@ -50,9 +52,6 @@ exports.superAdminSignUpWithGoogle = async (accessToken) => {
   }
 
   const generatedUsername = generateDefaultName("superadmin");
-  const generatedPassword = generatePassword();
-
-  // const hashedPassword = await bcrypt.hash(generatedPassword, 10);
 
   const payload = {
     profileDetails: {
@@ -63,8 +62,54 @@ exports.superAdminSignUpWithGoogle = async (accessToken) => {
     username: generatedUsername,
     role: "super admin",
     name,
-    password: generatedPassword,
   };
 
   return payload;
+};
+
+exports.localSignIn = async (data) => {
+  const { email, password } = data;
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    throw new Error("Email doesn't exist in database");
+  }
+
+  const userData =
+    user.role === "super admin"
+      ? await SuperAdmin.findOne({ userId: user._id })
+      : user.role === "student"
+      ? await Student.findOne({ userId: user._id })
+      : user.role === "guard"
+      ? await Guard.findOne({ userId: user._id })
+      : null;
+
+  if (!userData) {
+    throw new Error("User role data not found");
+  }
+
+  const comparePassword = await bcrypt.compare(password, user.password);
+
+  if (!comparePassword) {
+    throw new Error("Wrong credentials");
+  }
+
+  //Remove risky data
+  const { _id, __v, ...moreData } = userData._doc;
+
+  const viewModel = {
+    _id: user._id,
+    profileDetails: user.profileDetails,
+    username: user.username,
+    email: user.email,
+    password: user.password,
+    status: user.status,
+    role: user.role,
+    emailVerified: user.emailVerified,
+    lastActive: user.lastActive,
+    ...moreData,
+  };
+
+  return viewModel;
 };

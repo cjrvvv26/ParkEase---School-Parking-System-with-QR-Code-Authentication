@@ -13,8 +13,6 @@ const securitySchema = new Schema(
       lastName: { type: String, trim: true, required: true },
     },
     workShift: { type: String, default: "flexible" },
-    password: { type: String, required: true },
-    isVerified: { type: Boolean, default: false },
     permissions: {
       canScan: { type: Boolean, default: true },
       canMarkParking: { type: Boolean, default: false },

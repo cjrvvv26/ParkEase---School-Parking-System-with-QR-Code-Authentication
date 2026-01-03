@@ -1,4 +1,4 @@
-module.exports = ({ firstName, name, password }) => ({
+module.exports = ({ firstName, email, username, password }) => ({
   subject: "Your ParkEase Account Details",
   html: `
     <!DOCTYPE html>
@@ -81,10 +81,10 @@ module.exports = ({ firstName, name, password }) => ({
           "
         >
           <p style="margin: 0 0 8px 0;">
-            <strong>Email:</strong> ${to}
+            <strong>Email:</strong> ${email}
           </p>
           <p style="margin: 0 0 8px 0;">
-            <strong>Name:</strong> ${name.toUpperCase()}
+            <strong>Username:</strong> ${username}
           </p>
           <p style="margin: 0;">
             <strong>Temporary Password:</strong>

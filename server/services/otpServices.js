@@ -2,6 +2,7 @@ const bcrypt = require("bcrypt");
 const Otp = require("../models/otpModel");
 const User = require("../models/userModel");
 const SuperAdmin = require("../models/superAdminModel");
+const generatePassword = require("../utils/generatePassword");
 
 exports.registerOtp = async ({ email, payload, otp, type }) => {
   if (!email || !otp) {
@@ -52,32 +53,67 @@ exports.verifyOtp = async (email, otp, type) => {
     throw new Error("Incorrect OTP");
   }
 
-  const { profileDetails, username, name, password, role } = user.payload;
+  const { profileDetails, username, name, role } = user.payload;
+
+  const generatedPassword = generatePassword();
+
+  const hashedPassword = await bcrypt.hash(generatedPassword, 10);
 
   if (type === "register") {
     const createUser = await User.create({
       profileDetails,
       username,
       email,
+      password: hashedPassword,
       role,
       emailVerified: true,
       lastActive: Date.now(),
     });
 
-    await SuperAdmin.create({
+    const userData = await SuperAdmin.create({
       userId: createUser._id,
       name,
-      password,
     });
 
+    const { _id, __v, ...moreData } = userData._doc;
+
+    const viewModel = {
+      _id: createUser._id,
+      profileDetails: createUser.profileDetails,
+      username: createUser.username,
+      email: createUser.email,
+      password: createUser.password,
+      status: createUser.status,
+      role: createUser.role,
+      emailVerified: createUser.emailVerified,
+      lastActive: createUser.lastActive,
+      ...moreData,
+    };
     await Otp.deleteOne({ _id: user._id });
-    return createUser;
+    return { viewModel, generatedPassword };
   }
 
   if (type === "login") {
-    const findUser = await User.findOne({ email });
+    const recordUser = await User.findOne({ email });
+    const userData = await SuperAdmin.findOne({ userId: recordUser._id });
+
+    const { _id, __v, ...moreData } = userData._doc;
+
+    const viewModel = {
+      _id: recordUser._id,
+      profileDetails: recordUser.profileDetails,
+      username: recordUser.username,
+      email: recordUser.email,
+      password: recordUser.password,
+      status: recordUser.status,
+      role: recordUser.role,
+      emailVerified: recordUser.emailVerified,
+      lastActive: recordUser.lastActive,
+      ...moreData,
+    };
+
     await Otp.deleteOne({ _id: user._id });
-    return findUser;
+    return viewModel;
   }
 };
 

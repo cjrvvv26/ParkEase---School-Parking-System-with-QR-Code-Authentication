@@ -9,7 +9,6 @@ const superAdminSchema = new Schema(
       ref: "user",
     },
     name: { type: String, trim: true, required: true },
-    password: { type: String, required: true },
   },
   { timestamps: true }
 );

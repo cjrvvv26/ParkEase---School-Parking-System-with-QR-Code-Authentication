@@ -53,7 +53,7 @@ export default function EmailConfirmation() {
 
         const handleOtpVerification = async () => {
           try {
-            const data = await fetchData("auth/register/verify-otp", {
+            const data = await fetchData("auth/verify-otp", {
               method: "POST",
               data: { email, inputOtp: convertedOtp, type: otpType },
             });
@@ -147,7 +147,7 @@ export default function EmailConfirmation() {
           ))}
         </div>
         <button
-          // disabled={timer > 0}
+          disabled={timer > 0}
           onClick={handleResendOtp}
           className={`${
             timer <= 0

@@ -19,7 +19,7 @@ const requiredSuperAdmin = async (req, res, next) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    req.data = superAdmin;
+    req.user = superAdmin;
     next();
   } catch (err) {
     return res.status(500).json({ error: err.message });
