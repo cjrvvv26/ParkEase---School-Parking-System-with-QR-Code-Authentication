@@ -1,5 +1,6 @@
 const User = require("../models/userModel");
 const SuperAdmin = require("../models/superAdminModel");
+const flattenFilteredData = require("../utils/definedDataFilter");
 
 exports.getDataBySession = async (data) => {
   const user = await User.findById(data.id).lean();
@@ -33,4 +34,34 @@ exports.getDataBySession = async (data) => {
   }
 
   return viewModel;
+};
+
+exports.updateData = async (id, data, session) => {
+  const updateFilterData = flattenFilteredData(data);
+  let additionalData;
+  let updatedData = await User.findByIdAndUpdate(id, updateFilterData, {
+    new: true,
+    session,
+  });
+
+  if (data?.name) {
+    additionalData = await SuperAdmin.findOneAndUpdate(
+      { userId: id },
+      updateFilterData,
+      { new: true, session }
+    );
+
+    if (!additionalData) {
+      throw new Error("Something went wrong while updating information.");
+    }
+  }
+
+  if (!updateFilterData) {
+    throw new Error("Something went wrong while updating information.");
+  }
+
+  // const { __v, _id, ...moreData } = additionalData;
+  console.log(additionalData);
+
+  return { updatedData };
 };
