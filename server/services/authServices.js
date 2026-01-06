@@ -113,3 +113,27 @@ exports.localSignIn = async (data) => {
 
   return viewModel;
 };
+
+exports.localSignUp = async (data) => {
+  const { email, firstName, lastName } = data;
+
+  let user = await User.findOne({ email });
+
+  if (user) {
+    throw new Error("Email address already exist");
+  }
+  const fullName = firstName + " " + lastName;
+  const generatedUsername = generateDefaultName(
+    fullName.toLowerCase().replaceAll(" ", "")
+  );
+
+  const payload = {
+    email,
+    username: generatedUsername,
+    role: "super admin",
+    username: generatedUsername,
+    name: fullName,
+  };
+
+  return payload;
+};

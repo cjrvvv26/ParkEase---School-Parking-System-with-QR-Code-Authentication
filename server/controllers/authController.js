@@ -10,7 +10,6 @@ const otpGenerator = require("otp-generator");
 exports.localSignIn = async (req, res) => {
   try {
     const data = req.body;
-
     const payload = await authService.localSignIn(data);
 
     const otp = otpGenerator.generate(6, {
@@ -36,29 +35,29 @@ exports.localSignIn = async (req, res) => {
   }
 };
 
-//Signed in after otp verification
-exports.verifyLocalOtp = async () => {
+exports.localSignUp = async (req, res) => {
   try {
-    const { email, inputOtp, type } = req.body;
+    const data = req.body;
+    const payload = await authService.localSignUp(data);
 
-    const user = await otpService.verifyOtp(email, inputOtp, type);
-
-    if (!user) {
-      return res.status(401).json({ error: "Failed to fetch user data" });
-    }
-
-    const token = generateToken(viewModel._id, viewModel.role);
-
-    const { tokenName, expiredAt } = session(viewModel.role);
-
-    res.cookie(tokenName, token, {
-      httpOnly: true,
-      secure: false,
-      sameSite: "strict",
-      expiredAt,
+    const otp = otpGenerator.generate(6, {
+      lowerCaseAlphabets: false,
+      upperCaseAlphabets: false,
+      specialChars: false,
     });
 
-    res.status(200).json({ message: "Successfully sign in", user });
+    await otpService.registerOtp({
+      email: payload.email,
+      payload,
+      otp,
+      type: "register",
+    });
+
+    await sendOtp(payload.email, otp);
+
+    res
+      .status(200)
+      .json({ message: "Successfully sent OTP", email: payload.email });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

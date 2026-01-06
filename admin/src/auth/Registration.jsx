@@ -6,14 +6,16 @@ import { useState } from "react";
 
 export default function Registration() {
   const [email, setEmail] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const { error, loading, fetchData } = useFetch();
   const navigate = useNavigate();
 
   const handleRegister = async () => {
     try {
-      const res = await fetchData("super-admin/auth/register", {
+      const res = await fetchData("/auth/sign-up", {
         method: "POST",
-        data: { email },
+        data: { firstName, lastName, email },
       });
       console.log(res);
       sessionStorage.setItem("otp_access", "true");
@@ -54,6 +56,26 @@ export default function Registration() {
         <h2>to continue to your Super Admin Account.</h2>
       </div>
       <div className="flex flex-col gap-5 w-[450px]">
+        <div className="flex gap-5">
+          <input
+            type="text"
+            value={firstName.charAt(0).toUpperCase() + firstName.slice(1)}
+            onChange={(e) => {
+              setFirstName(e.target.value);
+            }}
+            className="p-4 rounded-lg ring ring-gray-400 hover:ring-2 hover:ring-blue-400 focus:ring-2 focus:ring-blue-400 outline-none w-full"
+            placeholder="First name"
+          />
+          <input
+            type="text"
+            value={lastName.charAt(0).toUpperCase() + lastName.slice(1)}
+            onChange={(e) => {
+              setLastName(e.target.value);
+            }}
+            className="p-4 rounded-lg ring ring-gray-400 hover:ring-2 hover:ring-blue-400 focus:ring-2 focus:ring-blue-400 outline-none w-full"
+            placeholder="Last name"
+          />
+        </div>
         <div className="flex-col gap-1 flex">
           <input
             type="text"
