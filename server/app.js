@@ -4,6 +4,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cookieParser = require("cookie-parser");
 const authRouters = require("./routers/authRouter");
+const shapeRouters = require("./routers/shapeRouter");
 const superAdminRouters = require("./routers/superAdminRouter");
 // const guardRouters = require("./routers/guardRouter");
 // const studentRouters = require("./routers/studentRouter");
@@ -29,6 +30,7 @@ app.use("/super-admin", superAdminRouters);
 // app.use("/guard", guardRouters);
 // app.use("/student", studentRouters);
 app.use("/motor", motorRouters);
+app.use("/shape", shapeRouters);
 // app.use("/user", userRouters);
 // app.use("/slot", slotRouters);
 

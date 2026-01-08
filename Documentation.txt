@@ -60,3 +60,13 @@ TO DO LISTS
 
 FUTURE SYSTEM IMPROVEMENT
 - MAP EDITOR FOR SUPER ADMIN
+
+MVP FOR MAP EDITOR
+- Rectangle slot
+- Parallelogram slot
+- Polygon building
+- Select / Move / Resize
+- Rotate
+- Delete
+- Properties panel (basic)
+- Save & Load layout
