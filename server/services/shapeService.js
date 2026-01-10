@@ -2,12 +2,12 @@ const Shape = require("../models/shapeModel");
 const mongoose = require("mongoose");
 
 exports.modifyMapLayout = async (data) => {
-  const { area, shapes } = req.body;
+  const { area, shapes } = data;
 
   if (!area) throw new Error("Map not found");
   if (!Array.isArray(shapes)) throw new Error("Invalid request");
 
-  const existingShapes = await Shape.find({ "metadata.zone": area });
+  const existingShapes = await Shape.find({ area });
   const existingIds = existingShapes.map((s) => s._id.toString());
 
   const frontendIds = shapes.filter((s) => s._id).map((s) => s._id);

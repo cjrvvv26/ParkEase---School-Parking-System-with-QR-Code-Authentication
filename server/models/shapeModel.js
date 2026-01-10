@@ -16,6 +16,13 @@ const metadataSchema = new mongoose.Schema({
   type: { type: String, enum: ["slot", "building"] },
   area: { type: String },
   locked: { type: Boolean, default: false },
+  information: {
+    picture: {
+      url: String,
+      public_id: String,
+    },
+    description: String,
+  },
 });
 
 const shapeSchema = new mongoose.Schema(
@@ -26,4 +33,4 @@ const shapeSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model("Shape", shapeSchema);
+module.exports = mongoose.model("shape", shapeSchema);

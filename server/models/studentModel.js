@@ -25,7 +25,6 @@ const studentSchema = new Schema(
     yearLevel: { type: String, required: true },
     course: { type: String, required: true },
     phoneNo: { type: String, required: true },
-    isVerified: { type: Boolean, default: false },
     isPaid: { type: Boolean, default: false },
     motorDetails,
   },
