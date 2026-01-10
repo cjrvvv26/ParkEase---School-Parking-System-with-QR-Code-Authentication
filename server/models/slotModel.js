@@ -9,6 +9,7 @@ const slotSchema = new Schema(
       unique: true,
       default: null,
     },
+    slotNumber: { type: String, required: true, unique: true },
     slotId: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,

@@ -1,8 +1,9 @@
 const mongoose = require("mongoose");
+const Slot = require("../models/slotModel");
 const Shape = require("../models/shapeModel");
 const shapeService = require("../services/shapeService");
 
-exports.getAllShapes = async () => {
+exports.getAllShapes = async (req, res) => {
   try {
     const { area } = req.body;
     const filter = {};
@@ -23,6 +24,17 @@ exports.saveMapLayout = async (req, res) => {
     if (!Array.isArray(shapes)) throw new Error("Invalid request");
 
     const insertedShapes = await Shape.insertMany(shapes);
+    const insertedSlots = insertedShapes.filter(
+      (s) => s.metadata.type === "slot"
+    );
+
+    const slots = insertedSlots.map(() => ({
+      assignedStudentId: null,
+      slotId: s._id,
+      status: "available",
+    }));
+
+    await Slot.insertMany(slots);
 
     res
       .status(201)
