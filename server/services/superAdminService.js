@@ -11,6 +11,7 @@ exports.getDataBySession = async (data) => {
   }
 
   const viewModel = {
+    _id: user._id,
     profileDetails: user.profileDetails,
     username: user.username,
     email: user.email,

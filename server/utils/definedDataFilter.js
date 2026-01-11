@@ -23,8 +23,6 @@ const filterDefinedData = (obj = {}, fieldMap = {}) => {
     return {};
   }
 
-  nested.updatedAt = new Date();
-
   const convertIntoDotNotation = (obj, parent = "", result = {}) => {
     for (const [key, value] of Object.entries(obj)) {
       const path = parent ? `${parent}.${key}` : key;

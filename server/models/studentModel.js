@@ -8,27 +8,24 @@ const motorDetails = new Schema({
   color: { type: String, required: true },
 });
 
-const studentSchema = new Schema(
-  {
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "user",
-      unique: true,
-      required: true,
-    },
-    studentNo: { type: String, required: true },
-    name: {
-      firstName: { type: String, trim: true, required: true },
-      middleName: { type: String, trim: true, required: true },
-      lastName: { type: String, trim: true, required: true },
-    },
-    yearLevel: { type: String, required: true },
-    course: { type: String, required: true },
-    phoneNo: { type: String, required: true },
-    isPaid: { type: Boolean, default: false },
-    motorDetails,
+const studentSchema = new Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "user",
+    unique: true,
+    required: true,
   },
-  { timestamps: true }
-);
+  studentNo: { type: String, required: true },
+  name: {
+    firstName: { type: String, trim: true, required: true },
+    middleName: { type: String, trim: true, required: true },
+    lastName: { type: String, trim: true, required: true },
+  },
+  yearLevel: { type: String, required: true },
+  course: { type: String, required: true },
+  phoneNo: { type: String, required: true },
+  isPaid: { type: Boolean, default: false },
+  motorDetails,
+});
 
 module.exports = mongoose.model("student", studentSchema);
