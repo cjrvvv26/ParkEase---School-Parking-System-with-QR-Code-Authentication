@@ -1,5 +1,6 @@
-const slotService = require("../services/slotService");
 const mongoose = require("mongoose");
+const qrService = require("../services/qrService");
+const slotService = require("../services/slotService");
 
 exports.assignStudentSlot = async (req, res) => {
   const session = await mongoose.startSession();
@@ -52,5 +53,14 @@ exports.removeAssignment = async (req, res) => {
     session.abortTransaction();
     session.endSession();
     res.status(500).json({ error: error.message });
+  }
+};
+
+exports.verifyStudentSlot = async (req, res) => {
+  try {
+    const message = await qrService.verifySlotData(req.body);
+    res.status(200).json({ message });
+  } catch (error) {
+    res.status(403).json({ error: error.message });
   }
 };

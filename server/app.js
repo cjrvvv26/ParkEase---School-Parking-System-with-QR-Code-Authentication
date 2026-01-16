@@ -6,10 +6,11 @@ const cookieParser = require("cookie-parser");
 const authRouters = require("./routers/authRouter");
 const slotRouters = require("./routers/slotRouter");
 const shapeRouters = require("./routers/shapeRouter");
-const superAdminRouters = require("./routers/superAdminRouter");
-// const guardRouters = require("./routers/guardRouter");
-// const studentRouters = require("./routers/studentRouter");
 const motorRouters = require("./routers/motorAiRouter");
+// const guardRouters = require("./routers/guardRouter");
+const studentRouters = require("./routers/studentRouter");
+const superAdminRouters = require("./routers/superAdminRouter");
+const rateLimiter = require("./utils/rateLimiter");
 // const userRouters = require("./routers/userRouter");
 // const slotRouters = require("./routers/slotRouter");
 const app = express();
@@ -25,11 +26,21 @@ app.use(
 app.use(cookieParser());
 //It accepts the json data (for postman)
 app.use(express.json());
+app.use((req, res, next) => {
+  rateLimiter
+    .consume(req.ip)
+    .then(() => {
+      next();
+    })
+    .catch(() => {
+      res.status(429).json({ error: "Too many requests" });
+    });
+});
 //API Endpoints base urlse
 app.use("/auth", authRouters);
 app.use("/super-admin", superAdminRouters);
 // app.use("/guard", guardRouters);
-// app.use("/student", studentRouters);
+app.use("/student", studentRouters);
 app.use("/motor", motorRouters);
 app.use("/slot", slotRouters);
 app.use("/shape", shapeRouters);

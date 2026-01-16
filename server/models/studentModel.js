@@ -25,6 +25,10 @@ const studentSchema = new Schema({
   course: { type: String, required: true },
   phoneNo: { type: String, required: true },
   isPaid: { type: Boolean, default: false },
+  QRCode: { type: String, required: true },
+  entryTime: Date,
+  outTime: Date,
+  creditPoints: { type: Number, default: 200, required: true },
   motorDetails,
 });
 

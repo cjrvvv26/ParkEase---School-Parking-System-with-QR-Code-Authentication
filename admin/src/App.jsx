@@ -23,6 +23,7 @@ import Settings from "./pages/Settings";
 import AddStudent from "./pages/AddStudent";
 import AddGuard from "./pages/AddGuard";
 import EmailEditor from "./EmailEditor";
+import MapEditor from "./MapEditor";
 import Profile from "./pages/Profile";
 
 export default function App() {
@@ -73,6 +74,10 @@ export default function App() {
     {
       path: "/otp-verification",
       element: <EmailConfirmation />,
+    },
+    {
+      path: "/map-editor",
+      element: <MapEditor />,
     },
     {
       path: "/",

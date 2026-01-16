@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const cloudinary = require("cloudinary").v2;
 const User = require("../models/userModel");
 const SuperAdmin = require("../models/superAdminModel");
+const Student = require("../models/studentModel");
 const mediaService = require("../services/mediaService");
 const superAdminService = require("../services/superAdminService");
 
@@ -56,6 +57,28 @@ exports.updateInformation = async (req, res) => {
     if (req.file?.filename) {
       await cloudinary.uploader.destroy(req.file.filename);
     }
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.registerUser = async (req, res) => {
+  try {
+    const user = await superAdminService.registerUserAccount(req.body);
+
+    res.status(200).json({ message: "Account was successfully created", user });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.deactivateUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    await superAdminService.deactivateUserAccount(id);
+
+    res.status(200).json({ message: "User account is now deactivated" });
+  } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };

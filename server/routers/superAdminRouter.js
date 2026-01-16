@@ -11,12 +11,16 @@ router.use(verifySession(), requiredSuperAdmin);
 //GET
 router.get("/me", superAdminController.getDataBySession);
 
+//POST
+router.post("/add-user", superAdminController.registerUser);
+
 //PATCH
 router.patch(
   "/me",
   upload.single("profileDetails"),
   superAdminController.updateInformation
 );
+router.patch("/deactivate/:id", superAdminController.deactivateUser);
 
 //DELETE
 router.delete("/sign-out", authController.signOutUser);

@@ -1,6 +1,9 @@
 const User = require("../models/userModel");
+const Guard = require("../models/guardModel");
+const Student = require("../models/studentModel");
 const SuperAdmin = require("../models/superAdminModel");
 const flattenFilteredData = require("../utils/definedDataFilter");
+const QRCode = require("qrcode");
 
 exports.getDataBySession = async (data) => {
   const user = await User.findById(data.id).lean();
@@ -65,4 +68,41 @@ exports.updateData = async (id, data, session) => {
   console.log(additionalData);
 
   return { updatedData };
+};
+
+exports.registerUserAccount = async (data) => {
+  const { role, username, email, ...info } = data;
+  const user = null;
+
+  const verifyEmail = await User.findOne({ email: info.email });
+
+  if (verifyEmail) {
+    throw new Error("Email already in use");
+  }
+
+  if (role === "student") {
+    user = await User.create({ username, email, profileDetails });
+    const qrCode = await QRCode.toDataURL(email);
+    await Student.create({
+      ...info,
+      QRCode: qrCode,
+    });
+  }
+  if (role === "guard") {
+    user = await User.create({ username, email, profileDetails });
+    await Guard.create(info);
+  }
+
+  if (!user) throw new Error("An error occurred while creating an account");
+
+  return user;
+};
+
+exports.deactivateUserAccount = async (id) => {
+  const user = await User.findById(id);
+
+  if (!user) throw new Error("User not found");
+
+  user.status = "deactivate";
+  user.save();
 };
