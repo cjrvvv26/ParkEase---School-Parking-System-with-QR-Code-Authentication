@@ -1,28 +1,39 @@
 import React from "react";
+import IconButton from "./IconButton";
 
-export default function ToolBox() {
+export default function ToolBox({ setShapes, mapName = "default" }) {
+  const addSlot = () => {
+    setShapes((prev) => [
+      ...prev,
+      {
+        tempId: crypto.randomUUID(),
+        geometry: {
+          shape: "rect",
+          x: "50",
+          y: "50",
+          width: "100",
+          height: "50",
+          rotation: "0",
+        },
+        metadata: {
+          label: "A" + prev.length,
+          type: "slot",
+          area: mapName,
+        },
+      },
+    ]);
+  };
+
   return (
-    <div className="w-80 h-screen text-xs text-gray-700 border-l border-gray-200 p-5 flex flex-col overflow-hidden relative">
-      {/* UPPER SECTION */}
-      <section className="flex flex-col overflow-y-auto gap-5 flex-1">
-        {/* TOOLBOX */}
-        <div className="flex flex-col gap-5 h-[9999px]">
-          <h1 className="font-semibold text-xl">Toolbox</h1>
-        </div>
-        {/* PROPERTIES */}
-        <div className="flex flex-col gap-5">
-          <h1 className="font-semibold text-xl">Properties</h1>
-        </div>
-      </section>
-      {/* BTN's */}
-      <section className="flex gap-3 bg-white absolute w-full bottom-0 p-5 left-0 items-center">
-        <button className="text-violet-500 border-2 border-violet-500 w-full rounded-md py-2 font-medium text-base">
-          Back
-        </button>
-        <button className="text-white border-2 border-violet-500 bg-violet-500 w-full rounded-md py-2 font-medium text-base">
-          Save
-        </button>
-      </section>
+    <div className="absolute bottom-3 p-2 border border-gray-200 rounded-md bg-white text-gray-700 shadow-md -translate-x-1/2 left-1/2 flex gap-2 items-center">
+      <IconButton name={"MousePointer2"} size={5} label={"Select"} />
+      <IconButton
+        name={"SquareDashed"}
+        size={5}
+        label={"Slot"}
+        action={addSlot}
+      />
+      <IconButton name={"Building"} size={5} label={"Building"} />
     </div>
   );
 }

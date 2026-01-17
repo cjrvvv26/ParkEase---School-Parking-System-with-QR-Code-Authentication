@@ -1,14 +1,12 @@
 const multer = require("multer");
 const cloudinary = require("../utils/cloudinary");
-const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const CloudinaryStorage = require("multer-storage-cloudinary");
 
 const allowedFolders = ["avatars"];
 
 const storage = new CloudinaryStorage({
   cloudinary,
   params: async (req, file) => {
-    if (!file) return {};
-
     const folder = allowedFolders.includes(req.params.folder)
       ? req.params.folder
       : "misc";
@@ -21,5 +19,4 @@ const storage = new CloudinaryStorage({
   },
 });
 
-const upload = multer({ storage });
-module.exports = upload;
+module.exports = multer({ storage });
