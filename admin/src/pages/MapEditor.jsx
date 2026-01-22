@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import ToolBox from "./components/maps/ToolBox";
-import PropertiesPanel from "./components/maps/PropertiesPanel";
-import Header from "./components/maps/Header";
+import ToolBox from "../components/maps/ToolBox";
+import PropertiesPanel from "../components/maps/PropertiesPanel";
+import Header from "../components/maps/Header";
 
 function SlotShape({
   shape,

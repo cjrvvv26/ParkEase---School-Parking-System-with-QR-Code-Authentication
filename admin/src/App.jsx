@@ -23,7 +23,7 @@ import Settings from "./pages/Settings";
 import AddStudent from "./pages/AddStudent";
 import AddGuard from "./pages/AddGuard";
 import EmailEditor from "./EmailEditor";
-import MapEditor from "./MapEditor";
+import MapEditor from "./pages/MapEditor";
 import Profile from "./pages/Profile";
 
 export default function App() {
@@ -76,10 +76,6 @@ export default function App() {
       element: <EmailConfirmation />,
     },
     {
-      path: "/map-editor",
-      element: <MapEditor />,
-    },
-    {
       path: "/",
       element: <PublicRoutes />,
       children: [
@@ -105,6 +101,7 @@ export default function App() {
       path: "/",
       element: <ProtectedRoute />,
       children: [
+        //Default Layout
         {
           element: <DefaultLayout />,
           children: [
@@ -143,6 +140,7 @@ export default function App() {
             },
           ],
         },
+        //Settings Layout
         {
           element: <SimpleLayout />,
           children: [
@@ -151,6 +149,11 @@ export default function App() {
               element: <Settings />,
             },
           ],
+        },
+        //Independent Pages
+        {
+          path: "/map-editor",
+          element: <MapEditor />,
         },
       ],
     },
