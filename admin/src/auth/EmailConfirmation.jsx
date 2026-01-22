@@ -108,7 +108,7 @@ export default function EmailConfirmation() {
     try {
       const res = await axiosConfig.delete(
         "super-admin/auth/cancel-verification",
-        { data: { email } }
+        { data: { email } },
       );
       console.log(res.data);
       sessionStorage.removeItem("otp_access");
@@ -180,7 +180,9 @@ text-white duration-75 flex items-center gap-2 justify-center`}
           )}
         </button>
         <div className="w-full mb-5">
-          <p className="text-xs text-red-500 text-left">{error}</p>
+          <p className="text-xs text-red-500 text-left">
+            {error && typeof error === "string" ? error : ""}
+          </p>
           {timer > 0 && (
             <p className="text-xs text-gray-400 text-left">
               You can resend otp in: {timer}

@@ -10,9 +10,7 @@ const motorRouters = require("./routers/motorAiRouter");
 // const guardRouters = require("./routers/guardRouter");
 const studentRouters = require("./routers/studentRouter");
 const superAdminRouters = require("./routers/superAdminRouter");
-const rateLimiter = require("./utils/rateLimiter");
 // const userRouters = require("./routers/userRouter");
-// const slotRouters = require("./routers/slotRouter");
 const app = express();
 
 //Middlewares
@@ -21,21 +19,11 @@ app.use(
   cors({
     origin: "http://localhost:5173",
     credentials: true,
-  })
+  }),
 );
 app.use(cookieParser());
 //It accepts the json data (for postman)
 app.use(express.json());
-app.use((req, res, next) => {
-  rateLimiter
-    .consume(req.ip)
-    .then(() => {
-      next();
-    })
-    .catch(() => {
-      res.status(429).json({ error: "Too many requests" });
-    });
-});
 //API Endpoints base urlse
 app.use("/auth", authRouters);
 app.use("/super-admin", superAdminRouters);
@@ -45,7 +33,6 @@ app.use("/motor", motorRouters);
 app.use("/slot", slotRouters);
 app.use("/shape", shapeRouters);
 // app.use("/user", userRouters);
-// app.use("/slot", slotRouters);
 
 //Initialize Server
 const initializeServer = async () => {
@@ -53,13 +40,13 @@ const initializeServer = async () => {
     await mongoose.connect(process.env.MONGO_URI);
     app.listen(process.env.PORT, () => {
       console.log(
-        `The server is running on port: http://localhost:${process.env.PORT}`
+        `The server is running on port: http://localhost:${process.env.PORT}`,
       );
     });
   } catch (error) {
     console.log(
       "An error occurred while initializing the server: ",
-      error.message
+      error.message,
     );
   }
 };

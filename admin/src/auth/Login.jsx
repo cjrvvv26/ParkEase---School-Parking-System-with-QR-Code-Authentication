@@ -20,9 +20,6 @@ export default function Login() {
     }
   });
 
-  //Check if the user already have session if true then redirect into dashboard
-  useEffect(() => {}, []);
-
   const handleManualLogin = async () => {
     try {
       const data = await fetchData("auth/sign-in", {
@@ -35,7 +32,7 @@ export default function Login() {
       sessionStorage.setItem("otp_type", "login");
       sessionStorage.setItem("email", email);
     } catch (error) {
-      console.log(error.response.data.error);
+      console.log(error);
     }
   };
 
@@ -161,7 +158,8 @@ export default function Login() {
             <p>{loading ? "Verifying" : "Continue with Google"}</p>
           </button>
           {error !== "All fields must be filled" &&
-            error !== "Wrong credentials! Please try again." && (
+            error !== "Wrong credentials! Please try again." &&
+            typeof error === "string" && (
               <p className="text-xs text-red-500">{error}</p>
             )}
         </div>

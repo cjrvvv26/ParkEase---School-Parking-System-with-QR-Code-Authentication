@@ -49,7 +49,7 @@ export default function App() {
         } else if (error.response) {
           console.error(
             "Session check error:",
-            error.response.data?.error || "Unauthorized"
+            error.response.data?.error || "Unauthorized",
           );
         } else {
           console.error("Network or unknown error:", error.message);
