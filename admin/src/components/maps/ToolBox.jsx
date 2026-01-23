@@ -10,6 +10,9 @@ export default function ToolBox({
   selectedShapeId,
   setPoints,
   setClickedShapeId,
+  setMode,
+  mode,
+  setErrorMessage,
 }) {
   const addSlot = () => {
     setShapes((prev) => [
@@ -38,7 +41,11 @@ export default function ToolBox({
   };
 
   const handleFinishPolygon = () => {
-    if (!isDrawing || !points.length) return;
+    if (!isDrawing) return;
+    if (points.length < 3) {
+      setErrorMessage("Polygon requires at least 3 points.");
+      return;
+    }
     setShapes((prev) => [
       ...prev,
       {
@@ -64,6 +71,8 @@ export default function ToolBox({
     ]);
     setIsDrawing(false);
     setPoints([]);
+    setErrorMessage("");
+    setMode("select");
   };
 
   return (
@@ -73,6 +82,7 @@ export default function ToolBox({
         size={5}
         label={"Select"}
         action={() => {
+          setMode("select");
           if (isDrawing) {
             setIsDrawing(false);
             setPoints([]);
@@ -95,6 +105,7 @@ export default function ToolBox({
           if (isDrawing) {
             handleFinishPolygon();
           } else {
+            setMode("draw");
             setIsDrawing(true);
           }
         }}

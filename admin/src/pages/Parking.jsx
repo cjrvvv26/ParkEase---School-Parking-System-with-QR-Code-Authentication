@@ -7,12 +7,18 @@ import { useState } from "react";
 export default function Parking() {
   const [isOpen, toggleIsOpenModal] = useState(false);
   const [areaName, setAreaName] = useState("");
-  const [svgSize, setSvgSize] = useState("");
+  const [width, setWidth] = useState("");
+  const [height, setHeight] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    navigate("/map-editor", { state: { areaName, svgSize } });
+    navigate("/map-editor", {
+      state: {
+        areaName,
+        svgSize: { width: Number(width), height: Number(height) },
+      },
+    });
     toggleIsOpenModal(false);
   };
 
@@ -70,40 +76,77 @@ export default function Parking() {
             </button>
             {isOpen && (
               <Modal onClose={() => toggleIsOpenModal(false)}>
-                <div className="p-5 max-w-full bg-white rounded-xl shadow-xl overflow-hidden flex flex-col gap-5">
+                <div className="text-xs w-[300px] text-gray-700 flex flex-col gap-5">
                   <h1 className="text-base font-semibold text-gray-700">
                     Create New Area
                   </h1>
                   <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-                    <input
-                      type="text"
-                      placeholder="Area Name"
-                      value={areaName}
-                      onChange={(e) => setAreaName(e.target.value)}
-                      className="border border-gray-300 rounded p-2"
-                      required
-                    />
-                    <input
-                      type="text"
-                      placeholder="SVG Size (e.g., 800x600)"
-                      value={svgSize}
-                      onChange={(e) => setSvgSize(e.target.value)}
-                      className="border border-gray-300 rounded p-2"
-                      required
-                    />
-                    <div className="flex items-center gap-5">
-                      <button
-                        type="submit"
-                        className="bg-violet-500 text-white py-2 px-4 rounded"
+                    <div className="flex flex-col gap-1">
+                      <label
+                        htmlFor="name"
+                        className="self-start text-xs text-gray-400"
                       >
-                        Create
-                      </button>
+                        Area name
+                      </label>
+                      <input
+                        id="name"
+                        type="text"
+                        value={areaName}
+                        onChange={(e) => setAreaName(e.target.value)}
+                        className="outline-none w-full rounded-md border border-gray-200 py-1 px-2"
+                      />
+                    </div>
+                    <div className="flex gap-3 items-center">
+                      <div className="flex flex-col gap-1">
+                        <label
+                          htmlFor="height"
+                          className="self-start text-xs text-gray-400"
+                        >
+                          Height
+                        </label>
+                        <div className="flex gap-1 items-end">
+                          <input
+                            id="height"
+                            type="number"
+                            value={height}
+                            onChange={(e) => setHeight(e.target.value)}
+                            className="outline-none w-full rounded-md border border-gray-200 py-1 px-2"
+                          />
+                          <span className="text-gray-400">px</span>
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <label
+                          htmlFor="width"
+                          className="self-start text-xs text-gray-400"
+                        >
+                          Width
+                        </label>
+                        <div className="flex gap-1 items-end">
+                          <input
+                            id="width"
+                            type="number"
+                            value={width}
+                            onChange={(e) => setWidth(e.target.value)}
+                            className="outline-none w-full rounded-md border border-gray-200 py-1 px-2"
+                          />
+                          <span className="text-gray-400">px</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-5 w-full">
                       <button
                         type="button"
                         onClick={() => toggleIsOpenModal(false)}
-                        className="border border-gray-300 py-2 px-4 rounded"
+                        className="border w-full border-gray-200 py-2 px-4 rounded"
                       >
                         Close
+                      </button>
+                      <button
+                        type="submit"
+                        className="bg-violet-500 w-full text-white py-2 px-4 rounded"
+                      >
+                        Create
                       </button>
                     </div>
                   </form>

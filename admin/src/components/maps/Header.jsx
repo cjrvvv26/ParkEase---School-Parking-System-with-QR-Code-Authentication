@@ -3,6 +3,7 @@ import Button from "./Button";
 import { Eye } from "lucide-react";
 
 export default function Header({
+  areaName,
   onNew,
   onUndo,
   onRedo,
@@ -22,7 +23,7 @@ export default function Header({
         </div>
         {/* Area Name */}
         <p className="-translate-x-1/2 left-1/2 absolute font-semibold text-base">
-          Admin Bldg
+          {areaName || "Admin Bldg"}
         </p>
         {/* Super Admin Profile */}
         <div className="flex items-center gap-3">
