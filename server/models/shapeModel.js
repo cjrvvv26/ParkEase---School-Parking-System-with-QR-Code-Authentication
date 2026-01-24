@@ -21,16 +21,22 @@ const metadataSchema = new mongoose.Schema({
       url: String,
       public_id: String,
     },
+    name: String,
     description: String,
   },
 });
 
 const shapeSchema = new mongoose.Schema(
   {
+    mapId: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: "map",
+    },
     geometry: geometrySchema,
     metadata: metadataSchema,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 module.exports = mongoose.model("shape", shapeSchema);

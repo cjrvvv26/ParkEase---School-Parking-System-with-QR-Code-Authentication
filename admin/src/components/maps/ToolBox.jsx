@@ -7,11 +7,9 @@ export default function ToolBox({
   setIsDrawing,
   isDrawing,
   points,
-  selectedShapeId,
   setPoints,
   setClickedShapeId,
   setMode,
-  mode,
   setErrorMessage,
 }) {
   const addSlot = () => {
@@ -34,10 +32,8 @@ export default function ToolBox({
         },
       },
     ]);
-  };
-
-  const addBuilding = () => {
-    setIsDrawing(true);
+    setIsDrawing(false);
+    setPoints([]);
   };
 
   const handleFinishPolygon = () => {
@@ -64,6 +60,7 @@ export default function ToolBox({
               url: null,
               public_id: null,
             },
+            name: "",
             description: "",
           },
         },

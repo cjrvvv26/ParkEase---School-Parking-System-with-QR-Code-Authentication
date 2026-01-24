@@ -1,6 +1,7 @@
 import React from "react";
 import Button from "./Button";
 import { Eye } from "lucide-react";
+import { useSelector } from "react-redux";
 
 export default function Header({
   areaName,
@@ -12,6 +13,8 @@ export default function Header({
   onPreview,
   onSave,
 }) {
+  const { user } = useSelector((s) => s.auth);
+
   return (
     <div className="flex flex-col gap-3 text-gray-700 text-xs p-2 border-b border-gray-200">
       <section className="flex relative justify-between">
@@ -27,9 +30,9 @@ export default function Header({
         </p>
         {/* Super Admin Profile */}
         <div className="flex items-center gap-3">
-          <p className="">Clarence</p>
+          <p className="">{user.name}</p>
           <img
-            src="https://plus.unsplash.com/premium_photo-1690407617542-2f210cf20d7e?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+            src={user.profileDetails?.url}
             alt=""
             className="h-8 w-8 object-cover rounded-full"
           />

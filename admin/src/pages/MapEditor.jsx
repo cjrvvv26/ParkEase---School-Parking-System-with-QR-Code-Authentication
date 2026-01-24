@@ -4,19 +4,17 @@ import ToolBox from "../components/maps/ToolBox";
 import PropertiesPanel from "../components/maps/PropertiesPanel";
 import Header from "../components/maps/Header";
 import Modal from "../components/Modal";
+import useFetch from "../hooks/useFetch";
 
 function SlotShape({
   shape,
   onClick,
   onMouseDown,
-  rotate,
-  height,
-  width,
-  isSelected,
   isDragging,
   isHovering,
   onMouseEnter,
   onMouseLeave,
+  onBuildingClick,
 }) {
   const renderShape = () => {
     if (shape.geometry.shape === "rect") {
@@ -24,8 +22,7 @@ function SlotShape({
         <rect
           width={shape.geometry.width}
           height={shape.geometry.height}
-          fill="#E5E7EB"
-          stroke="#9CA3AF"
+          fill="#d1d5dc"
           className={
             isDragging
               ? "cursor-grabbing"
@@ -42,8 +39,7 @@ function SlotShape({
       return (
         <polygon
           points={pointsStr}
-          fill="#D1D5DB"
-          stroke="#6B7280"
+          fill="#E5E7EB"
           className={
             isDragging
               ? "cursor-grabbing"
@@ -99,6 +95,33 @@ function SlotShape({
           ? shape.metadata.label
           : "No Label"}
       </text>
+      {shape.geometry.shape === "polygon" && (
+        <g>
+          <circle
+            cx={labelPos.x}
+            cy={labelPos.y + 10}
+            r="5"
+            fill="#05df72"
+            className="animate-pulse hover:cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation();
+              onBuildingClick(shape);
+            }}
+          />
+          <circle
+            cx={labelPos.x}
+            cy={labelPos.y + 10}
+            r="8"
+            opacity={50}
+            fill="#b9f8cf"
+            className="animate-pulse"
+            onClick={(e) => {
+              e.stopPropagation();
+              onBuildingClick(shape);
+            }}
+          />
+        </g>
+      )}
     </g>
   );
 }
@@ -120,7 +143,6 @@ export default function MapEditor() {
   const [zoom, setZoom] = useState(1);
   const [history, setHistory] = useState([[]]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isUndoing, setIsUndoing] = useState(false);
   const [isFromHistory, setIsFromHistory] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [newAreaName, setNewAreaName] = useState("");
@@ -128,6 +150,9 @@ export default function MapEditor() {
   const [newHeight, setNewHeight] = useState("");
   const [mode, setMode] = useState("select");
   const [errorMessage, setErrorMessage] = useState("");
+  const [isBuildingModalOpen, setIsBuildingModalOpen] = useState(false);
+  const [selectedBuilding, setSelectedBuilding] = useState(null);
+  const { fetchData } = useFetch();
 
   useEffect(() => {
     setCurrentAreaName(initialAreaName || "");
@@ -250,6 +275,21 @@ export default function MapEditor() {
     );
   };
 
+  const handleBuildingUpdate = (updatedBuilding) => {
+    setShapes((prev) =>
+      prev.map((s) =>
+        (s._id || s.tempId) === updatedBuilding.tempId ? updatedBuilding : s,
+      ),
+    );
+    setSelectedBuilding(null);
+    setIsBuildingModalOpen(false);
+  };
+
+  const openBuildingModal = (shape) => {
+    setSelectedBuilding(shape);
+    setIsBuildingModalOpen(true);
+  };
+
   const handleDeleteShape = (id) => {
     setShapes((prev) => prev.filter((s) => (s._id || s.tempId) !== id));
   };
@@ -290,9 +330,19 @@ export default function MapEditor() {
     console.log("Preview mode");
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     console.log("Save", shapes);
-    // TODO: send to backend
+    const { height, width } = currentSvgSize;
+    const data = { name: currentAreaName, height, width, shapes };
+    try {
+      const res = await fetchData("/map", {
+        method: "POST",
+        data,
+      });
+      console.log(res.data);
+    } catch (error) {
+      console.log(error.response.data);
+    }
   };
 
   const handleNewSubmit = (e) => {
@@ -333,7 +383,7 @@ export default function MapEditor() {
           style={{ height: "600px" }}
         >
           {errorMessage && (
-            <div className="absolute top-2 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded">
+            <div className="absolute top-2 left-1/2 transform -translate-x-1/2 text-xs bg-rose-500 text-white px-4 py-2 rounded">
               {errorMessage}
             </div>
           )}
@@ -378,6 +428,7 @@ export default function MapEditor() {
                     setHoveredShapeId(shape._id || shape.tempId)
                   }
                   onMouseLeave={() => setHoveredShapeId(null)}
+                  onBuildingClick={openBuildingModal}
                 />
               ))}
               {isDrawing && points.length > 1 && (
@@ -486,6 +537,130 @@ export default function MapEditor() {
                   className="bg-violet-500 w-full text-white py-2 px-4 rounded"
                 >
                   Create
+                </button>
+              </div>
+            </form>
+          </div>
+        </Modal>
+      )}
+      {isBuildingModalOpen && selectedBuilding && (
+        <Modal onClose={() => setIsBuildingModalOpen(false)}>
+          <div className="text-xs w-[300px] text-gray-700 flex flex-col gap-5">
+            <h1 className="text-base font-semibold text-gray-700">
+              Edit Building
+            </h1>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleBuildingUpdate(selectedBuilding);
+              }}
+              className="flex flex-col gap-5"
+            >
+              <div className="flex flex-col gap-1">
+                <label
+                  htmlFor="bldg-pic"
+                  className="self-start text-xs text-gray-400"
+                >
+                  Picture
+                </label>
+                {selectedBuilding.metadata?.information?.picture?.url && (
+                  <img
+                    src={selectedBuilding.metadata.information.picture.url}
+                    alt="Current Building"
+                    className="w-20 h-20 object-cover rounded mb-2"
+                  />
+                )}
+                <input
+                  id="bldg-pic"
+                  type="file"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      setSelectedBuilding({
+                        ...selectedBuilding,
+                        metadata: {
+                          ...selectedBuilding.metadata,
+                          information: {
+                            ...selectedBuilding.metadata.information,
+                            picture: {
+                              url: URL.createObjectURL(file),
+                              public_id: null,
+                            },
+                          },
+                        },
+                      });
+                    }
+                  }}
+                  className="outline-none w-full rounded-md border border-gray-200 py-1 px-2"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label
+                  htmlFor="bldg-name"
+                  className="self-start text-xs text-gray-400"
+                >
+                  Name
+                </label>
+                <input
+                  id="bldg-name"
+                  type="text"
+                  value={selectedBuilding.metadata?.information?.name || ""}
+                  onChange={(e) =>
+                    setSelectedBuilding({
+                      ...selectedBuilding,
+                      metadata: {
+                        ...selectedBuilding.metadata,
+                        information: {
+                          ...selectedBuilding.metadata.information,
+                          name: e.target.value,
+                        },
+                      },
+                    })
+                  }
+                  className="outline-none w-full rounded-md border border-gray-200 py-1 px-2"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label
+                  htmlFor="bldg-desc"
+                  className="self-start text-xs text-gray-400"
+                >
+                  Description
+                </label>
+                <textarea
+                  id="bldg-desc"
+                  value={
+                    selectedBuilding.metadata?.information?.description || ""
+                  }
+                  onChange={(e) =>
+                    setSelectedBuilding({
+                      ...selectedBuilding,
+                      metadata: {
+                        ...selectedBuilding.metadata,
+                        information: {
+                          ...selectedBuilding.metadata.information,
+                          description: e.target.value,
+                        },
+                      },
+                    })
+                  }
+                  className="outline-none w-full rounded-md border border-gray-200 py-1 px-2 resize-none h-20"
+                />
+              </div>
+
+              <div className="flex items-center gap-5 w-full">
+                <button
+                  type="button"
+                  onClick={() => setIsBuildingModalOpen(false)}
+                  className="border w-full border-gray-200 py-2 px-4 rounded"
+                >
+                  Close
+                </button>
+                <button
+                  type="submit"
+                  className="bg-violet-500 w-full text-white py-2 px-4 rounded"
+                >
+                  Save
                 </button>
               </div>
             </form>
