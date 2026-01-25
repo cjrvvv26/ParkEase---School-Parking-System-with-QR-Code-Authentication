@@ -3,6 +3,8 @@ const crypto = require("crypto");
 const Map = require("../models/mapModel");
 const Shape = require("../models/shapeModel");
 const Slot = require("../models/slotModel");
+const cloudinary = require("../utils/cloudinary");
+const { uploadShapeImage } = require("../services/mediaService");
 
 // Create a new map with shapes
 exports.createMap = async (req, res) => {
@@ -37,8 +39,6 @@ exports.createMap = async (req, res) => {
         assignedStudentId: null,
         slotId: shape._id,
         status: "available",
-        slotNumber: shape.metadata.label,
-        QRCode: crypto.randomUUID(),
       }));
 
       if (slots.length > 0) {
@@ -60,12 +60,28 @@ exports.createMap = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
-
 // Get all maps for the user
 exports.getAllMaps = async (req, res) => {
   try {
     const maps = await Map.find({ createdBy: req.user.id });
     res.status(200).json(maps);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+// Get all maps with shapes
+exports.getAllMapsWithShapes = async (req, res) => {
+  try {
+    const filter = req.user ? { createdBy: req.user.id } : {};
+    const maps = await Map.find(filter);
+    const mapsWithShapes = await Promise.all(
+      maps.map(async (map) => {
+        const shapes = await Shape.find({ mapId: map._id });
+        return { ...map.toObject(), shapes };
+      }),
+    );
+    res.status(200).json(mapsWithShapes);
   } catch (error) {
     res.status(400).json({ error: error.message });
   }

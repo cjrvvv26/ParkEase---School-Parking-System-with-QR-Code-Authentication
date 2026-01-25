@@ -1,15 +1,42 @@
 import ReportSummaryCard from "../components/charts/ReportSummaryCard";
 import AdminBldg from "../components/maps/AdminBldg";
+import DynamicMap from "../components/maps/DynamicMap";
 import { useNavigate } from "react-router-dom";
 import Modal from "../components/Modal";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import useFetch from "../hooks/useFetch";
 
 export default function Parking() {
   const [isOpen, toggleIsOpenModal] = useState(false);
   const [areaName, setAreaName] = useState("");
   const [width, setWidth] = useState("");
   const [height, setHeight] = useState("");
+  const [maps, setMaps] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [selectedShape, setSelectedShape] = useState(null);
   const navigate = useNavigate();
+  const { fetchData } = useFetch();
+
+  useEffect(() => {
+    const fetchMaps = async () => {
+      try {
+        const data = await fetchData("map/with-shapes", {
+          method: "GET",
+        });
+        setMaps(data || []);
+      } catch (error) {
+        console.error("Error fetching maps:", error);
+        setMaps([]);
+      }
+    };
+    fetchMaps();
+  }, []);
+
+  useEffect(() => {
+    if (maps && maps.length > 0 && currentIndex >= maps.length) {
+      setCurrentIndex(0);
+    }
+  }, [maps, currentIndex]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -20,6 +47,10 @@ export default function Parking() {
       },
     });
     toggleIsOpenModal(false);
+  };
+
+  const handleShapeClick = (shape) => {
+    setSelectedShape(shape);
   };
 
   return (
@@ -190,7 +221,12 @@ export default function Parking() {
               viewBox="0 0 24 24"
               strokeWidth={1.5}
               stroke="currentColor"
-              className="size-6 absolute right-5 -translate-x-1/2 top-1/2"
+              className={`size-6 absolute right-5 -translate-x-1/2 top-1/2 ${maps && maps.length > 1 ? "cursor-pointer" : "cursor-not-allowed opacity-50"}`}
+              onClick={() =>
+                maps &&
+                maps.length > 1 &&
+                setCurrentIndex((prev) => (prev + 1) % maps.length)
+              }
             >
               <path
                 strokeLinecap="round"
@@ -204,7 +240,14 @@ export default function Parking() {
               viewBox="0 0 24 24"
               strokeWidth={1.5}
               stroke="currentColor"
-              className="size-6 absolute left-10 top-1/2 -translate-x-1/2"
+              className={`size-6 absolute left-10 top-1/2 -translate-x-1/2 ${maps && maps.length > 1 ? "cursor-pointer" : "cursor-not-allowed opacity-50"}`}
+              onClick={() =>
+                maps &&
+                maps.length > 1 &&
+                setCurrentIndex(
+                  (prev) => (prev - 1 + maps.length) % maps.length,
+                )
+              }
             >
               <path
                 strokeLinecap="round"
@@ -258,34 +301,74 @@ export default function Parking() {
             </div>
             {/* Area name */}
             <p className="text-center px-4 py-2 bg-violet-100 text-xs text-violet-500 absolute bottom-5 right-5 rounded-xl ring ring-violet-500">
-              Admin Building Area
+              {(maps && maps[currentIndex]?.name) || "No Area"}
             </p>
-            <div className="h-full flex items-center">
-              <AdminBldg />
+            <div className="h-full min-h-96 flex items-center justify-center">
+              {maps && maps.length > 0 ? (
+                <DynamicMap
+                  shapes={maps[currentIndex].shapes}
+                  width={maps[currentIndex].width}
+                  height={maps[currentIndex].height}
+                  onShapeClick={handleShapeClick}
+                />
+              ) : (
+                <div className="text-center text-gray-400">
+                  No parking areas available
+                </div>
+              )}
             </div>
           </section>
           {/* Parking Details */}
-          <section className="w-[400px] border-l border-gray-200 flex flex-col p-5 items-center justify-center gap-1">
-            <div className="flex gap-2 items-center text-base font-medium">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="size-5"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z"
-                />
-              </svg>
-              <h2>No slot selected</h2>
-            </div>
-            <p className="text-xs text-gray-400">
-              Click a parking slot on the map to view details here.
-            </p>
+          <section
+            className={`${!selectedShape && "justify-center"} w-[400px] border-l border-gray-200 flex flex-col p-5 items-center gap-1 `}
+          >
+            {selectedShape ? (
+              <div className="flex flex-col items-center gap-4 w-full">
+                <div className="text-left w-full">
+                  <p className="text-sm text-gray-600">
+                    <strong>Type:</strong> {selectedShape.metadata.type}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    <strong>ID:</strong>{" "}
+                    {selectedShape._id || selectedShape.tempId}
+                  </p>
+                  {selectedShape.metadata.type === "slot" && (
+                    <p className="text-sm text-gray-600">
+                      <strong>Status:</strong> Available
+                    </p>
+                  )}
+                  {selectedShape.metadata.type === "bldg" && (
+                    <p className="text-sm text-gray-600">
+                      <strong>Name:</strong> Building
+                    </p>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-1">
+                <div className="flex gap-2 items-center justify-center text-base font-medium">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="size-5"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z"
+                    />
+                  </svg>
+                  <h2>No slot selected</h2>
+                </div>
+                <p className="text-xs text-center text-gray-400">
+                  Click a parking slot or building on the map to view details
+                  here.
+                </p>
+              </div>
+            )}
           </section>
         </main>
       </div>

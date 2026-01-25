@@ -345,6 +345,14 @@ export default function MapEditor() {
     }
   };
 
+  const fileToBase64 = (file) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+    });
+
   const handleNewSubmit = (e) => {
     e.preventDefault();
     setCurrentAreaName(newAreaName);
@@ -565,7 +573,7 @@ export default function MapEditor() {
                 </label>
                 {selectedBuilding.metadata?.information?.picture?.url && (
                   <img
-                    src={selectedBuilding.metadata.information.picture.url}
+                    src={selectedBuilding.metadata.information.picture?.url}
                     alt="Current Building"
                     className="w-20 h-20 object-cover rounded mb-2"
                   />
@@ -573,23 +581,23 @@ export default function MapEditor() {
                 <input
                   id="bldg-pic"
                   type="file"
-                  onChange={(e) => {
+                  onChange={async (e) => {
                     const file = e.target.files[0];
-                    if (file) {
-                      setSelectedBuilding({
-                        ...selectedBuilding,
-                        metadata: {
-                          ...selectedBuilding.metadata,
-                          information: {
-                            ...selectedBuilding.metadata.information,
-                            picture: {
-                              url: URL.createObjectURL(file),
-                              public_id: null,
-                            },
-                          },
+                    if (!file) return;
+
+                    const base64 = await fileToBase64(file);
+
+                    setSelectedBuilding({
+                      ...selectedBuilding,
+                      imageFile: file, // ✅ IMPORTANT
+                      metadata: {
+                        ...selectedBuilding.metadata,
+                        information: {
+                          ...selectedBuilding.metadata.information,
+                          picture: base64, // preview only
                         },
-                      });
-                    }
+                      },
+                    });
                   }}
                   className="outline-none w-full rounded-md border border-gray-200 py-1 px-2"
                 />

@@ -81,7 +81,7 @@ export default function PropertiesPanel({
                   <div className="flex relative w-[80px] h-[80px] items-center justify-center bg-gray-100 rounded-md">
                     {selectedShape.metadata?.information?.picture?.url && (
                       <img
-                        src={selectedShape.metadata.information.picture.url}
+                        src={selectedShape.metadata.information.picture?.url}
                         alt="Building"
                         className="w-full h-full object-cover rounded-md"
                       />

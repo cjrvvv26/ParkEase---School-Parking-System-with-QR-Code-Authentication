@@ -30,7 +30,7 @@ const slotSchema = new Schema(
     entryTime: Date,
     endTime: Date,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 module.exports = mongoose.model("slot", slotSchema);

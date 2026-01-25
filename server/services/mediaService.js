@@ -1,5 +1,6 @@
 const cloudinary = require("cloudinary").v2;
 const User = require("../models/userModel");
+const Shape = require("../models/shapeModel");
 
 exports.replaceProfileImage = async (userId, file, session) => {
   const { filename, path } = file;
@@ -18,4 +19,22 @@ exports.replaceProfileImage = async (userId, file, session) => {
   await user.save({ session });
 
   return { profileDetails, oldPublicId };
+};
+
+exports.uploadShapeImage = async (shapeId, file, session) => {
+  const building = await Shape.findById(shapeId).session(session);
+  if (!building) throw new Error("Shape not found");
+
+  const buildingPicture = building.metadata?.information?.picture;
+  const oldPublicId = buildingPicture?.public_id || null;
+
+  const pictureDetails = {
+    url: file.path,
+    public_id: file.filename,
+  };
+
+  building.metadata.information.picture = pictureDetails;
+  await building.save({ session });
+
+  return { pictureDetails, oldPublicId };
 };

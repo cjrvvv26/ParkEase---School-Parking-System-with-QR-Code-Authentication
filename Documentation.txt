@@ -35,12 +35,12 @@ TO DO LISTS
 
 ===== Dec 26, 2025 ======
 ✅ Added slot API
-- Add services (business logic) for system scalability
-- Improve MVC architecture
-- Add super admin profile design
+✅ Add services (business logic) for system scalability
+✅ Improve MVC architecture
+✅ Add super admin profile design
 
 ===== Dec 27, 2025 ======
-- Finalize schema & API
+✅ Finalize schema & API
 
 ===== Dec 28, 2025 ======
 - Frontend data fetching
@@ -59,15 +59,15 @@ TO DO LISTS
 - Start data fetching
 
 FUTURE SYSTEM IMPROVEMENT
-- MAP EDITOR FOR SUPER ADMIN
+✅ MAP EDITOR FOR SUPER ADMIN
 - REAL TIME CHAT (BETWEEN SA AND STUDENTS)
 
 MVP FOR MAP EDITOR
-- Rectangle slot
-- Parallelogram slot
-- Polygon building
-- Select / Move / Resize
-- Rotate
-- Delete
-- Properties panel (basic)
-- Save & Load layout
+✅ Rectangle slot
+✅ Parallelogram slot
+✅ Polygon building
+✅ Select / Move / Resize
+✅ Rotate
+✅ Delete
+✅ Properties panel (basic)
+✅ Save & Load layout
