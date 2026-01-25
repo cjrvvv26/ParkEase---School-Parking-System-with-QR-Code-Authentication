@@ -12,7 +12,7 @@ const storage = new CloudinaryStorage({
       : "misc";
 
     return {
-      folder: `ParkEase/${folder}`,
+      folder: `ParkEase/building`,
       allowed_formats: ["jpg", "png", "jpeg"],
       public_id: `${Date.now()}-${file.originalname.split(".")[0]}`,
     };

@@ -8,7 +8,7 @@ const upload = require("../middlewares/uploadImage");
 router.use(verifyUser(), requiredSuperAdmin);
 
 router.get("/with-shapes", mapController.getAllMapsWithShapes);
-router.post("/", upload.array("buildingImages"), mapController.createMap);
+router.post("/", upload.any(), mapController.createMap);
 router.get("/", mapController.getAllMaps);
 router.get("/:id", mapController.getMapById);
 router.put("/:id", mapController.updateMap);

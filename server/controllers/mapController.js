@@ -1,65 +1,88 @@
 const mongoose = require("mongoose");
-const crypto = require("crypto");
 const Map = require("../models/mapModel");
 const Shape = require("../models/shapeModel");
 const Slot = require("../models/slotModel");
-const cloudinary = require("../utils/cloudinary");
-const { uploadShapeImage } = require("../services/mediaService");
+const generateQRCode = require("../utils/generateQRCode");
 
 // Create a new map with shapes
 exports.createMap = async (req, res) => {
   try {
-    const { name, height, width, shapes } = req.body;
-    const createdBy = req.user.id; // assuming auth middleware sets req.user
+    const { name, height, width } = req.body;
+    const createdBy = req.user.id;
 
-    // Create the map
-    const newMap = new Map({
+    // IMPORTANT: multipart/form-data => shapes is STRING
+    const shapes = JSON.parse(req.body.shapes);
+
+    // 1. Create map
+    const map = await Map.create({
       name,
       height,
       width,
       createdBy,
     });
 
-    const savedMap = await newMap.save();
+    // 2. Index uploaded Cloudinary files by tempId
+    const imageMap = {};
+    req.files?.forEach((file) => {
+      // building[tempId]
+      const match = file.fieldname.match(/\[(.*?)\]/);
+      if (match) imageMap[match[1]] = file;
+    });
 
-    // Insert shapes with mapId
-    if (shapes && Array.isArray(shapes)) {
-      const shapesWithMapId = shapes.map((shape) => ({
+    const savedShapes = [];
+
+    // 3. Create shapes + attach building images
+    for (const shape of shapes) {
+      const newShape = new Shape({
         ...shape,
-        mapId: savedMap._id,
-      }));
+        mapId: map._id,
+      });
 
-      const insertedShapes = await Shape.insertMany(shapesWithMapId);
-
-      // Create slots for slot shapes
-      const slotShapes = insertedShapes.filter(
-        (s) => s.metadata.type === "slot",
-      );
-      const slots = slotShapes.map((shape) => ({
-        assignedStudentId: null,
-        slotId: shape._id,
-        status: "available",
-      }));
-
-      if (slots.length > 0) {
-        await Slot.insertMany(slots);
+      if (shape.metadata?.type === "building" && imageMap[shape.tempId]) {
+        newShape.metadata.information.picture = {
+          url: imageMap[shape.tempId].path,
+          public_id: imageMap[shape.tempId].filename,
+        };
       }
 
-      res.status(201).json({
-        message: "Map created successfully",
-        map: savedMap,
-        shapes: insertedShapes,
-      });
-    } else {
-      res.status(201).json({
-        message: "Map created successfully",
-        map: savedMap,
-      });
+      await newShape.save();
+      savedShapes.push(newShape);
     }
+
+    // 4. Create slots
+    const slotShapes = savedShapes.filter((s) => s.metadata?.type === "slot");
+
+    if (slotShapes.length) {
+      const slots = [];
+
+      for (const shape of slotShapes) {
+        const slotNumber = shape.metadata.label; // e.g. A-01
+        const qrText = `MAP:${map._id}-SLOT:${slotNumber}`;
+
+        const qrCode = await generateQRCode(qrText);
+
+        slots.push({
+          slotId: shape._id,
+          slotNumber,
+          QRCode: qrCode,
+          assignedStudentId: null,
+          status: "available",
+        });
+      }
+
+      await Slot.insertMany(slots);
+    }
+
+    res.status(201).json({
+      message: "Map created successfully",
+      map,
+      shapes: savedShapes,
+    });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 };
+
 // Get all maps for the user
 exports.getAllMaps = async (req, res) => {
   try {

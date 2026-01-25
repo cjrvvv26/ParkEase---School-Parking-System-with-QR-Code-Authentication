@@ -56,10 +56,6 @@ export default function ToolBox({
           type: "building",
           area: mapName,
           information: {
-            picture: {
-              url: null,
-              public_id: null,
-            },
             name: "",
             description: "",
           },

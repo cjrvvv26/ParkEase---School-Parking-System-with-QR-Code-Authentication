@@ -11,6 +11,8 @@ export default function useFetch() {
       const res = await axios(url, options);
       return res.data;
     } catch (error) {
+      console.log(error.response.data);
+
       if (error.response) {
         setError(error.response.data.error || "Something went wrong");
       } else if (error.request) {

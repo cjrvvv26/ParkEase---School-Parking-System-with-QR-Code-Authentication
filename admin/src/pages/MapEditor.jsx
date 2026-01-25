@@ -278,9 +278,15 @@ export default function MapEditor() {
   const handleBuildingUpdate = (updatedBuilding) => {
     setShapes((prev) =>
       prev.map((s) =>
-        (s._id || s.tempId) === updatedBuilding.tempId ? updatedBuilding : s,
+        (s._id || s.tempId) === updatedBuilding.tempId
+          ? {
+              ...updatedBuilding,
+              imageFile: updatedBuilding.imageFile,
+            }
+          : s,
       ),
     );
+
     setSelectedBuilding(null);
     setIsBuildingModalOpen(false);
   };
@@ -331,18 +337,32 @@ export default function MapEditor() {
   };
 
   const handleSave = async () => {
-    console.log("Save", shapes);
     const { height, width } = currentSvgSize;
-    const data = { name: currentAreaName, height, width, shapes };
-    try {
-      const res = await fetchData("/map", {
-        method: "POST",
-        data,
-      });
-      console.log(res.data);
-    } catch (error) {
-      console.log(error.response.data);
-    }
+
+    const formData = new FormData();
+    formData.append("name", currentAreaName);
+    formData.append("height", height);
+    formData.append("width", width);
+
+    const cleanedShapes = shapes.map(({ imageFile, ...rest }) => rest);
+    formData.append("shapes", JSON.stringify(cleanedShapes));
+
+    shapes.forEach((shape) => {
+      if (
+        shape.metadata?.type === "building" &&
+        shape.imageFile &&
+        shape.tempId
+      ) {
+        formData.append(`building[${shape.tempId}]`, shape.imageFile);
+      }
+    });
+
+    const response = await fetchData("/map", {
+      method: "POST",
+      data: formData,
+    });
+
+    setShapes(response.shapes);
   };
 
   const fileToBase64 = (file) =>
@@ -594,7 +614,7 @@ export default function MapEditor() {
                         ...selectedBuilding.metadata,
                         information: {
                           ...selectedBuilding.metadata.information,
-                          picture: base64, // preview only
+                          preview: base64, // preview only
                         },
                       },
                     });
