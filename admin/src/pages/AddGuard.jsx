@@ -1,21 +1,104 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { Info } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import useFetch from "../hooks/useFetch";
+import DefaultInput from "../components/forms/DefaultInput";
+import DefaultOptions from "../components/forms/DefaultOptions";
 
 export default function AddGuard() {
+  const navigate = useNavigate();
+  const [preview, setPreview] = useState(null);
+  const [formError, setFormError] = useState("");
+  const { error, loading, fetchData } = useFetch();
   const [guard, setGuard] = useState({
+    profileDetails: null,
     firstName: "",
     lastName: "",
     email: "",
-    phone: "",
-    assignedArea: "",
+    phoneNo: "",
     shift: "",
     status: "active",
+    role: "guard",
+  });
+  const [permissions, setPermissions] = useState({
+    canScan: true,
+    canViewAnalytics: false,
   });
 
-  const [credentials, setCredentials] = useState({
-    username: "",
-    password: "",
-    confirmPassword: "",
-  });
+  useEffect(() => {
+    if (!formError) return;
+    const timer = setTimeout(() => {
+      setFormError("");
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, [formError]);
+
+  const handleProfilePic = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setGuard({ ...guard, profileDetails: file });
+        setPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setGuard({ ...guard, profileDetails: null });
+    }
+  };
+
+  const handleRegistration = async () => {
+    const hasEmptyField = Object.values(guard).some(
+      (value) => value === "" || value === undefined,
+    );
+
+    if (hasEmptyField) {
+      setFormError("All fields must be filled");
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guard.email)) {
+      return setFormError("Invalid email address");
+    }
+
+    if (!/^[0-9]+$/.test(guard.phoneNo)) {
+      return setFormError("Phone number must be numbers only");
+    }
+
+    const username =
+      guard.firstName && guard.lastName
+        ? guard.firstName[0].toLowerCase() +
+          guard.lastName.toLowerCase() +
+          Date.now()
+        : "";
+
+    const formData = new FormData();
+
+    // Append guard data
+    Object.entries(guard).forEach(([key, value]) => {
+      if (key === "profileDetails" && value) {
+        formData.append("profileDetails", value);
+      } else if (key !== "profileDetails") {
+        formData.append(key, value);
+      }
+    });
+
+    formData.append("username", username);
+
+    Object.entries(permissions).forEach(([key, value]) => {
+      formData.append(key, value);
+    });
+
+    const res = await fetchData("super-admin/add-user/avatars", {
+      method: "POST",
+      data: formData,
+    });
+
+    if (res) {
+      navigate("/users");
+    }
+  };
 
   return (
     <div className=" w-full p-5">
@@ -30,7 +113,11 @@ export default function AddGuard() {
         </div>
         <div className="text-sm text-gray-500">Step 1 of 1</div>
       </header>
-
+      {formError && (
+        <div className="fixed bg-rose-500 text-sm text-white flex items-center justify-center py-4 px-2 top-2 left-1/2 -translate-x-1/2 rounded-md">
+          <span>{formError}</span>
+        </div>
+      )}
       <form className="grid grid-cols-1 lg:grid-cols-3 gap-5 w-full">
         {/* Left: form inputs */}
         <section className="lg:col-span-2 bg-white rounded-xl pt-5 flex-1">
@@ -40,53 +127,59 @@ export default function AddGuard() {
               Personal Information
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <label className="flex flex-col text-sm">
-                <span className="text-gray-600">First name</span>
-                <input
-                  value={guard.firstName}
-                  onChange={(e) =>
-                    setGuard({ ...guard, firstName: e.target.value })
-                  }
-                  placeholder="Rafael"
-                  className="mt-2 px-3 py-2 border rounded-md text-sm"
-                />
-              </label>
+              <DefaultInput
+                label="First Name"
+                onChange={(e) =>
+                  setGuard({
+                    ...guard,
+                    firstName:
+                      e.target.value.charAt(0).toUpperCase() +
+                      e.target.value.slice(1),
+                  })
+                }
+                value={guard.firstName}
+                placeholder="William"
+              />
 
-              <label className="flex flex-col text-sm">
-                <span className="text-gray-600">Last name</span>
-                <input
-                  value={guard.lastName}
-                  onChange={(e) =>
-                    setGuard({ ...guard, lastName: e.target.value })
-                  }
-                  placeholder="Santos"
-                  className="mt-2 px-3 py-2 border rounded-md text-sm"
-                />
-              </label>
+              <DefaultInput
+                label="Last Name"
+                onChange={(e) =>
+                  setGuard({
+                    ...guard,
+                    lastName:
+                      e.target.value.charAt(0).toUpperCase() +
+                      e.target.value.slice(1),
+                  })
+                }
+                value={guard.lastName}
+                placeholder="Gomez"
+              />
 
-              <label className="flex flex-col text-sm">
-                <span className="text-gray-600">Email</span>
-                <input
-                  value={guard.email}
-                  onChange={(e) =>
-                    setGuard({ ...guard, email: e.target.value })
-                  }
-                  placeholder="rafael.santos@school.edu.ph"
-                  className="mt-2 px-3 py-2 border rounded-md text-sm"
-                />
-              </label>
+              <DefaultInput
+                label="Email Address"
+                onChange={(e) =>
+                  setGuard({
+                    ...guard,
+                    email: e.target.value,
+                  })
+                }
+                value={guard.email}
+                placeholder="william.gomez@gmail.com"
+              />
 
-              <label className="flex flex-col text-sm">
-                <span className="text-gray-600">Phone</span>
-                <input
-                  value={guard.phone}
-                  onChange={(e) =>
-                    setGuard({ ...guard, phone: e.target.value })
-                  }
-                  placeholder="+63 912 345 6789"
-                  className="mt-2 px-3 py-2 border rounded-md text-sm"
-                />
-              </label>
+              <DefaultInput
+                label="Phone No."
+                onChange={(e) =>
+                  setGuard({
+                    ...guard,
+                    phoneNo:
+                      e.target.value.charAt(0).toUpperCase() +
+                      e.target.value.slice(1),
+                  })
+                }
+                value={guard.phoneNo}
+                placeholder="+63 912 345 8123"
+              />
             </div>
 
             <div className="flex items-center gap-4">
@@ -95,10 +188,23 @@ export default function AddGuard() {
                   Profile photo (optional)
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="h-20 w-20 bg-gray-100 rounded-md flex items-center justify-center text-gray-400">
-                    Preview
+                  <div className="h-20 w-20 bg-gray-100 rounded-md flex items-center justify-center relative text-gray-400">
+                    {preview ? (
+                      <img
+                        src={preview}
+                        alt=""
+                        className="h-full w-full rounded-md object-cover"
+                      />
+                    ) : (
+                      <span>Preview</span>
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleProfilePic}
+                      className="h-full w-full absolute opacity-0"
+                    />
                   </div>
-                  <input type="file" accept="image/*" className="text-sm" />
                 </div>
                 <p className="text-xs text-gray-400 mt-2">
                   Recommended: 300x300px, JPG/PNG
@@ -113,39 +219,25 @@ export default function AddGuard() {
               Assignment & Schedule
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <label className="flex flex-col text-sm">
-                <span className="text-gray-600">Work shift</span>
-                <select
-                  value={guard.shift}
-                  onChange={(e) =>
-                    setGuard({ ...guard, shift: e.target.value })
-                  }
-                  className="mt-2 px-3 py-2 border rounded-md text-sm bg-white"
-                >
-                  <option value="">Select shift</option>
-                  <option value="morning">Morning (6:00 AM - 2:00 PM)</option>
-                  <option value="afternoon">
-                    Afternoon (2:00 PM - 10:00 PM)
-                  </option>
-                  <option value="night">Night (10:00 PM - 6:00 AM)</option>
-                  <option value="flexible">Flexible</option>
-                </select>
-              </label>
-
-              <label className="flex flex-col text-sm">
-                <span className="text-gray-600">Status</span>
-                <select
-                  value={guard.status}
-                  onChange={(e) =>
-                    setGuard({ ...guard, status: e.target.value })
-                  }
-                  className="mt-2 px-3 py-2 border rounded-md text-sm bg-white"
-                >
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                  <option value="on-leave">On Leave</option>
-                </select>
-              </label>
+              <DefaultOptions
+                label="Work Shift"
+                onChange={(e) => setGuard({ ...guard, shift: e.target.value })}
+                placeholder={"Select work shift"}
+                value={guard.shift}
+                options={[
+                  "Morning (6:00 AM - 2:00 PM)",
+                  "Afternoon (2:00 PM - 10:00 PM)",
+                  "Night (10:00 PM - 6:00 AM)",
+                  "Flexible",
+                ]}
+              />
+              <DefaultOptions
+                label="Status"
+                onChange={(e) => setGuard({ ...guard, status: e.target.value })}
+                placeholder={"Select status"}
+                value={guard.status}
+                options={["active", "deactivate", "offline"]}
+              />
             </div>
           </section>
 
@@ -162,10 +254,16 @@ export default function AddGuard() {
               <label className="flex flex-col text-sm">
                 <span className="text-gray-600">Username</span>
                 <input
-                  value={credentials.username}
+                  value={
+                    guard.firstName && guard.lastName
+                      ? guard.firstName[0].toLowerCase() +
+                        guard.lastName.toLowerCase() +
+                        Date.now()
+                      : ""
+                  }
                   disabled
                   placeholder="Auto-generated"
-                  className="mt-2 px-3 py-2 border rounded-md text-sm bg-gray-50"
+                  className="mt-2 px-3 py-2 ring rounded-md text-sm ring-gray-200 placeholder:text-gray-400 outline-none text-gray-700"
                 />
                 <p className="text-xs text-gray-400 mt-1">
                   Format: first initial + last name (e.g., rsantos)
@@ -174,32 +272,19 @@ export default function AddGuard() {
 
               <label className="flex flex-col text-sm">
                 <span className="text-gray-600">
-                  Email (for login recovery)
+                  Email (can be used for login recovery)
                 </span>
                 <input
                   value={guard.email}
                   disabled
-                  className="mt-2 px-3 py-2 border rounded-md text-sm bg-gray-50"
+                  className="mt-2 px-3 py-2 ring rounded-md text-sm ring-gray-200 placeholder:text-gray-400 outline-none text-gray-700"
                 />
               </label>
             </div>
 
-            <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-              <svg
-                className="w-5 h-5 text-blue-600"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="m11.25 11.25.041-.02a.75.75 0 0 1 .84.835l-.841 8.415a.75.75 0 0 0 1.485.054l.823-8.415a.75.75 0 0 1 .84-.835l.041.02M9 9.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
-                />
-              </svg>
-              <div className="text-xs text-blue-700">
+            <div className="flex items-center gap-2 p-3 bg-violet-50 border border-violet-200 rounded-lg text-violet-500">
+              <Info strokeWidth={1.5} size={18} />
+              <div className="text-xs ">
                 Guard will receive a welcome email with their username.
                 Generated password can be viewed in the received email.
               </div>
@@ -211,35 +296,39 @@ export default function AddGuard() {
             <h2 className="text-lg font-medium text-gray-800">Permissions</h2>
             <div className="space-y-2">
               <label className="flex items-center gap-3">
-                <input type="checkbox" defaultChecked className="rounded" />
+                <input
+                  type="checkbox"
+                  onChange={(e) =>
+                    setPermissions({
+                      ...permissions,
+                      canScan: e.target.checked,
+                    })
+                  }
+                  defaultChecked
+                  checked={permissions.canScan}
+                  className="rounded"
+                />
                 <span className="text-sm text-gray-700">
                   Can scan & verify QR codes (entry/exit)
                 </span>
               </label>
               <label className="flex items-center gap-3">
-                <input type="checkbox" defaultChecked className="rounded" />
-                <span className="text-sm text-gray-700">
-                  Can mark parking spots (available/occupied)
-                </span>
-              </label>
-              <label className="flex items-center gap-3">
-                <input type="checkbox" className="rounded" />
+                <input
+                  type="checkbox"
+                  className="rounded"
+                  onChange={(e) =>
+                    setPermissions({
+                      ...permissions,
+                      canViewAnalytics: e.target.checked,
+                    })
+                  }
+                  checked={permissions.canViewAnalytics}
+                />
                 <span className="text-sm text-gray-700">
                   Can view parking analytics & reports
                 </span>
               </label>
             </div>
-          </section>
-
-          {/* Notes */}
-          <section className="pt-5 border-gray-200 mt-5 border-t">
-            <label className="flex flex-col text-sm">
-              <span className="text-gray-600">Notes (internal)</span>
-              <textarea
-                placeholder="Any special notes about this guard..."
-                className="mt-2 px-3 py-2 border rounded-md text-sm h-32 resize-none"
-              />
-            </label>
           </section>
         </section>
 
@@ -257,6 +346,22 @@ export default function AddGuard() {
                 {guard.firstName || "—"} {guard.lastName || ""}
               </div>
               <div>
+                <span className="font-medium text-gray-700">Email:</span>{" "}
+                {guard.email || "—"}
+              </div>
+              <div>
+                <span className="font-medium text-gray-700">Phone No:</span>{" "}
+                {guard.phoneNo || "—"}
+              </div>
+              <div>
+                <span className="font-medium text-gray-700">Username:</span>{" "}
+                {guard.firstName && guard.lastName
+                  ? guard.firstName[0].toLowerCase() +
+                    guard.lastName.toLowerCase() +
+                    Date.now()
+                  : "" || "—"}
+              </div>
+              <div>
                 <span className="font-medium text-gray-700">Shift:</span>{" "}
                 {guard.shift || "—"}
               </div>
@@ -272,27 +377,24 @@ export default function AddGuard() {
                   {guard.status}
                 </span>
               </div>
-              <div>
-                <span className="font-medium text-gray-700">Username:</span>{" "}
-                {credentials.username || "—"}
-              </div>
             </div>
           </div>
 
           <div className="mt-auto space-y-3">
             <button
+              disabled={loading || formError}
+              onClick={handleRegistration}
               type="button"
-              className="w-full bg-violet-600 hover:bg-violet-700 text-white py-2 rounded-lg text-sm"
-              // onClick: wire to submit handler
+              className={`${loading || formError ? "bg-gray-200 text-gray-400 hover:bg-gray-100 cursor-not-allowed" : "bg-violet-500 hover:bg-violet-500 text-white"} w-full text-white py-2 rounded-lg text-sm`}
             >
-              Create Guard Account
+              {loading ? "Processing..." : "Create Guard Account"}
             </button>
             <button
+              onClick={() => navigate("/users")}
               type="button"
-              className="w-full border rounded-lg py-2 text-sm text-gray-700 hover:bg-gray-50"
-              // onClick: reset or cancel
+              className="w-full border-2 border-gray-200 rounded-lg py-2 text-sm text-gray-400 hover:bg-gray-50"
             >
-              Cancel
+              Back
             </button>
             <p className="text-xs text-gray-400">
               After saving, the guard can log in using their credentials and

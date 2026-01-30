@@ -1,21 +1,22 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import DefaultInput from "../components/forms/DefaultInput";
 import DefaultOptions from "../components/forms/DefaultOptions";
-import axios from "../utils/axiosConfig";
 import useFetch from "../hooks/useFetch";
+import { useNavigate } from "react-router-dom";
 
 export default function AddStudent() {
   const [checkMotorycleBtn, toggleCheckMotorcycleBtn] = useState(true);
   const [generatedMotorcycle, setGeneratedMotorcycle] = useState({});
   const [showGeneratedSection, setShowGeneratedSection] = useState(false);
   const [preview, setPreview] = useState(null);
+  const [formError, setFormError] = useState("");
+  const navigate = useNavigate();
   const { error, loading, fetchData } = useFetch();
   const [student, setStudent] = useState({
     profileDetails: null,
     firstName: "",
     middleName: "",
     lastName: "",
-    username: "",
     studentNo: "",
     course: "",
     yearLevel: "",
@@ -25,11 +26,21 @@ export default function AddStudent() {
   });
 
   const [motor, setMotor] = useState({
-    plate: "",
-    type: "",
+    plateNo: "",
+    model: "",
     brand: "",
     color: "",
   });
+
+  useEffect(() => {
+    if (!formError) return;
+
+    const timer = setTimeout(() => {
+      setFormError(null);
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, [formError]);
 
   const handleProfilePic = (e) => {
     const file = e.target.files[0];
@@ -46,11 +57,11 @@ export default function AddStudent() {
   };
 
   const fetchMotorDetails = async () => {
-    if (!motor.brand || !motor.color || !motor.type) return;
+    if (!motor.brand || !motor.color || !motor.model) return;
     setShowGeneratedSection(true);
     const inputMotorData = {
       brand: motor.brand,
-      model: motor.type,
+      model: motor.model,
       color: motor.color,
     };
     const motorData = await fetchData("/motor/image", {
@@ -61,21 +72,56 @@ export default function AddStudent() {
   };
 
   const handleRegistration = async () => {
-    setStudent({
-      ...student,
-      username:
-        student.firstName && student.lastName
-          ? student.firstName[0].toLowerCase() +
-            student.lastName.toLowerCase() +
-            Date.now()
-          : "",
+    const hasEmptyField = Object.values(student).some(
+      (value) => value === "" || value === undefined,
+    );
+
+    if (hasEmptyField) {
+      setFormError("All fields must be filled");
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(student.email)) {
+      return setFormError("Invalid email address");
+    }
+
+    if (!/^[0-9]+$/.test(student.phoneNo)) {
+      return setFormError("Phone number must be numbers only");
+    }
+
+    const username =
+      student.firstName && student.lastName
+        ? student.firstName[0].toLowerCase() +
+          student.lastName.toLowerCase() +
+          Date.now()
+        : "";
+
+    const formData = new FormData();
+
+    // Append student data
+    Object.entries(student).forEach(([key, value]) => {
+      if (key === "profileDetails" && value) {
+        formData.append("profileDetails", value);
+      } else if (key !== "profileDetails") {
+        formData.append(key, value);
+      }
     });
-    const data = { ...student, ...motor };
-    const res = await fetchData("super-admin/add-user", {
+
+    formData.append("username", username);
+
+    // Append motor data
+    Object.entries(motor).forEach(([key, value]) => {
+      formData.append(key, value);
+    });
+
+    const res = await fetchData("super-admin/add-user/avatars", {
       method: "POST",
-      data,
+      data: formData,
     });
-    console.log(res);
+
+    if (res) {
+      navigate("/users");
+    }
   };
 
   return (
@@ -89,7 +135,11 @@ export default function AddStudent() {
         </div>
         <div className="text-sm text-gray-500">Step 1 of 1</div>
       </header>
-
+      {formError && (
+        <div className="fixed bg-rose-500 text-sm text-white flex items-center justify-center py-4 px-2 top-2 left-1/2 -translate-x-1/2 rounded-md">
+          <span>{formError}</span>
+        </div>
+      )}
       <form className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left: form inputs */}
         <div className="lg:col-span-2 pt-5 space-y-6">
@@ -100,7 +150,12 @@ export default function AddStudent() {
               <DefaultInput
                 label="First name"
                 onChange={(e) =>
-                  setStudent({ ...student, firstName: e.target.value })
+                  setStudent({
+                    ...student,
+                    firstName:
+                      e.target.value.charAt(0).toUpperCase() +
+                      e.target.value.slice(1),
+                  })
                 }
                 value={student.firstName}
                 placeholder="Juan"
@@ -108,7 +163,12 @@ export default function AddStudent() {
               <DefaultInput
                 label="Middle name"
                 onChange={(e) =>
-                  setStudent({ ...student, middleName: e.target.value })
+                  setStudent({
+                    ...student,
+                    middleName:
+                      e.target.value.charAt(0).toUpperCase() +
+                      e.target.value.slice(1),
+                  })
                 }
                 value={student.middleName}
                 placeholder="Reyes"
@@ -117,7 +177,12 @@ export default function AddStudent() {
               <DefaultInput
                 label="Last name"
                 onChange={(e) =>
-                  setStudent({ ...student, lastName: e.target.value })
+                  setStudent({
+                    ...student,
+                    lastName:
+                      e.target.value.charAt(0).toUpperCase() +
+                      e.target.value.slice(1),
+                  })
                 }
                 value={student.lastName}
                 placeholder="Tamayo"
@@ -126,7 +191,12 @@ export default function AddStudent() {
               <DefaultInput
                 label="Student ID"
                 onChange={(e) =>
-                  setStudent({ ...student, studentNo: e.target.value })
+                  setStudent({
+                    ...student,
+                    studentNo:
+                      e.target.value.charAt(0).toUpperCase() +
+                      e.target.value.slice(1),
+                  })
                 }
                 value={student.studentNo}
                 placeholder="C2025-00001"
@@ -177,15 +247,23 @@ export default function AddStudent() {
                   Student photo (optional)
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="h-20 w-20 bg-gray-100 rounded-md flex items-center justify-center text-gray-400 overflow-hidden">
-                    <img src={preview} alt="" className="h-full w-full" />
+                  <div className="h-20 w-20 bg-gray-100 rounded-md flex items-center justify-center relative text-gray-400">
+                    {preview ? (
+                      <img
+                        src={preview}
+                        alt=""
+                        className="h-full w-full rounded-md object-cover"
+                      />
+                    ) : (
+                      <span>Preview</span>
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleProfilePic}
+                      className="h-full w-full absolute opacity-0"
+                    />
                   </div>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleProfilePic}
-                    className="text-sm"
-                  />
                 </div>
                 <p className="text-xs text-gray-400 mt-2">
                   Recommended: 300x300px, JPG/PNG
@@ -302,35 +380,58 @@ export default function AddStudent() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <DefaultInput
                 label="Plate number"
-                onChange={(e) => setMotor({ ...motor, plate: e.target.value })}
-                value={motor.plate}
+                onChange={(e) =>
+                  setMotor({ ...motor, plateNo: e.target.value.toUpperCase() })
+                }
+                value={motor.plateNo}
                 placeholder="ABC 1234"
               />
 
               <DefaultInput
                 label="Brand"
-                onChange={(e) => setMotor({ ...motor, brand: e.target.value })}
+                onChange={(e) =>
+                  setMotor({
+                    ...motor,
+                    brand:
+                      e.target.value.charAt(0).toUpperCase() +
+                      e.target.value.slice(1),
+                  })
+                }
                 value={motor.brand}
                 placeholder="Honda"
               />
               <DefaultInput
                 label="Model"
-                onChange={(e) => setMotor({ ...motor, type: e.target.value })}
-                value={motor.type}
+                onChange={(e) =>
+                  setMotor({
+                    ...motor,
+                    model:
+                      e.target.value.charAt(0).toUpperCase() +
+                      e.target.value.slice(1),
+                  })
+                }
+                value={motor.model}
                 placeholder="Wave 125"
               />
               <DefaultInput
                 label="Color"
-                onChange={(e) => setMotor({ ...motor, color: e.target.value })}
+                onChange={(e) =>
+                  setMotor({
+                    ...motor,
+                    color:
+                      e.target.value.charAt(0).toUpperCase() +
+                      e.target.value.slice(1),
+                  })
+                }
                 value={motor.color}
                 placeholder="Black"
               />
               <button
-                disabled={!(motor.brand && motor.color && motor.type)}
+                disabled={!(motor.brand && motor.color && motor.model)}
                 onClick={fetchMotorDetails}
                 type="button"
                 className={`py-2 rounded-md ${
-                  motor.brand && motor.color && motor.type
+                  motor.brand && motor.color && motor.model
                     ? "bg-violet-500 text-white hover:bg-violet-600"
                     : "bg-gray-200 text-gray-400"
                 }`}
@@ -377,24 +478,24 @@ export default function AddStudent() {
               </div>
               <div>
                 <span className="font-medium text-gray-700">Plate:</span>{" "}
-                {motor.plate || "—"}
+                {motor.plateNo || "—"}
               </div>
             </div>
           </div>
 
           <div className="mt-auto space-y-3">
             <button
+              disabled={loading || formError}
               onClick={handleRegistration}
               type="button"
-              className="w-full bg-violet-700 hover:bg-violet-700 text-white py-2 rounded-lg text-sm"
-              // onClick: wire to submit handler
+              className={`${loading || formError ? "bg-gray-200 text-gray-400 hover:bg-gray-100 cursor-not-allowed" : "bg-violet-500 hover:bg-violet-500 text-white"} w-full text-white py-2 rounded-lg text-sm`}
             >
-              Register
+              {loading ? "Processing..." : "Register"}
             </button>
             <button
+              onClick={() => navigate("/users")}
               type="button"
-              className="w-full border rounded-lg py-2 text-sm text-gray-700 hover:bg-gray-50"
-              // onClick: reset or cancel
+              className="w-full border-2 text-gray-400 border-gray-200 rounded-lg py-2 text-sm hover:bg-gray-50"
             >
               Back
             </button>

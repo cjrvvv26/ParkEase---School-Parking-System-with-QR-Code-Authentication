@@ -83,6 +83,10 @@ exports.registerUserAccount = async (data) => {
     throw new Error("Email already in use");
   }
 
+  if (!username) {
+    throw new Error("All fields must be filled");
+  }
+
   const generatedPassword = generatePassword();
   const hashPass = await bcrypt.hash(generatedPassword, 10);
 
@@ -95,7 +99,7 @@ exports.registerUserAccount = async (data) => {
   });
 
   if (role === "student") {
-    const qrCode = await QRCode.toDataURL(email);
+    //Must be verified first before having a qr code
     specificData = await Student.create({
       userId: user._id,
       studentNo: info.studentNo,
@@ -107,7 +111,6 @@ exports.registerUserAccount = async (data) => {
       yearLevel: info.yearLevel,
       course: info.course,
       phoneNo: info.phoneNo,
-      QRCode: qrCode,
       motorDetails: {
         plateNo: info.plateNo,
         brand: info.brand,
@@ -117,7 +120,18 @@ exports.registerUserAccount = async (data) => {
     });
   }
   if (role === "guard") {
-    specificData = await Guard.create(info);
+    specificData = await Guard.create({
+      userId: user._id,
+      name: {
+        firstName: info.firstName,
+        lastName: info.lastName,
+      },
+      workShift: info.shift,
+      permissions: {
+        canScan: info.canScan,
+        canViewAnalytics: info.canViewAnalytics,
+      },
+    });
   }
 
   if (!user) throw new Error("An error occurred while creating an account");

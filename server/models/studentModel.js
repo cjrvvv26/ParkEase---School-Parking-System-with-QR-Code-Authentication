@@ -28,7 +28,7 @@ const studentSchema = new Schema({
     isPaid: { type: Boolean, default: false },
     amount: { type: Number, default: 0 },
   },
-  QRCode: { type: String, required: true },
+  QRCode: String,
   entryTime: Date,
   outTime: Date,
   creditPoints: { type: Number, default: 200, required: true },

@@ -14,7 +14,6 @@ const securitySchema = new Schema({
   workShift: { type: String, default: "flexible" },
   permissions: {
     canScan: { type: Boolean, default: true },
-    canMarkParking: { type: Boolean, default: false },
     canViewAnalytics: { type: Boolean, default: false },
   },
 });

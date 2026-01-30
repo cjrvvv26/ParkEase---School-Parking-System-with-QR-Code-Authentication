@@ -71,8 +71,8 @@ exports.authWithGoogle = async (req, res) => {
       type === "register"
         ? await authService.superAdminSignUpWithGoogle(access_token)
         : type === "login"
-        ? await authService.signInWithGoogle(access_token)
-        : null;
+          ? await authService.signInWithGoogle(access_token)
+          : null;
 
     if (!payload) {
       return res.status(401).json({ error: "Authentication type not found" });
@@ -129,7 +129,7 @@ exports.verifyUserOtp = async (req, res) => {
       httpOnly: true,
       secure: false,
       sameSite: "strict",
-      expiredAt,
+      maxAge: expiredAt,
     });
 
     if (type === "register") {
