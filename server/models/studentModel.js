@@ -24,7 +24,10 @@ const studentSchema = new Schema({
   yearLevel: { type: String, required: true },
   course: { type: String, required: true },
   phoneNo: { type: String, required: true },
-  isPaid: { type: Boolean, default: false },
+  payment: {
+    isPaid: { type: Boolean, default: false },
+    amount: { type: Number, default: 0 },
+  },
   QRCode: { type: String, required: true },
   entryTime: Date,
   outTime: Date,

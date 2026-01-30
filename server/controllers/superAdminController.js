@@ -5,6 +5,11 @@ const SuperAdmin = require("../models/superAdminModel");
 const Student = require("../models/studentModel");
 const mediaService = require("../services/mediaService");
 const superAdminService = require("../services/superAdminService");
+const {
+  sendAccountDetails,
+  sendAccountVerification,
+} = require("../emails/index");
+const generateEmailToken = require("../utils/generateEmailJWT");
 
 exports.getDataBySession = async (req, res) => {
   try {
@@ -32,7 +37,7 @@ exports.updateInformation = async (req, res) => {
       const result = await mediaService.replaceProfileImage(
         _id,
         req.file,
-        session
+        session,
       );
       data.profileDetails = result.profileDetails;
       oldProfileId = result.oldPublicId;
@@ -63,10 +68,47 @@ exports.updateInformation = async (req, res) => {
 
 exports.registerUser = async (req, res) => {
   try {
-    const user = await superAdminService.registerUserAccount(req.body);
+    const data = req.body;
+    console.log(req.body, "asd");
+    console.log(req.file);
 
-    res.status(200).json({ message: "Account was successfully created", user });
+    if (req.file) {
+      const { filename, path } = req.file;
+      data.profileDetails = {
+        url: path,
+        public_id: filename,
+      };
+    }
+
+    const { userVM, generatedPassword } =
+      await superAdminService.registerUserAccount(data);
+
+    const firstName =
+      userVM.name?.firstName.charAt(0).toUpperCase() +
+      userVM.name?.firstName.slice(1);
+
+    console.log(userVM);
+
+    const emailToken = generateEmailToken(userVM._id, userVM.role);
+    await sendAccountDetails({
+      firstName,
+      username: userVM.username,
+      to: userVM.email,
+      password: generatedPassword,
+    });
+
+    await sendAccountVerification({
+      email: userVM.email,
+      firstName,
+      token: emailToken,
+    });
+    res
+      .status(200)
+      .json({ message: "Account was successfully created", user: userVM });
   } catch (error) {
+    if (req.file?.filename) {
+      await cloudinary.uploader.destroy(req.file.filename);
+    }
     res.status(500).json({ error: error.message });
   }
 };

@@ -1,4 +1,5 @@
 import React from "react";
+import useFetch from "../../hooks/useFetch";
 
 export default function DynamicMap({
   shapes,
@@ -6,6 +7,20 @@ export default function DynamicMap({
   height = 600,
   onShapeClick,
 }) {
+  const { fetchData } = useFetch();
+
+  const handleSlotDetails = async (shape) => {
+    if (!onShapeClick) return;
+    console.log(shape._id);
+
+    const data = await fetchData("slot", {
+      method: "POST",
+      data: { _id: shape._id },
+    });
+    const { createdAt, updatedAt, __v, _id, slotId, ...slotData } = data.slot;
+    onShapeClick({ ...shape, ...slotData });
+  };
+
   const renderShape = (shape) => {
     if (shape.geometry.shape === "rect") {
       return (
@@ -17,7 +32,7 @@ export default function DynamicMap({
           height={shape.geometry.height}
           fill={shape.metadata.type === "slot" ? "#d1d5dc" : "#E5E7EB"}
           strokeWidth="1"
-          onClick={() => onShapeClick && onShapeClick(shape)}
+          onClick={() => handleSlotDetails(shape)}
           className="cursor-pointer"
         />
       );

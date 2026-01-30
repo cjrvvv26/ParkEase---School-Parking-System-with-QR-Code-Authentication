@@ -1,6 +1,24 @@
 const mongoose = require("mongoose");
+const Slot = require("../models/slotModel");
+const User = require("../models/userModel");
 const qrService = require("../services/qrService");
 const slotService = require("../services/slotService");
+
+exports.getSlotDetails = async (req, res) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.body._id))
+      throw new Error("Invalid slot id");
+    let slot = await Slot.findOne({ slotId: req.body._id });
+    const student = await slotService.getAssignedStudent(
+      slot.assignedStudentId,
+    );
+    console.log(student);
+
+    res.status(201).json({ message: "Successfully fetched slot data", slot });
+  } catch (error) {
+    res.status(401).json({ error: error.message });
+  }
+};
 
 exports.assignStudentSlot = async (req, res) => {
   const session = await mongoose.startSession();

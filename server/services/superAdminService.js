@@ -1,9 +1,11 @@
+const QRCode = require("qrcode");
+const bcrypt = require("bcrypt");
 const User = require("../models/userModel");
 const Guard = require("../models/guardModel");
 const Student = require("../models/studentModel");
 const SuperAdmin = require("../models/superAdminModel");
+const generatePassword = require("../utils/generatePassword");
 const flattenFilteredData = require("../utils/definedDataFilter");
-const QRCode = require("qrcode");
 
 exports.getDataBySession = async (data) => {
   const user = await User.findById(data.id).lean();
@@ -52,7 +54,7 @@ exports.updateData = async (id, data, session) => {
     additionalData = await SuperAdmin.findOneAndUpdate(
       { userId: id },
       updateFilterData,
-      { new: true, session }
+      { new: true, session },
     );
 
     if (!additionalData) {
@@ -71,8 +73,9 @@ exports.updateData = async (id, data, session) => {
 };
 
 exports.registerUserAccount = async (data) => {
-  const { role, username, email, ...info } = data;
-  const user = null;
+  const { role, username, email, profileDetails, ...info } = data;
+  let user = null;
+  let specificData = null;
 
   const verifyEmail = await User.findOne({ email: info.email });
 
@@ -80,22 +83,52 @@ exports.registerUserAccount = async (data) => {
     throw new Error("Email already in use");
   }
 
+  const generatedPassword = generatePassword();
+  const hashPass = await bcrypt.hash(generatedPassword, 10);
+
+  user = await User.create({
+    username,
+    email,
+    password: hashPass,
+    profileDetails,
+    role,
+  });
+
   if (role === "student") {
-    user = await User.create({ username, email, profileDetails });
     const qrCode = await QRCode.toDataURL(email);
-    await Student.create({
-      ...info,
+    specificData = await Student.create({
+      userId: user._id,
+      studentNo: info.studentNo,
+      name: {
+        firstName: info.firstName,
+        middleName: info.middleName,
+        lastName: info.lastName,
+      },
+      yearLevel: info.yearLevel,
+      course: info.course,
+      phoneNo: info.phoneNo,
       QRCode: qrCode,
+      motorDetails: {
+        plateNo: info.plateNo,
+        brand: info.brand,
+        model: info.model,
+        color: info.color,
+      },
     });
   }
   if (role === "guard") {
-    user = await User.create({ username, email, profileDetails });
-    await Guard.create(info);
+    specificData = await Guard.create(info);
   }
 
   if (!user) throw new Error("An error occurred while creating an account");
 
-  return user;
+  const { __v, _id, userId, ...moreData } = specificData._doc;
+  const userVM = {
+    ...user._doc,
+    ...moreData,
+  };
+
+  return { userVM, generatedPassword };
 };
 
 exports.deactivateUserAccount = async (id) => {

@@ -3,6 +3,16 @@ const User = require("../models/userModel");
 const Student = require("../models/studentModel");
 const Slot = require("../models/slotModel");
 
+exports.getAssignedStudent = async (_id) => {
+  const user = await User.findById(_id).select(
+    "profileDetails -_id status emailVerified lastActive",
+  );
+  const student = await Student.findOne({ userId: user._id }).select(
+    "name yearLevel course QRCode entryTime outTime creditPoints motorDetails studentNo phoneNo",
+  );
+  return { ...user, ...student };
+};
+
 exports.verifyStudentInfo = async (data, reassign = false) => {
   const { _id } = data;
   if (!mongoose.Types.ObjectId.isValid(_id)) {
@@ -20,7 +30,7 @@ exports.verifyStudentInfo = async (data, reassign = false) => {
 
   const studentRecord = await Student.findOne({ userId: student._id });
 
-  if (!studentRecord || !studentRecord.isPaid) {
+  if (!studentRecord || !studentRecord.payment?.isPaid) {
     throw new Error("Student must pay ₱20.00 for exclusive slot");
   }
 
@@ -49,7 +59,7 @@ exports.assignStudent = async (data, session, reassign = false) => {
     {
       $set: { assignedStudentId: student._id, status: "exclusive" },
     },
-    { new: true, session }
+    { new: true, session },
   );
 
   if (!register) {
@@ -65,7 +75,7 @@ exports.assignStudent = async (data, session, reassign = false) => {
       {
         $set: { assignedStudentId: null, status: "available" },
       },
-      { new: true, session }
+      { new: true, session },
     );
   }
 
@@ -82,7 +92,7 @@ exports.removeAssignment = async (data) => {
   const assignedSlot = await Slot.updateOne(
     { slotId: slot._id },
     { $set: { assignedStudentId: student._id, status: "available" } },
-    { new: true, session }
+    { new: true, session },
   );
 
   if (!assignedSlot) throw new Error("Failed to remove student from slot");

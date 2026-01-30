@@ -16,7 +16,7 @@ Return JSON exactly in this shape:
   "model": "",
   "color": "",
   "brand": "",
-  "information": "",
+  "information": [an information about the requested motorcycle. At least 3 to 4 sentences.],
   "search_query": "brand model color motorcycle"
 }
 `;

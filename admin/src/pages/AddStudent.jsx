@@ -8,17 +8,20 @@ export default function AddStudent() {
   const [checkMotorycleBtn, toggleCheckMotorcycleBtn] = useState(true);
   const [generatedMotorcycle, setGeneratedMotorcycle] = useState({});
   const [showGeneratedSection, setShowGeneratedSection] = useState(false);
+  const [preview, setPreview] = useState(null);
   const { error, loading, fetchData } = useFetch();
   const [student, setStudent] = useState({
-    profilePic: null,
+    profileDetails: null,
     firstName: "",
     middleName: "",
     lastName: "",
-    studentId: "",
+    username: "",
+    studentNo: "",
     course: "",
     yearLevel: "",
     email: "",
-    phone: "",
+    phoneNo: "",
+    role: "student",
   });
 
   const [motor, setMotor] = useState({
@@ -26,7 +29,6 @@ export default function AddStudent() {
     type: "",
     brand: "",
     color: "",
-    engineNo: "",
   });
 
   const handleProfilePic = (e) => {
@@ -34,12 +36,12 @@ export default function AddStudent() {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setStudent({ ...student, profilePic: reader.result });
-        console.log(reader.result);
+        setStudent({ ...student, profileDetails: file });
+        setPreview(reader.result);
       };
       reader.readAsDataURL(file);
     } else {
-      setStudent({ ...student, profilePic: null });
+      setStudent({ ...student, profileDetails: null });
     }
   };
 
@@ -56,7 +58,24 @@ export default function AddStudent() {
       data: inputMotorData,
     });
     setGeneratedMotorcycle(motorData);
-    console.log(motorData);
+  };
+
+  const handleRegistration = async () => {
+    setStudent({
+      ...student,
+      username:
+        student.firstName && student.lastName
+          ? student.firstName[0].toLowerCase() +
+            student.lastName.toLowerCase() +
+            Date.now()
+          : "",
+    });
+    const data = { ...student, ...motor };
+    const res = await fetchData("super-admin/add-user", {
+      method: "POST",
+      data,
+    });
+    console.log(res);
   };
 
   return (
@@ -107,9 +126,9 @@ export default function AddStudent() {
               <DefaultInput
                 label="Student ID"
                 onChange={(e) =>
-                  setStudent({ ...student, studentId: e.target.value })
+                  setStudent({ ...student, studentNo: e.target.value })
                 }
-                value={student.studentId}
+                value={student.studentNo}
                 placeholder="C2025-00001"
               />
 
@@ -145,9 +164,9 @@ export default function AddStudent() {
               <DefaultInput
                 label="Phone No."
                 onChange={(e) =>
-                  setStudent({ ...student, phone: e.target.value })
+                  setStudent({ ...student, phoneNo: e.target.value })
                 }
-                value={student.phone}
+                value={student.phoneNo}
                 placeholder="+63 912 345 6789"
               />
             </div>
@@ -159,11 +178,7 @@ export default function AddStudent() {
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="h-20 w-20 bg-gray-100 rounded-md flex items-center justify-center text-gray-400 overflow-hidden">
-                    <img
-                      src={student.profilePic}
-                      alt=""
-                      className="h-full w-full"
-                    />
+                    <img src={preview} alt="" className="h-full w-full" />
                   </div>
                   <input
                     type="file"
@@ -340,8 +355,16 @@ export default function AddStudent() {
                 {student.firstName || "—"} {student.lastName || ""}
               </div>
               <div>
+                <span className="font-medium text-gray-700">Username:</span>{" "}
+                {student.firstName && student.lastName
+                  ? student.firstName[0].toLowerCase() +
+                    student.lastName.toLowerCase() +
+                    Date.now()
+                  : ""}
+              </div>
+              <div>
                 <span className="font-medium text-gray-700">Student ID:</span>{" "}
-                {student.studentId || "—"}
+                {student.studentNo || "—"}
               </div>
 
               <div>
@@ -361,11 +384,12 @@ export default function AddStudent() {
 
           <div className="mt-auto space-y-3">
             <button
+              onClick={handleRegistration}
               type="button"
               className="w-full bg-violet-700 hover:bg-violet-700 text-white py-2 rounded-lg text-sm"
               // onClick: wire to submit handler
             >
-              Save & Register
+              Register
             </button>
             <button
               type="button"

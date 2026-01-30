@@ -12,13 +12,17 @@ router.use(verifySession(), requiredSuperAdmin);
 router.get("/me", superAdminController.getDataBySession);
 
 //POST
-router.post("/add-user", superAdminController.registerUser);
+router.post(
+  "/add-user/:folder",
+  upload.single("profileDetails"),
+  superAdminController.registerUser,
+);
 
 //PATCH
 router.patch(
   "/me",
   upload.single("profileDetails"),
-  superAdminController.updateInformation
+  superAdminController.updateInformation,
 );
 router.patch("/deactivate/:id", superAdminController.deactivateUser);
 
