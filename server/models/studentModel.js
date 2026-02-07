@@ -31,7 +31,6 @@ const studentSchema = new Schema({
   QRCode: String,
   entryTime: Date,
   outTime: Date,
-  creditPoints: { type: Number, default: 200, required: true },
   motorDetails,
 });
 

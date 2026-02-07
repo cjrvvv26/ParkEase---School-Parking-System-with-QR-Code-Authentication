@@ -8,6 +8,7 @@ const slotSchema = new Schema(
       ref: "user",
       unique: true,
       default: null,
+      sparse: true,
     },
     slotNumber: { type: String, required: true, unique: true },
     slotId: {

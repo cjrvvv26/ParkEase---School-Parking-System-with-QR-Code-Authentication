@@ -16,7 +16,7 @@ export default function Parking() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedShape, setSelectedShape] = useState(null);
   const navigate = useNavigate();
-  const { fetchData } = useFetch();
+  const { fetchData, loading } = useFetch();
 
   useEffect(() => {
     const fetchMaps = async () => {
@@ -320,7 +320,7 @@ export default function Parking() {
             </div>
           </section>
           {/* Parking Details */}
-          <Details selectedShape={selectedShape} />
+          <Details selectedShape={selectedShape} loading={loading} />
         </main>
       </div>
     </>

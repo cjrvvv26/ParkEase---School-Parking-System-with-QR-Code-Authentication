@@ -4,14 +4,16 @@ module.exports = (role) => {
       ? "token"
       : role === "student"
         ? "student_token"
-        : role === "guard" && "guard_token";
+        : role === "guard"
+          ? "guard_token"
+          : "token";
 
-  const expiredAt =
+  let expiredAt =
     role === "super admin"
-      ? 24 * 60 * 1000
-      : role === "student_token" || role === "guard_token"
-        ? 7 * 24 * 60 * 1000
-        : null;
+      ? 24 * 60 * 60 * 1000
+      : role === "student" || role === "guard"
+        ? 7 * 24 * 60 * 60 * 1000
+        : 24 * 60 * 60 * 1000;
 
   return { tokenName, expiredAt };
 };

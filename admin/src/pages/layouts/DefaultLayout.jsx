@@ -10,7 +10,7 @@ export default function DefaultLayout() {
   document.body.style.width = "100%";
   return (
     <div className="min-h-screen w-full bg-gray-100 text-gray-700 flex gap-10 text-sm p-2">
-      <div className="h-screen fixed">
+      <div className="h-screen fixed top-2">
         <Navbar toggleShow={toggleShow} show={show} />
       </div>
       <div

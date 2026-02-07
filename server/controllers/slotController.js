@@ -6,15 +6,23 @@ const slotService = require("../services/slotService");
 
 exports.getSlotDetails = async (req, res) => {
   try {
+    let student = null;
+
     if (!mongoose.Types.ObjectId.isValid(req.body._id))
       throw new Error("Invalid slot id");
     let slot = await Slot.findOne({ slotId: req.body._id });
-    const student = await slotService.getAssignedStudent(
-      slot.assignedStudentId,
-    );
-    console.log(student);
+    if (slot.assignedStudentId) {
+      student = await slotService.getAssignedStudent(slot.assignedStudentId);
+    }
 
-    res.status(201).json({ message: "Successfully fetched slot data", slot });
+    const details = {
+      ...(slot ? slot.toObject() : {}),
+      ...student,
+    };
+
+    res
+      .status(201)
+      .json({ message: "Successfully fetched slot data", slot: details });
   } catch (error) {
     res.status(401).json({ error: error.message });
   }
@@ -29,7 +37,7 @@ exports.assignStudentSlot = async (req, res) => {
     await slotService.verifyStudentInfo(student);
     await slotService.assignStudent(req.body, session);
 
-    session.commitTransaction();
+    await session.commitTransaction();
     session.endSession();
 
     res.status(200).json({ message: "Successfully assigned student" });
@@ -62,13 +70,17 @@ exports.removeAssignment = async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
-    await slotService.removeAssignment(req.body);
+    if (!mongoose.Types.ObjectId.isValid(req.body)) {
+      throw new Error("Invalid Object ID");
+    }
 
-    session.commitTransaction();
+    await slotService.removeAssignment(req.body, session);
+
+    await session.commitTransaction();
     session.endSession();
     res.status(200).json({ message: "Successfully removed student" });
   } catch (error) {
-    session.abortTransaction();
+    await session.abortTransaction();
     session.endSession();
     res.status(500).json({ error: error.message });
   }

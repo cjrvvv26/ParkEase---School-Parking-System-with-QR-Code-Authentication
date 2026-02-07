@@ -5,12 +5,17 @@ const Slot = require("../models/slotModel");
 
 exports.getAssignedStudent = async (_id) => {
   const user = await User.findById(_id).select(
-    "profileDetails -_id status emailVerified lastActive",
+    "profileDetails status emailVerified lastActive",
   );
   const student = await Student.findOne({ userId: user._id }).select(
-    "name yearLevel course QRCode entryTime outTime creditPoints motorDetails studentNo phoneNo",
+    "-_id name yearLevel course QRCode entryTime outTime motorDetails studentNo phoneNo payment userId",
   );
-  return { ...user, ...student };
+
+  const studentVM = {
+    ...(user ? user.toObject() : {}),
+    ...(student ? student.toObject() : {}),
+  };
+  return studentVM;
 };
 
 exports.verifyStudentInfo = async (data, reassign = false) => {
@@ -82,18 +87,18 @@ exports.assignStudent = async (data, session, reassign = false) => {
   return register;
 };
 
-exports.removeAssignment = async (data) => {
-  const { slot, student } = data;
+exports.removeAssignment = async (data, session) => {
+  const { id } = data;
 
-  const slotRecord = await Slot.findOne({ slotId: slot._id }).session(session);
+  const slotRecord = await Slot.findOne({ slotId: id }).session(session);
 
   if (!slotRecord) throw new Error("Slot not found");
 
-  const assignedSlot = await Slot.updateOne(
-    { slotId: slot._id },
-    { $set: { assignedStudentId: student._id, status: "available" } },
+  const removeSlot = await Slot.updateOne(
+    { slotId: id },
+    { $set: { assignedStudentId: null, status: "available" } },
     { new: true, session },
   );
 
-  if (!assignedSlot) throw new Error("Failed to remove student from slot");
+  if (!removeSlot) throw new Error("Failed to remove student from slot");
 };

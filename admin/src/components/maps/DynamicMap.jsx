@@ -11,14 +11,19 @@ export default function DynamicMap({
 
   const handleSlotDetails = async (shape) => {
     if (!onShapeClick) return;
-    console.log(shape._id);
 
-    const data = await fetchData("slot", {
-      method: "POST",
-      data: { _id: shape._id },
-    });
-    const { createdAt, updatedAt, __v, _id, slotId, ...slotData } = data.slot;
-    onShapeClick({ ...shape, ...slotData });
+    if (shape.metadata?.type === "slot") {
+      const data = await fetchData("slot", {
+        method: "POST",
+        data: { _id: shape._id },
+      });
+      const { createdAt, updatedAt, __v, _id, slotId, ...slotData } = data.slot;
+      console.log(data.slot);
+
+      return onShapeClick({ ...shape, ...slotData });
+    }
+
+    onShapeClick({ ...shape });
   };
 
   const renderShape = (shape) => {
@@ -46,7 +51,7 @@ export default function DynamicMap({
           points={pointsStr}
           fill={shape.metadata.type === "slot" ? "#F3F4F6" : "#E5E7EB"}
           strokeWidth="1"
-          onClick={() => onShapeClick && onShapeClick(shape)}
+          onClick={() => handleSlotDetails(shape)}
           className="cursor-pointer"
         />
       );
