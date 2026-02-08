@@ -67,8 +67,28 @@ exports.getAllUsers = async (req, res) => {
 };
 
 //Fetch all available users
-exports.getAllPaidUsers = async (req, res) => {
+exports.getAvailableUsers = async (req, res) => {
   try {
+    const { id } = req.body;
+    let assignedUser = null;
+
+    const selectedSlot = await Slot.findOne({ slotId: id }).populate(
+      "assignedStudentId",
+      "profileDetails email role",
+    );
+
+    if (selectedSlot?.assignedStudentId) {
+      assignedUser = selectedSlot.assignedStudentId.toObject();
+
+      const studentData = await Student.findOne({
+        userId: assignedUser._id,
+      }).select("name -_id");
+
+      assignedUser.name = studentData?.name || assignedUser.name;
+
+      console.log(assignedUser);
+    }
+
     const users = await User.find({
       $or: [{ role: "student" }, { role: "faculty" }],
     });
@@ -81,9 +101,26 @@ exports.getAllPaidUsers = async (req, res) => {
       slot.assignedStudentId?.toString(),
     );
 
-    const availableUsers = users.filter(
-      (user) => !exclusiveUserIds.includes(user._id?.toString()),
-    );
+    const availableUsers = [];
+    for (const user of users) {
+      if (exclusiveUserIds.includes(user._id.toString())) continue;
+
+      const userObj = user.toObject();
+
+      if (user.role === "student") {
+        const studentData = await Student.findOne({ userId: user._id }).select(
+          "name",
+        );
+        userObj.profile = studentData;
+      }
+
+      // if (user.role === "faculty") {
+      //   const facultyData = await Faculty.findOne({ userId: user._id });
+      //   userObj.profile = facultyData;
+      // }
+
+      availableUsers.push(userObj);
+    }
 
     if (users.length <= 0) {
       throw new Error("No users available");
@@ -91,6 +128,7 @@ exports.getAllPaidUsers = async (req, res) => {
 
     res.status(201).json({
       message: "Successfully fetched available users",
+      assignedUser,
       users: availableUsers,
     });
   } catch (error) {

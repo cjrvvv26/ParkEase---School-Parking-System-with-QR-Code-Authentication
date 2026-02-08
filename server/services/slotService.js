@@ -65,7 +65,10 @@ exports.assignStudent = async (data, session, reassign = false) => {
       $set: { assignedStudentId: student._id, status: "exclusive" },
     },
     { new: true, session },
-  );
+  ).populate({
+    path: "slotId",
+    select: "metadata -_id",
+  });
 
   if (!register) {
     throw new Error("Something went wrong while assigning student");
@@ -84,21 +87,40 @@ exports.assignStudent = async (data, session, reassign = false) => {
     );
   }
 
-  return register;
+  const plainSlot = {
+    _id: register._id,
+    assignedStudentId: register.assignedStudentId,
+    status: register.status,
+    metadata: register.slotId?.metadata || {},
+  };
+
+  return plainSlot;
 };
 
-exports.removeAssignment = async (data, session) => {
-  const { id } = data;
-
+exports.removeAssignment = async (id, session) => {
+  // Find the slot first
   const slotRecord = await Slot.findOne({ slotId: id }).session(session);
-
   if (!slotRecord) throw new Error("Slot not found");
 
-  const removeSlot = await Slot.updateOne(
+  // Update the slot
+  const slot = await Slot.findOneAndUpdate(
     { slotId: id },
     { $set: { assignedStudentId: null, status: "available" } },
     { new: true, session },
-  );
+  ).populate({
+    path: "slotId",
+    select: "metadata -_id", // only take metadata
+  });
 
-  if (!removeSlot) throw new Error("Failed to remove student from slot");
+  if (!slot) throw new Error("Failed to remove student from slot");
+
+  // Build a plain object with only the fields you need
+  const result = {
+    _id: slot._id,
+    assignedStudentId: slot.assignedStudentId,
+    status: slot.status,
+    metadata: slot.slotId?.metadata || {},
+  };
+
+  return result; // safe, plain object
 };

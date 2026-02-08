@@ -6,9 +6,7 @@ const slotSchema = new Schema(
     assignedStudentId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "user",
-      unique: true,
       default: null,
-      sparse: true,
     },
     slotNumber: { type: String, required: true, unique: true },
     slotId: {

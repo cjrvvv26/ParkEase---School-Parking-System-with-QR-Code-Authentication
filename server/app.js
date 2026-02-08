@@ -7,6 +7,7 @@ const authRouters = require("./routers/authRouter");
 const slotRouters = require("./routers/slotRouter");
 const shapeRouters = require("./routers/shapeRouter");
 const motorRouters = require("./routers/motorAiRouter");
+const userRouters = require("./routers/userRouter");
 const mapRouters = require("./routers/mapRouter");
 // const guardRouters = require("./routers/guardRouter");
 const studentRouters = require("./routers/studentRouter");
@@ -33,6 +34,7 @@ app.use("/student", studentRouters);
 app.use("/motor", motorRouters);
 app.use("/slot", slotRouters);
 app.use("/shape", shapeRouters);
+app.use("/user", userRouters);
 app.use("/map", mapRouters);
 // app.use("/user", userRouters);
 

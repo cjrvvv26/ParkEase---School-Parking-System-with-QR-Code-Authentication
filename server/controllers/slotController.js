@@ -31,20 +31,83 @@ exports.getSlotDetails = async (req, res) => {
 exports.assignStudentSlot = async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
+
+  let committed = false;
+
   try {
-    const { student } = req.body;
+    let { student } = req.body;
 
     await slotService.verifyStudentInfo(student);
-    await slotService.assignStudent(req.body, session);
+
+    const updatedSlot = await slotService.assignStudent(req.body, session);
+    // updatedSlot is already a plain object (merged metadata)
+
+    if (updatedSlot.assignedStudentId) {
+      student = await slotService.getAssignedStudent(
+        updatedSlot.assignedStudentId,
+      );
+    }
+
+    const details = {
+      ...updatedSlot,
+      ...student,
+    };
+
+    await session.commitTransaction();
+    committed = true;
+    session.endSession();
+
+    res
+      .status(200)
+      .json({ message: "Successfully assigned student", slot: details });
+  } catch (error) {
+    if (!committed) {
+      try {
+        await session.abortTransaction();
+      } catch (abortErr) {
+        console.log("Transaction could not be aborted:", abortErr.message);
+      }
+    }
+    session.endSession();
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.removeAssignment = async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    const { id } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      throw new Error("Invalid Object ID");
+    }
+
+    const slot = await slotService.removeAssignment(id, session);
 
     await session.commitTransaction();
     session.endSession();
 
-    res.status(200).json({ message: "Successfully assigned student" });
+    res.status(200).json({
+      message: "Successfully removed student",
+      slot, // ⚡ safe, plain object
+    });
   } catch (error) {
-    await session.abortTransaction();
+    // Only abort if the transaction hasn't been committed
+    if (session.inTransaction()) {
+      await session.abortTransaction();
+    }
     session.endSession();
     res.status(500).json({ error: error.message });
+  }
+};
+
+exports.verifyStudentSlot = async (req, res) => {
+  try {
+    const message = await qrService.verifySlotData(req.body);
+    res.status(200).json({ message });
+  } catch (error) {
+    res.status(403).json({ error: error.message });
   }
 };
 
@@ -63,34 +126,5 @@ exports.updateStudentLocation = async (req, res) => {
     session.abortTransaction();
     session.endSession();
     res.status(500).json({ error: error.message });
-  }
-};
-
-exports.removeAssignment = async (req, res) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
-  try {
-    if (!mongoose.Types.ObjectId.isValid(req.body)) {
-      throw new Error("Invalid Object ID");
-    }
-
-    await slotService.removeAssignment(req.body, session);
-
-    await session.commitTransaction();
-    session.endSession();
-    res.status(200).json({ message: "Successfully removed student" });
-  } catch (error) {
-    await session.abortTransaction();
-    session.endSession();
-    res.status(500).json({ error: error.message });
-  }
-};
-
-exports.verifyStudentSlot = async (req, res) => {
-  try {
-    const message = await qrService.verifySlotData(req.body);
-    res.status(200).json({ message });
-  } catch (error) {
-    res.status(403).json({ error: error.message });
   }
 };
