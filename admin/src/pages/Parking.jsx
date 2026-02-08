@@ -8,6 +8,7 @@ import useFetch from "../hooks/useFetch";
 import Details from "../components/Parking/Details";
 
 export default function Parking() {
+  const [reports, setReports] = useState([]);
   const [isOpen, toggleIsOpenModal] = useState(false);
   const [areaName, setAreaName] = useState("");
   const [width, setWidth] = useState("");
@@ -54,6 +55,20 @@ export default function Parking() {
     setSelectedShape(shape);
   };
 
+  useEffect(() => {
+    const parkingSummary = async () => {
+      const res = await fetchData("/report/parking-summary", {
+        method: "GET",
+      });
+
+      if (res) {
+        setReports(res.reports);
+        console.log(res);
+      }
+    };
+    parkingSummary();
+  }, []);
+
   return (
     <>
       {/* Header Page */}
@@ -70,9 +85,7 @@ export default function Parking() {
       </header>
       {/* Parking Report Summary */}
       <div className="flex gap-5 h-[150px] px-5">
-        {Array.from({ length: 4 }, () => (
-          <ReportSummaryCard />
-        ))}
+        <ReportSummaryCard reports={reports} loading={loading} />
       </div>
       {/* Parking Map and Details */}
       <div className="flex flex-col mx-5 border-gray-200 border rounded-xl mb-5">

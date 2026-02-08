@@ -124,3 +124,23 @@ exports.removeAssignment = async (id, session) => {
 
   return result; // safe, plain object
 };
+
+// SLOT REPORTS
+exports.calculateSummaryReports = async () => {
+  const slots = await Slot.find();
+  const totalSlots = slots.length;
+  const exclusiveSlots = slots.filter(
+    (s) => s.assignedStudentId !== null,
+  ).length;
+  const availableSlots = slots.filter((s) => !s.occupiedBy).length;
+  const occupiedSlots = slots.filter((s) => s.occupiedBy).length;
+
+  const reports = [
+    { title: "Total Slots", data: totalSlots },
+    { title: "Total Exclusive", data: exclusiveSlots },
+    { title: "Total Available", data: availableSlots },
+    { title: "Total Occupied", data: occupiedSlots },
+  ];
+
+  return reports;
+};

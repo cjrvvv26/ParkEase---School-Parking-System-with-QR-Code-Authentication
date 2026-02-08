@@ -7,12 +7,12 @@ const authRouters = require("./routers/authRouter");
 const slotRouters = require("./routers/slotRouter");
 const shapeRouters = require("./routers/shapeRouter");
 const motorRouters = require("./routers/motorAiRouter");
+const reportRouters = require("./routers/reportRouter");
 const userRouters = require("./routers/userRouter");
 const mapRouters = require("./routers/mapRouter");
 // const guardRouters = require("./routers/guardRouter");
 const studentRouters = require("./routers/studentRouter");
 const superAdminRouters = require("./routers/superAdminRouter");
-// const userRouters = require("./routers/userRouter");
 const app = express();
 
 //Middlewares
@@ -24,7 +24,6 @@ app.use(
   }),
 );
 app.use(cookieParser());
-//It accepts the json data (for postman)
 app.use(express.json());
 //API Endpoints base urlse
 app.use("/auth", authRouters);
@@ -36,7 +35,7 @@ app.use("/slot", slotRouters);
 app.use("/shape", shapeRouters);
 app.use("/user", userRouters);
 app.use("/map", mapRouters);
-// app.use("/user", userRouters);
+app.use("/report", reportRouters);
 
 //Initialize Server
 const initializeServer = async () => {
