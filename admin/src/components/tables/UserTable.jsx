@@ -1,6 +1,15 @@
-export default function UserTable() {
-  return (
-    <tr className="grid grid-cols-[auto_repeat(4,minmax(0,1fr))_150px_100px] gap-5 px-5 py-4 items-center text-gray-400">
+export default function UserTable({ users = [] }) {
+  console.log(users);
+
+  if (!Array.isArray(users) || users.length === 0) {
+    return <tbody className="text-center py-20 text-gray-400">No users</tbody>;
+  }
+
+  return users.map((user) => (
+    <tr
+      key={user._id}
+      className="grid grid-cols-[auto_repeat(4,minmax(0,1fr))_150px_100px] gap-5 px-5 py-4 items-center text-gray-400"
+    >
       {/* Checkbox */}
       <td>
         <div className="h-5 w-5 rounded-md border-gray-200 border-2 bg-white"></div>
@@ -8,29 +17,33 @@ export default function UserTable() {
       {/* Profile & Name */}
       <td className="flex items-center gap-3">
         <img
-          src="https://images.unsplash.com/photo-1499996860823-5214fcc65f8f?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTR8fGZhY2V8ZW58MHx8MHx8fDA%3D&fm=jpg&q=60&w=3000"
-          alt=""
+          src={user.profileDetails?.url}
+          alt={user.profileDetails?.url}
           className="h-10 w-10 object-cover rounded-full"
         />
         <div className="flex flex-col overflow-hidden flex-1">
           <h2 className="font-medium text-sm text-gray-700 text-nowrap overflow-hidden">
-            Clarence Gomez
+            {user.name?.firstName + " " + user.name?.lastName}
           </h2>
-          <p className="text-xs">Student</p>
+          <p className="text-xs">
+            {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+          </p>
         </div>
       </td>
       {/* Contact */}
       <td className="overflow-hidden *:overflow-hidden *:text-nowrap">
-        <p>example123@gmail.com</p>
-        <p>+63 912-123-9814</p>
+        <p>{user.email}</p>
+        <p>{user?.phoneNo}</p>
       </td>
       {/* Last Login & Created At */}
-      <td>05-23-25 10:03 AM</td>
-      <td>03-21-25 8:25 AM</td>
+      <td>{user?.lastActive || "No record"}</td>
+      <td>{new Date(user.createdAt).toISOString().split("T")[0]}</td>
       {/* Status */}
       <td className="flex items-start">
-        <div className="text-green-500 border-green-500 border rounded-xl py-2 px-4 bg-green-100">
-          Active
+        <div
+          className={`${user.status === "active" ? "text-green-500 bg-green-100 border-green-500" : "text-rose-500 bg-rose-100 border-rose-500"} border rounded-xl py-2 px-4 `}
+        >
+          {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
         </div>
       </td>
       {/* Action Button */}
@@ -71,5 +84,5 @@ export default function UserTable() {
         </button>
       </td>
     </tr>
-  );
+  ));
 }

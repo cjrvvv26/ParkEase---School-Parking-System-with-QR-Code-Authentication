@@ -1,8 +1,26 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import UserTable from "../components/tables/UserTable";
 import { Link } from "react-router-dom";
+import useFetch from "../hooks/useFetch";
 
 export default function Users() {
+  const [users, setUsers] = useState([]);
+  const [page, setPage] = useState(1);
+  const { loading, fetchData } = useFetch();
+  useEffect(() => {
+    const getUsers = async () => {
+      const data = await fetchData(`/user?page=${page}&limit=10`, {
+        method: "GET",
+      });
+
+      if (data) {
+        setUsers(data.users);
+      }
+    };
+
+    getUsers();
+  }, []);
+
   const [showFilter, setShowFilter] = useState(false);
   return (
     <>
@@ -16,6 +34,26 @@ export default function Users() {
         </div>
         {/* Quick Actions */}
         <div className="flex gap-5">
+          <Link
+            to="/add-faculty"
+            className="p-4 bg-violet-500 duration-200 hover:shadow-md hover:shadow-violet-500/40 text-white flex items-center gap-2 rounded-full font-medium"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="size-6"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+              />
+            </svg>
+            <p>Add Faculty</p>
+          </Link>
           <Link
             to="/add-student"
             className="p-4 bg-violet-500 duration-200 hover:shadow-md hover:shadow-violet-500/40 text-white flex items-center gap-2 rounded-full font-medium"
@@ -188,11 +226,9 @@ export default function Users() {
               <td>Action</td>
             </tr>
           </thead>
-          <tbody className="overflow-y-scroll">
+          <tbody className="overflow-y-auto">
             {/* User List Card */}
-            {Array.from({ length: 10 }, () => (
-              <UserTable />
-            ))}
+            {users && <UserTable users={users} />}
           </tbody>
         </table>
       </div>

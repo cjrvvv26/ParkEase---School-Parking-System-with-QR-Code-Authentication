@@ -3,6 +3,46 @@ const Student = require("../models/studentModel");
 const User = require("../models/userModel");
 const definedFilterData = require("../utils/definedDataFilter");
 
+exports.getUsersInformation = async (req) => {
+  const { page } = req.query || 1;
+  const { limit } = req.query || 10;
+  const skip = (page - 1) * limit;
+  const users = await User.find({ role: { $nin: ["super admin"] } })
+    .skip(skip)
+    .limit(limit);
+
+  if (users.length <= 0) {
+    throw new Error("No users found");
+  }
+
+  const allUsers = [];
+
+  for (const user of users) {
+    let viewModel = user.toObject();
+    let userVM = null;
+
+    switch (user.role) {
+      case "student":
+        userVM = await Student.findOne({ userId: user._id }).select(
+          "name phoneNo -_id",
+        );
+        viewModel.name = userVM.name;
+        viewModel.phoneNo = userVM.phoneNo;
+        break;
+      case "guard":
+        userVM = await Guard.findOne({ userId: user._id }).select(
+          "name phoneNo -_id",
+        );
+        viewModel.name = userVM.name;
+        viewModel.phoneNo = userVM.phoneNo;
+        break;
+    }
+
+    allUsers.push(viewModel);
+  }
+  return allUsers;
+};
+
 exports.updateInformation = async (id, data, session) => {
   const { info, role } = data;
   const nested = {};
@@ -64,8 +104,8 @@ exports.updateInformation = async (id, data, session) => {
     Object.entries(flattenData).filter(
       ([key, value]) =>
         userFields.includes(key) ||
-        (key.startsWith("profileDetails.") && value !== undefined)
-    )
+        (key.startsWith("profileDetails.") && value !== undefined),
+    ),
   );
 
   const user = await User.findByIdAndUpdate(
@@ -74,13 +114,14 @@ exports.updateInformation = async (id, data, session) => {
     {
       new: true,
       session,
-    }
+    },
   );
 
   const roleSpecificData = Object.fromEntries(
     Object.entries(flattenData).filter(
-      ([key]) => !userFields.includes(key) && !key.startsWith("profileDetails.")
-    )
+      ([key]) =>
+        !userFields.includes(key) && !key.startsWith("profileDetails."),
+    ),
   );
 
   if (role === "student") {

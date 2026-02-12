@@ -18,6 +18,7 @@ const slotSchema = new Schema(
     isOccupied: { type: Boolean, default: false },
     occupiedBy: {
       type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
       default: null,
     },
     status: {

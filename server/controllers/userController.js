@@ -49,16 +49,7 @@ exports.updateUserData = async (req, res) => {
 
 exports.getAllUsers = async (req, res) => {
   try {
-    const { page } = req.query || 1;
-    const { limit } = req.query || 10;
-    const skip = (page - 1) * limit;
-    const users = await User.find({ role: { $nin: "super admin" } })
-      .skip(skip)
-      .limit(limit);
-
-    if (users.length <= 0) {
-      throw new Error("No users found");
-    }
+    const users = await userService.getUsersInformation(req);
 
     res.status(200).json({ message: "Successfully fetched users data", users });
   } catch (error) {

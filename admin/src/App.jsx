@@ -20,11 +20,13 @@ import Analytics from "./pages/Analytics";
 import Parking from "./pages/Parking";
 import SimpleLayout from "./pages/layouts/SimpleLayout";
 import Settings from "./pages/Settings";
-import AddStudent from "./pages/AddStudent";
 import AddGuard from "./pages/AddGuard";
+import AddFaculty from "./pages/AddFaculty";
+import AddStudent from "./pages/AddStudent";
 import EmailEditor from "./EmailEditor";
 import MapEditor from "./pages/MapEditor";
 import Profile from "./pages/Profile";
+import Chat from "./pages/Chats";
 
 export default function App() {
   const { fetchData } = useFetch();
@@ -123,6 +125,10 @@ export default function App() {
               element: <AddGuard />,
             },
             {
+              path: "add-faculty",
+              element: <AddFaculty />,
+            },
+            {
               path: "activity-logs",
               element: <Logs />,
             },
@@ -137,6 +143,10 @@ export default function App() {
             {
               path: "account-details",
               element: <Profile />,
+            },
+            {
+              path: "chat",
+              element: <Chat />,
             },
           ],
         },
