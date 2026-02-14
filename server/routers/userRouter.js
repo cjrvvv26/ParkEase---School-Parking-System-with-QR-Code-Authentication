@@ -6,6 +6,7 @@ const requiredSuperAdmin = require("../middlewares/requiredSuperAdmin");
 router.use(verifyUser(), requiredSuperAdmin);
 
 router.get("/", userController.getAllUsers);
+router.get("/:id", userController.getUserById);
 router.post("/available", userController.getAvailableUsers);
 
 module.exports = router;

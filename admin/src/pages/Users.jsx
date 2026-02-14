@@ -2,24 +2,32 @@ import { useState, useEffect } from "react";
 import UserTable from "../components/tables/UserTable";
 import { Link } from "react-router-dom";
 import useFetch from "../hooks/useFetch";
+import { RefreshCcw } from "lucide-react";
 
 export default function Users() {
   const [users, setUsers] = useState([]);
   const [page, setPage] = useState(1);
+  const [count, setCount] = useState({ current: 0, total: 0 });
+  const [filter, setFilter] = useState({ role: "all", status: "all" });
   const { loading, fetchData } = useFetch();
-  useEffect(() => {
-    const getUsers = async () => {
-      const data = await fetchData(`/user?page=${page}&limit=10`, {
+
+  const getUsers = async () => {
+    const data = await fetchData(
+      `/user?page=${page}&limit=10&role=${filter.role}&status=${filter.status}`,
+      {
         method: "GET",
-      });
+      },
+    );
 
-      if (data) {
-        setUsers(data.users);
-      }
-    };
+    if (data) {
+      setUsers(data.users);
+      setCount({ current: data.current, total: data.total });
+    }
+  };
 
+  useEffect(() => {
     getUsers();
-  }, []);
+  }, [page, filter]);
 
   const [showFilter, setShowFilter] = useState(false);
   return (
@@ -117,7 +125,12 @@ export default function Users() {
               <div className="absolute top-12 right-0 bg-white rounded-lg border border-gray-200 p-5 flex flex-col gap-3 text-xs">
                 <div className="flex justify-between items-center">
                   <h2 className="text-sm font-medium">Filter by</h2>
-                  <button className="rounded-lg py-1 px-4 border border-violet-500 hover:bg-violet-500 hover:text-white duration-100 hover:shadow-sm hover:shadow-violet-500 bg-transparent text-violet-500">
+                  <button
+                    onClick={() =>
+                      setFilter(() => ({ role: "all", status: "all" }))
+                    }
+                    className="text-gray-400 hover:text-gray-500 bg-transparent"
+                  >
                     Reset
                   </button>
                 </div>
@@ -126,32 +139,43 @@ export default function Users() {
                   <div className="flex flex-col gap-1">
                     <p className="text-xs text-gray-400">Role</p>
                     <div className="flex gap-2">
-                      <button className="py-2 px-4 rounded-md text-gray-400 border-gray-400 border text-nowrap">
-                        All
-                      </button>
-                      <button className="py-2 px-4 rounded-md text-gray-400 border-gray-400 border text-nowrap">
-                        Student
-                      </button>
-                      <button className="py-2 px-4 rounded-md text-gray-400 border-gray-400 border text-nowrap">
-                        Guard
-                      </button>
+                      {["All", "Student", "Faculty", "Guard"].map(
+                        (role, index) => (
+                          <button
+                            onClick={() =>
+                              setFilter((prev) => ({
+                                ...prev,
+                                role: role.toLowerCase(),
+                              }))
+                            }
+                            key={index}
+                            className={`${role.toLowerCase() === filter.role ? "bg-violet-500 hover:bg-violet-400 text-white" : "text-violet-500 bg-violet-100 border-violet-500 hover:bg-violet-500  hover:text-white"} py-2 px-4 rounded-md  border text-nowrap`}
+                          >
+                            {role}
+                          </button>
+                        ),
+                      )}
                     </div>
                   </div>
                   <div className="flex flex-col gap-1">
                     <p className="text-xs text-gray-400">Status</p>
                     <div className="flex gap-2">
-                      <button className="py-2 px-4 rounded-md text-gray-400 border-gray-400 border text-nowrap">
-                        Active
-                      </button>
-                      <button className="py-2 px-4 rounded-md text-gray-400 border-gray-400 border text-nowrap">
-                        Not Active
-                      </button>
+                      {["Active", "Deactivate", "Offline"].map((status) => (
+                        <button
+                          key={status}
+                          onClick={() =>
+                            setFilter((prev) => ({
+                              ...prev,
+                              status: status.toLowerCase(),
+                            }))
+                          }
+                          className={`${status.toLowerCase() === filter.status ? "bg-violet-500 hover:bg-violet-400 text-white" : "text-violet-500 bg-violet-100 border-violet-500 hover:bg-violet-500  hover:text-white"} py-2 px-4 rounded-md  border text-nowrap`}
+                        >
+                          {status}
+                        </button>
+                      ))}
                     </div>
                   </div>
-                  {/* Apply btn */}
-                  <button className="py-2 px-4 rounded-md hover:shadow-sm hover:shadow-violet-500 duration-100 text-white bg-violet-500">
-                    Apply
-                  </button>
                 </div>
               </div>
             )}
@@ -166,23 +190,15 @@ export default function Users() {
             {/* Pagination Details */}
             <tr className="text-xs text-gray-400 flex gap-5 justify-between items-center w-full">
               {/* Refresh */}
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
+              <RefreshCcw
+                onClick={getUsers}
+                className="text-gray-400 cursor-pointer hover:text-gray-500 size-5"
                 strokeWidth={1.5}
-                stroke="currentColor"
-                className="size-5 cursor-pointer hover:text-gray-700 text-gray-400"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
-                />
-              </svg>
-
+              />
               <div className="flex gap-5">
-                <p className="">20 of 302</p>
+                <p className="">
+                  {count.current} of {count.total}
+                </p>
                 <div className="flex gap-3 *:size-4 *:hover:text-gray-700 *:text-gray-400 *:cursor-pointer">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -214,10 +230,7 @@ export default function Users() {
                 </div>
               </div>
             </tr>
-            <tr className="grid grid-cols-[auto_repeat(4,minmax(0,1fr))_150px_100px] gap-5 *:font-medium">
-              <td>
-                <div className="h-5 w-5 rounded-md border-gray-200 border-2 bg-white"></div>
-              </td>
+            <tr className="grid grid-cols-[250px_repeat(3,minmax(0,1fr))_150px_100px] gap-5 *:font-medium">
               <td>Name</td>
               <td>Contact</td>
               <td>Last Login</td>
@@ -228,7 +241,31 @@ export default function Users() {
           </thead>
           <tbody className="overflow-y-auto">
             {/* User List Card */}
-            {users && <UserTable users={users} />}
+            {users ? (
+              <UserTable users={users} />
+            ) : (
+              Array.from({ length: 4 }, (_, i) => (
+                <tr
+                  key={i}
+                  className="grid grid-cols-[250px_repeat(3,minmax(0,1fr))_150px_100px] gap-5 px-5 py-4 items-center *:animate-pulse text-gray-400"
+                >
+                  <div className="flex gap-2 items-center">
+                    <span className="min-h-12 min-w-12 rounded-full bg-gray-100"></span>
+                    <div className="flex flex-col w-full gap-1">
+                      <span className="py-2 rounded-full bg-gray-100 h-1 "></span>
+                      <span className="py-2 rounded-full bg-gray-100 w-[70%] h-1 "></span>
+                    </div>
+                  </div>
+                  {Array.from({ length: 4 }, (_, i) => (
+                    <span
+                      key={i}
+                      className="py-2 rounded-full bg-gray-100 w-[70%] h-1 "
+                    ></span>
+                  ))}
+                  <span className="py-4 rounded-md bg-gray-100 w-10 h-1 "></span>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

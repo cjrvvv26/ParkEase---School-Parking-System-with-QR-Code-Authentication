@@ -2,14 +2,66 @@ const Guard = require("../models/guardModel");
 const Student = require("../models/studentModel");
 const User = require("../models/userModel");
 const definedFilterData = require("../utils/definedDataFilter");
+const mongoose = require("mongoose");
+
+exports.getUserData = async (id) => {
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new Error("Invalid User Id");
+  }
+
+  const user = await User.findById(id);
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  let viewModel = user.toObject();
+  let userData = null;
+
+  switch (user.role) {
+    case "student":
+      userData = await Student.findOne({ userId: id }).select(
+        "-_id name course phoneNo studentNo payment entryTime outTime yearLevel motorDetails ",
+      );
+      viewModel = { ...viewModel, ...userData.toObject() };
+      break;
+    case "faculty":
+      break;
+    case "guard":
+      userData = await Guard.findOne({ userId: id }).select(
+        "-_id name workShift phoneNo permissions",
+      );
+
+      viewModel = { ...viewModel, ...userData.toObject() };
+      break;
+
+    default:
+      throw new Error("Invalid user role");
+  }
+
+  return viewModel;
+};
 
 exports.getUsersInformation = async (req) => {
   const { page } = req.query || 1;
   const { limit } = req.query || 10;
+  const { role } = req.query || "";
+  const { status } = req.query || "";
   const skip = (page - 1) * limit;
-  const users = await User.find({ role: { $nin: ["super admin"] } })
-    .skip(skip)
-    .limit(limit);
+
+  const query = {
+    role: { $nin: ["super admin"] },
+  };
+
+  if (role !== "all") {
+    query.role = role;
+  }
+
+  if (status !== "all") {
+    query.status = status;
+  }
+
+  const users = await User.find(query).skip(skip).limit(limit);
 
   if (users.length <= 0) {
     throw new Error("No users found");
@@ -40,7 +92,7 @@ exports.getUsersInformation = async (req) => {
 
     allUsers.push(viewModel);
   }
-  return allUsers;
+  return { allUsers, current: allUsers.length + skip, total: allUsers.length };
 };
 
 exports.updateInformation = async (id, data, session) => {

@@ -27,6 +27,7 @@ import EmailEditor from "./EmailEditor";
 import MapEditor from "./pages/MapEditor";
 import Profile from "./pages/Profile";
 import Chat from "./pages/Chats";
+import UserAccount from "./pages/UserAccount";
 
 export default function App() {
   const { fetchData } = useFetch();
@@ -115,6 +116,10 @@ export default function App() {
             {
               path: "users",
               element: <Users />,
+            },
+            {
+              path: "users/:id",
+              element: <UserAccount />,
             },
             {
               path: "add-student",

@@ -6,6 +6,18 @@ const Slot = require("../models/slotModel");
 const userService = require("../services/userService");
 const mediaService = require("../services/mediaService");
 
+//GET user by Id
+exports.getUserById = async (req, res) => {
+  try {
+    const user = await userService.getUserData(req.params.id);
+    console.log(user);
+
+    res.status(200).json({ message: "User found", user });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 exports.updateUserData = async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -49,9 +61,15 @@ exports.updateUserData = async (req, res) => {
 
 exports.getAllUsers = async (req, res) => {
   try {
-    const users = await userService.getUsersInformation(req);
+    const { allUsers, current, total } =
+      await userService.getUsersInformation(req);
 
-    res.status(200).json({ message: "Successfully fetched users data", users });
+    res.status(200).json({
+      message: "Successfully fetched users data",
+      users: allUsers,
+      current,
+      total,
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
