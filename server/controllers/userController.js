@@ -5,12 +5,12 @@ const User = require("../models/userModel");
 const Slot = require("../models/slotModel");
 const userService = require("../services/userService");
 const mediaService = require("../services/mediaService");
+const cloudinary = require("../utils/cloudinary");
 
 //GET user by Id
 exports.getUserById = async (req, res) => {
   try {
     const user = await userService.getUserData(req.params.id);
-    console.log(user);
 
     res.status(200).json({ message: "User found", user });
   } catch (error) {
@@ -18,43 +18,84 @@ exports.getUserById = async (req, res) => {
   }
 };
 
-exports.updateUserData = async (req, res) => {
+exports.updateUserDataBySA = async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
-    const { id } = req;
-    const info = req.body;
+    const { id } = req.params;
+    let userData = {};
     let oldPublicId = null;
 
+    // Parse user data from FormData
+    if (req.body.user) {
+      userData =
+        typeof req.body.user === "string"
+          ? JSON.parse(req.body.user)
+          : req.body.user;
+    }
+
+    // Get existing profile details for reference if needed
+    const existingProfileDetails = req.body.existingProfileDetails
+      ? JSON.parse(req.body.existingProfileDetails)
+      : null;
+
+    // Handle profile image upload if provided
     if (req.file) {
       const result = await mediaService.replaceProfileImage(
-        user._id,
+        id,
         req.file,
         session,
       );
 
       oldPublicId = result.oldPublicId;
-      info.url = result.profileDetails?.url;
-      info.public_id = result.profileDetails?.public_id;
+      userData.profileDetails = {
+        url: result.profileDetails?.url,
+        public_id: result.profileDetails?.public_id,
+      };
     }
 
+    // Prepare data structure for updateInformation service
+    const updateData = {
+      info: userData,
+      role: userData.role,
+    };
+
+    // Update user information with transaction
+    const user = await userService.updateInformation(id, updateData, session);
+
+    // Delete old profile image from Cloudinary after successful transaction
     if (oldPublicId) {
       await cloudinary.uploader.destroy(oldPublicId);
     }
 
-    const user = await userService.updateInformation(id, data, session);
+    await session.commitTransaction();
+    await session.endSession();
 
-    session.commitTransaction();
-    session.endSession();
-
-    res.status(200).json({ message: "Information has be", user });
+    res
+      .status(200)
+      .json({ message: "User information updated successfully", user });
   } catch (error) {
-    if (req.file?.filename) {
-      await cloudinary.uploader.destroy(req.file.filename);
+    try {
+      await session.abortTransaction();
+    } catch (abortError) {
+      // Session might already be aborted
     }
 
-    session.abortTransaction();
-    session.endSession();
+    try {
+      await session.endSession();
+    } catch (endError) {
+      // Session might already be ended
+    }
+
+    // Cleanup: delete uploaded image if update fails
+    if (req.file?.filename) {
+      try {
+        await cloudinary.uploader.destroy(req.file.filename);
+      } catch (deleteError) {
+        // Ignore if deletion fails
+      }
+    }
+
     res.status(500).json({ error: error.message });
   }
 };

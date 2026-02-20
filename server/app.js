@@ -25,6 +25,7 @@ app.use(
 );
 app.use(cookieParser());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 //API Endpoints base urlse
 app.use("/auth", authRouters);
 app.use("/super-admin", superAdminRouters);

@@ -5,7 +5,11 @@ export default function UserTable({ users = [] }) {
   console.log(users);
 
   if (!Array.isArray(users) || users.length === 0) {
-    return <tbody className="text-center py-20 text-gray-400">No users</tbody>;
+    return (
+      <tbody className="text-center flex items-center justify-center py-20 text-gray-400">
+        No users
+      </tbody>
+    );
   }
 
   return users.map((user) => (

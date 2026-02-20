@@ -97,7 +97,7 @@ exports.getUsersInformation = async (req) => {
 
 exports.updateInformation = async (id, data, session) => {
   const { info, role } = data;
-  const nested = {};
+  let nested = {};
   switch (data.role) {
     case "student":
       nested = {
@@ -177,22 +177,35 @@ exports.updateInformation = async (id, data, session) => {
   );
 
   if (role === "student") {
-    additionalData = await Student.findByIdAndUpdate(id, roleSpecificData, {
-      new: true,
-      session,
-    });
+    additionalData = await Student.findOneAndUpdate(
+      { userId: id },
+      { $set: roleSpecificData },
+      {
+        new: true,
+        session,
+      },
+    );
   }
 
   if (role === "guard") {
-    additionalData = await Guard.findByIdAndUpdate(id, roleSpecificData, {
-      new: true,
-      session,
-    });
+    additionalData = await Guard.findOneAndUpdate(
+      { userId: id },
+      { $set: roleSpecificData },
+      {
+        new: true,
+        session,
+      },
+    );
   }
 
   if (!additionalData) additionalData = {};
 
-  const { _id, __v, createdAt, updatedAt, ...moreData } = additionalData._doc;
+  let moreData = {};
+
+  if (additionalData && additionalData._doc) {
+    const { _id, __v, createdAt, updatedAt, ...rest } = additionalData._doc;
+    moreData = rest;
+  }
 
   const viewModel = {
     _id: user._id,
