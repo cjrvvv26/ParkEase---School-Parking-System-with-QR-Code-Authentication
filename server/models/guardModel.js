@@ -11,6 +11,7 @@ const securitySchema = new Schema({
     firstName: { type: String, trim: true, required: true },
     lastName: { type: String, trim: true, required: true },
   },
+  phoneNo: { type: String, required: true },
   workShift: { type: String, default: "flexible" },
   permissions: {
     canScan: { type: Boolean, default: true },

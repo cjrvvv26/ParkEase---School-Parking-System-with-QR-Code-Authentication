@@ -1,5 +1,7 @@
 require("dotenv").config();
 const cors = require("cors");
+const http = require("http");
+const { Server } = require("socket.io");
 const express = require("express");
 const mongoose = require("mongoose");
 const cookieParser = require("cookie-parser");
@@ -13,7 +15,18 @@ const mapRouters = require("./routers/mapRouter");
 // const guardRouters = require("./routers/guardRouter");
 const studentRouters = require("./routers/studentRouter");
 const superAdminRouters = require("./routers/superAdminRouter");
+const socketHandler = require("./socket/socketHandler");
 const app = express();
+const server = http.createServer(app);
+
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST"],
+  },
+});
+
+socketHandler(io);
 
 //Middlewares
 //CORS it allows HTTP requests from its origin
@@ -42,7 +55,7 @@ app.use("/report", reportRouters);
 const initializeServer = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI);
-    app.listen(process.env.PORT, () => {
+    server.listen(process.env.PORT, () => {
       console.log(
         `The server is running on port: http://localhost:${process.env.PORT}`,
       );

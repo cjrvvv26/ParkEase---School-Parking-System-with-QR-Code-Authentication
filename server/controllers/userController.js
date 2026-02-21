@@ -61,7 +61,12 @@ exports.updateUserDataBySA = async (req, res) => {
     };
 
     // Update user information with transaction
-    const user = await userService.updateInformation(id, updateData, session);
+    const user = await userService.updateInformation(
+      req.user._id,
+      id,
+      updateData,
+      session,
+    );
 
     // Delete old profile image from Cloudinary after successful transaction
     if (oldPublicId) {
@@ -78,21 +83,20 @@ exports.updateUserDataBySA = async (req, res) => {
     try {
       await session.abortTransaction();
     } catch (abortError) {
-      // Session might already be aborted
+      console.log(abortError);
     }
 
     try {
       await session.endSession();
     } catch (endError) {
-      // Session might already be ended
+      console.log(endError);
     }
 
-    // Cleanup: delete uploaded image if update fails
     if (req.file?.filename) {
       try {
         await cloudinary.uploader.destroy(req.file.filename);
       } catch (deleteError) {
-        // Ignore if deletion fails
+        console.log(deleteError);
       }
     }
 

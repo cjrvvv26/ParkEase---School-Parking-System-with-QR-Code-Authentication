@@ -76,10 +76,6 @@ export default function UserAccount() {
       if (!user.motorDetails?.color?.trim()) {
         errors.color = "Motorcycle color is required";
       }
-
-      if (user.payment?.amount && isNaN(user.payment.amount)) {
-        errors.paymentAmount = "Payment amount must be a valid number";
-      }
     }
 
     // Validate guard-specific fields
@@ -496,17 +492,32 @@ export default function UserAccount() {
                 </div>
                 {user.role === "student" && (
                   <div className="grid grid-cols-3 gap-5">
-                    <DefaultInput
-                      label={"Payment Amount"}
-                      value={user.payment.amount || 0}
-                      onChange={(e) =>
-                        setUser({
-                          ...user,
-                          payment: { ...user.payment, amount: e.target.value },
-                        })
-                      }
-                      onlyRead={onlyRead}
-                    />
+                    {onlyRead ? (
+                      <DefaultInput
+                        label={"Payment Status"}
+                        value={user.payment.isPaid ? "Paid Already" : "Not Yet"}
+                        onlyRead={true}
+                      />
+                    ) : (
+                      <DefaultOptions
+                        label={"Payment Status"}
+                        value={user.payment.isPaid ? "Paid Already" : "Not Yet"}
+                        placeholder={"Update Status"}
+                        options={["Paid Already", "Not Yet"]}
+                        onChange={(e) =>
+                          setUser({
+                            ...user,
+                            payment: {
+                              ...user.payment,
+                              isPaid:
+                                e.target.value === "Paid Already"
+                                  ? true
+                                  : false,
+                            },
+                          })
+                        }
+                      />
+                    )}
                   </div>
                 )}
               </div>

@@ -1,6 +1,8 @@
 const Guard = require("../models/guardModel");
 const Student = require("../models/studentModel");
 const User = require("../models/userModel");
+const Semester = require("../models/semesterModel");
+const ActivityLog = require("../models/activityModel");
 const definedFilterData = require("../utils/definedDataFilter");
 const mongoose = require("mongoose");
 
@@ -95,10 +97,10 @@ exports.getUsersInformation = async (req) => {
   return { allUsers, current: allUsers.length + skip, total: allUsers.length };
 };
 
-exports.updateInformation = async (id, data, session) => {
+exports.updateInformation = async (superAdmin, id, data, session) => {
   const { info, role } = data;
   let nested = {};
-  switch (data.role) {
+  switch (role) {
     case "student":
       nested = {
         url: "profileDetails",
@@ -110,6 +112,8 @@ exports.updateInformation = async (id, data, session) => {
         brand: "motorDetails",
         model: "motorDetails",
         color: "motorDetails",
+        isPaid: "payment",
+        amount: "payment",
       };
       break;
 
@@ -126,22 +130,20 @@ exports.updateInformation = async (id, data, session) => {
       break;
   }
 
-  if (!role) {
-    throw new Error("User role is null");
-  }
+  if (!role) throw new Error("User role is null");
 
   const checkUser = await User.findById(id);
+  if (!checkUser) throw new Error("User not found");
 
-  if (!checkUser) {
-    throw new Error("User not found");
-  }
+  const checkStudentRecord =
+    role === "student" ? await Student.findOne({ userId: id }) : null;
 
-  let additionalData = null;
+  // Flatten input data
   const flattenData = definedFilterData(info, nested);
-
   if (!flattenData)
     throw new Error("Something went wrong while updating information");
 
+  // Separate user fields
   const userFields = [
     "username",
     "email",
@@ -163,12 +165,10 @@ exports.updateInformation = async (id, data, session) => {
   const user = await User.findByIdAndUpdate(
     id,
     { $set: userUpdateData, updatedAt: new Date() },
-    {
-      new: true,
-      session,
-    },
+    { new: true, session },
   );
 
+  // Role-specific data
   const roleSpecificData = Object.fromEntries(
     Object.entries(flattenData).filter(
       ([key]) =>
@@ -176,37 +176,72 @@ exports.updateInformation = async (id, data, session) => {
     ),
   );
 
+  let additionalData = null;
   if (role === "student") {
     additionalData = await Student.findOneAndUpdate(
       { userId: id },
       { $set: roleSpecificData },
-      {
-        new: true,
-        session,
-      },
+      { new: true, session },
     );
-  }
-
-  if (role === "guard") {
+  } else if (role === "guard") {
     additionalData = await Guard.findOneAndUpdate(
       { userId: id },
       { $set: roleSpecificData },
-      {
-        new: true,
-        session,
-      },
+      { new: true, session },
     );
   }
 
   if (!additionalData) additionalData = {};
 
-  let moreData = {};
+  const activeSem = await Semester.findOne({ status: "active" });
+  const newValue = flattenData["payment.isPaid"];
 
+  // ----- Payment log for students -----
+  if (role === "student" && newValue !== undefined) {
+    const oldValue = checkStudentRecord?.payment?.isPaid || false;
+
+    if (oldValue !== newValue) {
+      const amountPaid = newValue ? activeSem?.slotPrice || 0 : 0;
+
+      const log = new ActivityLog({
+        userId: superAdmin,
+        actionType: "users",
+        action: "UPDATE_PAYMENT_STATUS",
+        description: newValue
+          ? `${checkStudentRecord?.name?.firstName} ${checkStudentRecord?.name?.lastName} sent a payment for exclusive slot.`
+          : `${checkStudentRecord?.name?.firstName} ${checkStudentRecord?.name?.lastName} payment status updated to unpaid.`,
+        entityType: "User",
+        entityId: id,
+        metadata: {
+          oldValue: checkStudentRecord?.payment?.amount || 0,
+          newValue: amountPaid,
+          semesterId: activeSem?._id,
+        },
+      });
+
+      await log.save({ session });
+    }
+  }
+
+  const log = new ActivityLog({
+    userId: superAdmin,
+    actionType: "users",
+    action: "UPDATE_ACCOUNT",
+    description: `${roleSpecificData["name.firstName"]} ${roleSpecificData["name.lastName"]} account has been successfully updated.`,
+    entityType: "User",
+    entityId: id,
+  });
+
+  await log.save({ session });
+
+  // Prepare additional data for view model
+  let moreData = {};
   if (additionalData && additionalData._doc) {
     const { _id, __v, createdAt, updatedAt, ...rest } = additionalData._doc;
     moreData = rest;
   }
 
+  // Final user view model
   const viewModel = {
     _id: user._id,
     profileDetails: user.profileDetails,

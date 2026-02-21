@@ -15,7 +15,6 @@ const slotSchema = new Schema(
       unique: true,
       ref: "shape",
     },
-    price: { type: Number, required: true, default: 0 },
     isOccupied: { type: Boolean, default: false },
     occupiedBy: {
       type: mongoose.Schema.Types.ObjectId,
