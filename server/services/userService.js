@@ -144,7 +144,27 @@ exports.updateInformation = async (superAdmin, id, data, session) => {
   if (!flattenData)
     throw new Error("Something went wrong while updating information");
 
-  // Separate user fields
+  // Get active semester early for payment processing
+  const activeSem = await Semester.findOne({ status: "active" });
+  let newValue = flattenData["payment.isPaid"];
+
+  if (role === "student" && newValue !== undefined) {
+    if (!activeSem && newValue === true) {
+      newValue = false;
+      flattenData["payment.isPaid"] = false;
+    }
+  }
+
+  if (role === "student" && newValue !== undefined) {
+    const amountPaid = newValue && activeSem ? activeSem.slotPrice : 0;
+    flattenData["payment.amount"] = amountPaid;
+    if (newValue && activeSem) {
+      flattenData["payment.semesterId"] = activeSem._id;
+    } else {
+      flattenData["payment.semesterId"] = null;
+    }
+  }
+
   const userFields = [
     "username",
     "email",
@@ -194,15 +214,12 @@ exports.updateInformation = async (superAdmin, id, data, session) => {
 
   if (!additionalData) additionalData = {};
 
-  const activeSem = await Semester.findOne({ status: "active" });
-  const newValue = flattenData["payment.isPaid"];
-
-  // ----- Payment log for students -----
+  // ----- Payment log for students (after student update) -----
   if (role === "student" && newValue !== undefined) {
     const oldValue = checkStudentRecord?.payment?.isPaid || false;
 
     if (oldValue !== newValue) {
-      const amountPaid = newValue ? activeSem?.slotPrice || 0 : 0;
+      const amountPaid = newValue && activeSem ? activeSem.slotPrice : 0;
 
       const log = new ActivityLog({
         userId: superAdmin,

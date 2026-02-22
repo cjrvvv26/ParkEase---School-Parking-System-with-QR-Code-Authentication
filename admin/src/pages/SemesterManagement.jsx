@@ -24,7 +24,7 @@ export default function SemesterManagement() {
           setCurrentSemester(currentRes.data);
         }
 
-        const statsRes = await fetchData("/semester/stats/current");
+        const statsRes = await fetchData("/semester/stats");
         if (statsRes?.data) {
           setStats(statsRes.data);
         }

@@ -11,6 +11,9 @@ router.post("/", semesterController.createSemester);
 // Get current active semester
 router.get("/current", semesterController.getCurrentSemester);
 
+// Get semester statistics for all semesters (Super Admin only)
+router.get("/stats", semesterController.getSemesterStats);
+
 // Get semester statistics (Super Admin only)
 router.get("/stats/current", semesterController.getSemesterStats);
 

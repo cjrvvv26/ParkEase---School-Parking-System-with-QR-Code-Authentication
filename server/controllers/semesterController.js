@@ -209,10 +209,15 @@ exports.expireSemester = async (req, res) => {
     semester.status = "expired";
     await semester.save();
 
-    // Reset all students' paid status and remove slot assignments
+    // Reset all students' paid status, payment amount, and remove slot assignments
     await Student.updateMany(
       { hasPaidCurrentSemester: true },
-      { hasPaidCurrentSemester: false, assignedSlot: null },
+      {
+        hasPaidCurrentSemester: false,
+        assignedSlot: null,
+        "payment.isPaid": false,
+        "payment.amount": 0,
+      },
     );
 
     // Update all slots to remove student assignments
@@ -237,34 +242,45 @@ exports.expireSemester = async (req, res) => {
 // Get semester statistics
 exports.getSemesterStats = async (req, res) => {
   try {
-    const currentSemester = await Semester.findOne({ status: "active" });
+    // Get all semesters
+    const allSemesters = await Semester.find();
 
-    if (!currentSemester) {
-      return res.status(404).json({
-        success: false,
-        error: "No active semester found",
+    // Calculate total revenue across all semesters in real-time
+    let totalRevenue = 0;
+    let highestEarningSemester = null;
+    let highestRevenue = 0;
+
+    for (const semester of allSemesters) {
+      const paidStudentsCount = await Student.countDocuments({
+        "payment.isPaid": true,
+        "payment.semesterId": semester._id,
       });
+      const semesterRevenue = paidStudentsCount * semester.slotPrice;
+      totalRevenue += semesterRevenue;
+
+      if (semesterRevenue > highestRevenue) {
+        highestRevenue = semesterRevenue;
+        highestEarningSemester = {
+          id: semester._id,
+          name: semester.name,
+          revenue: semesterRevenue,
+        };
+      }
     }
 
-    const totalStudentsPaid = await Student.countDocuments({
-      hasPaidCurrentSemester: true,
-    });
+    const totalSemesters = allSemesters.length;
+    const averageRevenue =
+      totalSemesters > 0 ? (totalRevenue / totalSemesters).toFixed(2) : 0;
 
-    const totalSlots = await Slot.countDocuments();
-    const occupiedSlots = await Slot.countDocuments({
-      assignedStudent: { $exists: true, $ne: null },
-    });
-
-    const stats = {
-      semesterId: currentSemester._id,
-      semesterName: currentSemester.name,
-      totalStudentsPaid,
-      totalSlots,
-      occupiedSlots,
-      availableSlots: totalSlots - occupiedSlots,
-      estimatedRevenue: totalStudentsPaid * currentSemester.slotPrice,
-      occupancyRate: ((occupiedSlots / totalSlots) * 100).toFixed(2),
-    };
+    const stats = [
+      { title: "Total Revenue", data: totalRevenue },
+      { title: "Total Semesters", data: totalSemesters },
+      { title: "Average Revenue", data: parseFloat(averageRevenue) },
+      {
+        title: "Highest Earning",
+        data: highestEarningSemester?.revenue || "N/A",
+      },
+    ];
 
     res.status(200).json({
       success: true,
