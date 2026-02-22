@@ -13,6 +13,10 @@ export default function ToolBox({
   setErrorMessage,
 }) {
   const addSlot = () => {
+    const timestamp = Date.now().toString(36).toUpperCase();
+    const random = Math.random().toString(36).substring(2, 5).toUpperCase();
+    const uniqueLabel = `${timestamp}-${random}`;
+
     setShapes((prev) => [
       ...prev,
       {
@@ -26,7 +30,7 @@ export default function ToolBox({
           rotation: 0,
         },
         metadata: {
-          label: "A" + prev.length,
+          label: uniqueLabel,
           type: "slot",
           area: mapName,
         },
@@ -42,6 +46,11 @@ export default function ToolBox({
       setErrorMessage("Polygon requires at least 3 points.");
       return;
     }
+
+    const timestamp = Date.now().toString(36).toUpperCase();
+    const random = Math.random().toString(36).substring(2, 5).toUpperCase();
+    const uniqueLabel = `${timestamp}-${random}`;
+
     setShapes((prev) => [
       ...prev,
       {
@@ -52,7 +61,7 @@ export default function ToolBox({
           points,
         },
         metadata: {
-          label: "A" + prev.length,
+          label: uniqueLabel,
           type: "building",
           area: mapName,
           information: {

@@ -10,6 +10,8 @@ const {
   sendAccountVerification,
 } = require("../emails/index");
 const generateEmailToken = require("../utils/generateEmailJWT");
+const notificationService = require("../services/notificationService");
+const ActivityLogs = require("../models/activityModel");
 
 exports.getDataBySession = async (req, res) => {
   try {
@@ -102,6 +104,26 @@ exports.registerUser = async (req, res) => {
       firstName,
       token: emailToken,
     });
+    const notifData = {
+      userId: userVM._id,
+      message: `Your account has been successfully registered. Welcome to the system! You may now log in, complete your profile, and proceed with the next steps to access all available features.`,
+      title: "Account Registration Successful",
+    };
+    await notificationService.createNotification(notifData);
+
+    await ActivityLogs.create({
+      userId: req.user._id, // or adminId if created by admin
+      actionType: "users",
+      action: "REGISTER",
+      description: `A new account has been successfully created in the system.`,
+      entityType: "User",
+      entityId: userVM._id,
+      metadata: {
+        role: userVM.role,
+        email: userVM.email,
+      },
+    });
+
     res
       .status(200)
       .json({ message: "Account was successfully created", user: userVM });

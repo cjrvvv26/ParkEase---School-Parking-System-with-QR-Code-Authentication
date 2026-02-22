@@ -1,7 +1,7 @@
 import ReportSummaryCard from "../components/charts/ReportSummaryCard";
 import AdminBldg from "../components/maps/AdminBldg";
 import DynamicMap from "../components/maps/DynamicMap";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Modal from "../components/Modal";
 import { useState, useEffect } from "react";
 import useFetch from "../hooks/useFetch";
@@ -16,7 +16,10 @@ export default function Parking() {
   const [maps, setMaps] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedShape, setSelectedShape] = useState(null);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [showMessage, setShowMessage] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { fetchData, loading } = useFetch();
 
   useEffect(() => {
@@ -32,7 +35,20 @@ export default function Parking() {
       }
     };
     fetchMaps();
-  }, []);
+
+    // Handle message from MapEditor redirect
+    if (location.state?.message) {
+      setSuccessMessage(location.state.message);
+      setShowMessage(true);
+
+      // Auto-hide message after 4 seconds
+      const timer = setTimeout(() => {
+        setShowMessage(false);
+      }, 4000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [location.state?.message]);
 
   useEffect(() => {
     if (maps && maps.length > 0 && currentIndex >= maps.length) {
@@ -71,6 +87,26 @@ export default function Parking() {
 
   return (
     <>
+      {/* Success Message Toast */}
+      {showMessage && (
+        <div className="fixed top-5 right-5 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 z-50 animate-pulse">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={1.5}
+            stroke="currentColor"
+            className="size-5"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          {successMessage}
+        </div>
+      )}
       {/* Header Page */}
       <header className="flex justify-between px-5 pt-5 items-center">
         <div className="flex flex-col">
@@ -199,7 +235,25 @@ export default function Parking() {
               </Modal>
             )}
             {/* Manage Slots */}
-            <button className="flex items-center gap-1 py-2 px-3 rounded-full  text-violet-500 border-violet-500 border">
+            <button
+              onClick={() => {
+                if (maps && maps.length > 0) {
+                  navigate("/map-editor", {
+                    state: {
+                      areaName: maps[currentIndex].name,
+                      svgSize: {
+                        width: maps[currentIndex].width,
+                        height: maps[currentIndex].height,
+                      },
+                      shapes: maps[currentIndex].shapes,
+                      mapId: maps[currentIndex]._id,
+                      isUpdate: true,
+                    },
+                  });
+                }
+              }}
+              className="flex items-center gap-1 py-2 px-3 rounded-full  text-violet-500 border-violet-500 border"
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"

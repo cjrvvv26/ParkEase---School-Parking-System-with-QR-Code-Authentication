@@ -11,7 +11,7 @@ router.get("/with-shapes", mapController.getAllMapsWithShapes);
 router.post("/", upload.any(), mapController.createMap);
 router.get("/", mapController.getAllMaps);
 router.get("/:id", mapController.getMapById);
-router.put("/:id", mapController.updateMap);
+router.put("/:id", upload.any(), mapController.updateMap);
 router.delete("/:id", mapController.deleteMap);
 
 module.exports = router;

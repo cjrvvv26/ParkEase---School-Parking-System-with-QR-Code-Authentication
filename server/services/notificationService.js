@@ -1,8 +1,18 @@
 const mongoose = require("mongoose");
-const Notification = require("../models/notification");
+const Notification = require("../models/notificationModel");
 
-exports.createNotification = async (data) => {
+exports.createNotification = async (data, session) => {
   const { userId, title, message } = data;
+  if (session) {
+    const notification = new Notification({
+      userId,
+      title,
+      message,
+    });
+
+    return await notification.save({ session });
+  }
+
   const notification = await Notification.create({
     userId,
     message,

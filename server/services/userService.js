@@ -3,6 +3,7 @@ const Student = require("../models/studentModel");
 const User = require("../models/userModel");
 const Semester = require("../models/semesterModel");
 const ActivityLog = require("../models/activityModel");
+const notificationService = require("../services/notificationService");
 const definedFilterData = require("../utils/definedDataFilter");
 const mongoose = require("mongoose");
 
@@ -220,6 +221,16 @@ exports.updateInformation = async (superAdmin, id, data, session) => {
       });
 
       await log.save({ session });
+
+      const paymentNotif = {
+        userId: id,
+        message: newValue
+          ? `Hey ${roleSpecificData["name.firstName"]}! You're now eligible to have an exclusive slot. Your recent payment has been successfully verified and processed. You may now proceed to reserve and secure your preferred slot before it becomes unavailable.`
+          : `Hey ${roleSpecificData["name.firstName"]}! Your payment status has been reset. This means your previous verification is no longer valid at the moment. Please review your payment details and complete the process again to regain eligibility for an exclusive slot.`,
+        title: newValue ? "Payment Verified" : "Payment Reset",
+      };
+
+      await notificationService.createNotification(paymentNotif, session);
     }
   }
 
@@ -233,6 +244,14 @@ exports.updateInformation = async (superAdmin, id, data, session) => {
   });
 
   await log.save({ session });
+
+  const notifData = {
+    userId: id,
+    message: `Hey ${roleSpecificData["name.firstName"]}! Your account has been successfully updated by super admin.`,
+    title: "Account Update",
+  };
+
+  await notificationService.createNotification(notifData, session);
 
   // Prepare additional data for view model
   let moreData = {};

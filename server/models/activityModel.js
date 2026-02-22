@@ -26,6 +26,7 @@ const activityLogSchema = new Schema(
         "OUT_TIME",
         "SIGN_IN",
         "REGISTER",
+        "UPDATE_MAP",
       ],
     },
 

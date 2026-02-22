@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import ToolBox from "../components/maps/ToolBox";
 import PropertiesPanel from "../components/maps/PropertiesPanel";
 import Header from "../components/maps/Header";
@@ -128,8 +128,14 @@ function SlotShape({
 
 export default function MapEditor() {
   const location = useLocation();
-  const { areaName: initialAreaName, svgSize: initialSvgSize } =
-    location.state || {};
+  const navigate = useNavigate();
+  const {
+    areaName: initialAreaName,
+    svgSize: initialSvgSize,
+    shapes: initialShapes,
+    mapId,
+    isUpdate,
+  } = location.state || {};
   const [currentAreaName, setCurrentAreaName] = useState(initialAreaName || "");
   const [currentSvgSize, setCurrentSvgSize] = useState(
     initialSvgSize || { width: 1200, height: 300 },
@@ -152,12 +158,23 @@ export default function MapEditor() {
   const [errorMessage, setErrorMessage] = useState("");
   const [isBuildingModalOpen, setIsBuildingModalOpen] = useState(false);
   const [selectedBuilding, setSelectedBuilding] = useState(null);
+  const [isUpdateMode, setIsUpdateMode] = useState(isUpdate || false);
+  const [currentMapId, setCurrentMapId] = useState(mapId || null);
+  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+  const [isPanning, setIsPanning] = useState(false);
+  const [panStart, setPanStart] = useState({ x: 0, y: 0 });
+  const [isSaving, setIsSaving] = useState(false);
   const { fetchData } = useFetch();
 
   useEffect(() => {
     setCurrentAreaName(initialAreaName || "");
     setCurrentSvgSize(initialSvgSize || { width: 1200, height: 300 });
-  }, [initialAreaName, initialSvgSize]);
+    if (initialShapes && isUpdate) {
+      setShapes(initialShapes);
+      setHistory([initialShapes]);
+      setCurrentIndex(1);
+    }
+  }, [initialAreaName, initialSvgSize, initialShapes, isUpdate]);
 
   useEffect(() => {
     if (!isFromHistory) {
@@ -169,6 +186,16 @@ export default function MapEditor() {
       setCurrentIndex((prev) => prev + 1);
     }
   }, [shapes, isFromHistory]);
+
+  // Auto-dismiss error message after 3 seconds
+  useEffect(() => {
+    if (errorMessage) {
+      const timer = setTimeout(() => {
+        setErrorMessage("");
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [errorMessage]);
 
   const startDrag = (e, shape) => {
     if (mode !== "select") return;
@@ -207,8 +234,14 @@ export default function MapEditor() {
       const pt = svg.createSVGPoint();
       pt.x = e.clientX;
       pt.y = e.clientY;
-      const matrix = svg.getScreenCTM().inverse();
-      const transformed = pt.matrixTransform(matrix);
+      const matrix = svg.getScreenCTM();
+
+      if (!matrix) return;
+
+      const inverseMatrix = matrix.inverse();
+      const transformed = pt.matrixTransform(inverseMatrix);
+
+      // Adjust for the viewBox offset (panOffset doesn't need adjustment as it's in viewBox coords)
       const dx = transformed.x - dragging.startX;
       const dy = transformed.y - dragging.startY;
 
@@ -337,32 +370,77 @@ export default function MapEditor() {
   };
 
   const handleSave = async () => {
-    const { height, width } = currentSvgSize;
+    try {
+      setIsSaving(true);
+      setErrorMessage("");
 
-    const formData = new FormData();
-    formData.append("name", currentAreaName);
-    formData.append("height", height);
-    formData.append("width", width);
+      const { height, width } = currentSvgSize;
 
-    const cleanedShapes = shapes.map(({ imageFile, ...rest }) => rest);
-    formData.append("shapes", JSON.stringify(cleanedShapes));
-
-    shapes.forEach((shape) => {
-      if (
-        shape.metadata?.type === "building" &&
-        shape.imageFile &&
-        shape.tempId
-      ) {
-        formData.append(`building[${shape.tempId}]`, shape.imageFile);
+      if (!currentAreaName.trim()) {
+        setErrorMessage("Please enter an area name.");
+        setIsSaving(false);
+        return;
       }
-    });
 
-    const response = await fetchData("/map", {
-      method: "POST",
-      data: formData,
-    });
+      const formData = new FormData();
+      formData.append("name", currentAreaName);
+      formData.append("height", height);
+      formData.append("width", width);
 
-    setShapes(response.shapes);
+      const cleanedShapes = shapes.map(({ imageFile, ...rest }) => rest);
+      formData.append("shapes", JSON.stringify(cleanedShapes));
+
+      shapes.forEach((shape) => {
+        if (
+          shape.metadata?.type === "building" &&
+          shape.imageFile &&
+          shape.tempId
+        ) {
+          formData.append(`building[${shape.tempId}]`, shape.imageFile);
+        }
+      });
+
+      const endpoint = isUpdateMode ? `/map/${currentMapId}` : "/map";
+      const method = isUpdateMode ? "PUT" : "POST";
+
+      console.log(`Sending ${method} request to ${endpoint}`, {
+        currentAreaName,
+        height,
+        width,
+        shapesCount: shapes.length,
+      });
+
+      const response = await fetchData(endpoint, {
+        method: method,
+        data: formData,
+      });
+
+      console.log("Save response:", response);
+
+      if (response) {
+        // Redirect to parking page with success message
+        navigate("/parking", {
+          state: {
+            message: isUpdateMode
+              ? "Map updated successfully!"
+              : "Map created successfully!",
+            type: "success",
+          },
+        });
+      } else {
+        setErrorMessage("Unexpected response from server. Please try again.");
+        setIsSaving(false);
+      }
+    } catch (error) {
+      console.error("Error saving map:", error);
+      console.error("Error response:", error.response?.data);
+      setErrorMessage(
+        error.response?.data?.error ||
+          error.message ||
+          "Failed to save map. Please try again.",
+      );
+      setIsSaving(false);
+    }
   };
 
   const fileToBase64 = (file) =>
@@ -402,6 +480,7 @@ export default function MapEditor() {
         onZoomOut={handleZoomOut}
         onPreview={handlePreview}
         onSave={handleSave}
+        isSaving={isSaving}
       />
 
       <main className="flex-1 relative flex">
@@ -426,19 +505,108 @@ export default function MapEditor() {
             }}
           >
             <svg
-              viewBox={`0 0 ${currentSvgSize.width / zoom} ${currentSvgSize.height / zoom}`}
+              viewBox={`${panOffset.x} ${panOffset.y} ${currentSvgSize.width / zoom} ${currentSvgSize.height / zoom}`}
               width="100%"
               height="100%"
-              fill="black"
               style={{
-                border: "1px solid #ccc",
-                cursor: mode === "draw" ? "crosshair" : "default",
+                border: "0.1px solid #f3f4f6",
+                cursor: isPanning
+                  ? "grabbing"
+                  : mode === "draw"
+                    ? "crosshair"
+                    : "default",
               }}
-              onMouseMove={onMouseMove}
-              onMouseUp={stopDrag}
-              onMouseLeave={stopDrag}
-              onMouseDown={handleMouseDown}
+              onMouseMove={(e) => {
+                if (isPanning) {
+                  const dx = (e.clientX - panStart.x) * zoom;
+                  const dy = (e.clientY - panStart.y) * zoom;
+                  setPanOffset((prev) => ({
+                    x:
+                      prev.x -
+                      dx /
+                        (currentSvgSize.width / (currentSvgSize.width / zoom)),
+                    y:
+                      prev.y -
+                      dy /
+                        (currentSvgSize.height /
+                          (currentSvgSize.height / zoom)),
+                  }));
+                  setPanStart({ x: e.clientX, y: e.clientY });
+                } else {
+                  onMouseMove(e);
+                }
+              }}
+              onMouseUp={(e) => {
+                setIsPanning(false);
+                stopDrag();
+              }}
+              onMouseLeave={(e) => {
+                setIsPanning(false);
+                stopDrag();
+              }}
+              onMouseDown={(e) => {
+                if (e.button === 2) {
+                  e.preventDefault();
+                  setIsPanning(true);
+                  setPanStart({ x: e.clientX, y: e.clientY });
+                } else {
+                  handleMouseDown(e);
+                }
+              }}
+              onContextMenu={(e) => e.preventDefault()}
             >
+              <defs>
+                <pattern
+                  id="grid"
+                  width="50"
+                  height="50"
+                  patternUnits="userSpaceOnUse"
+                >
+                  <path
+                    d="M 50 0 L 0 0 0 50"
+                    fill="none"
+                    stroke="#e5e7eb"
+                    strokeWidth="0.8"
+                  />
+                </pattern>
+              </defs>
+
+              {/* Extended draggable area - allows dragging way beyond canvas boundaries */}
+              <rect
+                x={-currentSvgSize.width / zoom}
+                y={-currentSvgSize.height / zoom}
+                width={(currentSvgSize.width * 4) / zoom}
+                height={(currentSvgSize.height * 4) / zoom}
+                fill="#f3f4f6"
+                pointerEvents="auto"
+              />
+
+              {/* Grid background */}
+              <rect
+                width={currentSvgSize.width / zoom}
+                height={currentSvgSize.height / zoom}
+                fill="white"
+                pointerEvents="none"
+              />
+
+              {/* Grid pattern overlay */}
+              <rect
+                width={currentSvgSize.width / zoom}
+                height={currentSvgSize.height / zoom}
+                fill="url(#grid)"
+                pointerEvents="none"
+              />
+
+              {/* Border around canvas grid area */}
+              <rect
+                width={currentSvgSize.width / zoom}
+                height={currentSvgSize.height / zoom}
+                fill="none"
+                stroke="#9ca3af"
+                strokeWidth="0.5"
+                pointerEvents="none"
+              />
+
               {shapes.map((shape) => (
                 <SlotShape
                   key={shape.tempId || shape._id}
