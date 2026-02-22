@@ -1,4 +1,5 @@
 import React from "react";
+import { GraduationCap } from "lucide-react";
 
 export default function NavData() {
   const main = [
@@ -74,6 +75,11 @@ export default function NavData() {
         </svg>
       ),
       path: "/parking",
+    },
+    {
+      label: "Semester",
+      icon: <GraduationCap strokeWidth={1.5} />,
+      path: "/semester",
     },
     {
       label: "Users",

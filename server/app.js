@@ -12,6 +12,7 @@ const motorRouters = require("./routers/motorAiRouter");
 const reportRouters = require("./routers/reportRouter");
 const userRouters = require("./routers/userRouter");
 const mapRouters = require("./routers/mapRouter");
+const semesterRouters = require("./routers/semesterRouter");
 // const guardRouters = require("./routers/guardRouter");
 const studentRouters = require("./routers/studentRouter");
 const superAdminRouters = require("./routers/superAdminRouter");
@@ -48,6 +49,7 @@ app.use("/motor", motorRouters);
 app.use("/slot", slotRouters);
 app.use("/shape", shapeRouters);
 app.use("/user", userRouters);
+app.use("/semester", semesterRouters);
 app.use("/map", mapRouters);
 app.use("/report", reportRouters);
 

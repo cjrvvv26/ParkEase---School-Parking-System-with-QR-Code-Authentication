@@ -23,6 +23,9 @@ import Settings from "./pages/Settings";
 import AddGuard from "./pages/AddGuard";
 import AddFaculty from "./pages/AddFaculty";
 import AddStudent from "./pages/AddStudent";
+import SemesterManagement from "./pages/SemesterManagement";
+import AddSemester from "./pages/AddSemester";
+import SemesterDetails from "./pages/SemesterDetails";
 import EmailEditor from "./EmailEditor";
 import MapEditor from "./pages/MapEditor";
 import Profile from "./pages/Profile";
@@ -112,6 +115,22 @@ export default function App() {
               path: "dashboard",
               element: <Dashboard />,
               index: true,
+            },
+            {
+              path: "semester",
+              element: <SemesterManagement />,
+            },
+            {
+              path: "semesters",
+              element: <SemesterManagement />,
+            },
+            {
+              path: "semesters/add",
+              element: <AddSemester />,
+            },
+            {
+              path: "semesters/:id",
+              element: <SemesterDetails />,
             },
             {
               path: "users",

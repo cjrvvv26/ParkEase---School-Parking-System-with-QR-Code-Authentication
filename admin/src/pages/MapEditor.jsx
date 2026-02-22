@@ -358,11 +358,11 @@ export default function MapEditor() {
   };
 
   const handleZoomIn = () => {
-    setZoom((prev) => Math.max(0.1, prev * 0.9));
+    setZoom((prev) => Math.min(5, prev * 1.2));
   };
 
   const handleZoomOut = () => {
-    setZoom((prev) => Math.min(5, prev * 1.1));
+    setZoom((prev) => Math.max(0.1, prev * 0.8));
   };
 
   const handlePreview = () => {
