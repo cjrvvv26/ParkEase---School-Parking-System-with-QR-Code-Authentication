@@ -9,6 +9,8 @@ import {
   Users,
   ShieldUser,
   SquaresExclude,
+  Clock,
+  CreditCard,
 } from "lucide-react";
 
 export default function ReportSummaryCard({ reports = [], loading, stats }) {
@@ -16,6 +18,12 @@ export default function ReportSummaryCard({ reports = [], loading, stats }) {
     switch (title) {
       case "Total Revenue":
         return <Landmark size={30} />;
+      case "Total Active Users":
+        return <Users size={30} />;
+      case "Total Paid Students":
+        return <CreditCard size={30} />;
+      case "Avg Parking (mins)":
+        return <Clock size={30} />;
       case "Total Semesters":
         return <BookOpenCheck size={30} />;
       case "Average Revenue":
@@ -37,7 +45,7 @@ export default function ReportSummaryCard({ reports = [], loading, stats }) {
   // If semester stats are provided, format currency for display
   const formatData = (item) => {
     if (item.title === "Total Revenue" || item.title === "Average Revenue") {
-      return `₱${item.data}`;
+      return `₱${item.data.toLocaleString()}`;
     }
     return item.data;
   };

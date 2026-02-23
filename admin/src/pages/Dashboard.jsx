@@ -3,12 +3,69 @@ import ReportSummaryCard from "../components/charts/ReportSummaryCard";
 import RevenueChart from "../components/charts/RevenueChart";
 import AvgParkingDurationChart from "../components/charts/AvgParkingDurationChart";
 import MotorOccupancyChart from "../components/charts/MotorOccupancyChart";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Modal from "../components/Modal";
-import BotImage from "../assets/images/ai-image.png";
+import useFetch from "../hooks/useFetch";
 
 export default function Dashboard() {
   const [isOpen, toggleIsOpenModal] = useState(false);
+  const [stats, setStats] = useState(null);
+  const [availableSlots, setAvailableSlots] = useState(0);
+  const [loadingStats, setLoadingStats] = useState(true);
+  const [semesterRevenue, setSemesterRevenue] = useState(null);
+  const [loadingRevenue, setLoadingRevenue] = useState(true);
+  const [monthlyRevenue, setMonthlyRevenue] = useState(null);
+  const [loadingMonthly, setLoadingMonthly] = useState(true);
+  const { fetchData } = useFetch();
+
+  useEffect(() => {
+    const fetchSystemSummary = async () => {
+      try {
+        setLoadingStats(true);
+        const response = await fetchData("/report/system-summary");
+        if (response?.data) {
+          setStats(response.data);
+          setAvailableSlots(response.availableSlots || 0);
+        }
+      } catch (err) {
+        console.error("Failed to fetch system summary:", err);
+      } finally {
+        setLoadingStats(false);
+      }
+    };
+
+    const fetchSemesterRevenue = async () => {
+      try {
+        setLoadingRevenue(true);
+        const response = await fetchData("/semester/revenue/dashboard");
+        if (response?.data) {
+          setSemesterRevenue(response.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch semester revenue:", err);
+      } finally {
+        setLoadingRevenue(false);
+      }
+    };
+
+    const fetchMonthlyRevenue = async () => {
+      try {
+        setLoadingMonthly(true);
+        const response = await fetchData("/report/monthly-revenue");
+        if (response?.data) {
+          setMonthlyRevenue(response.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch monthly revenue:", err);
+      } finally {
+        setLoadingMonthly(false);
+      }
+    };
+
+    fetchSystemSummary();
+    fetchSemesterRevenue();
+    fetchMonthlyRevenue();
+  }, []);
   return (
     <>
       {/* Header Page */}
@@ -303,65 +360,114 @@ export default function Dashboard() {
       </header>
       {/* Report Summary */}
       <div className="flex gap-5 h-[150px] px-5">
-        {Array.from({ length: 4 }, () => (
-          <ReportSummaryCard />
-        ))}
+        <ReportSummaryCard stats={stats} loading={loadingStats} />
       </div>
       {/* Mid Section */}
       <div className="flex gap-5 px-5">
         {/* Revenue per Semester */}
         <div className="rounded-xl flex-3 h-auto bg-gray-100 ">
           <div className="flex flex-col gap-5 h-full p-5">
-            <h1 className="text-base font-medium">Revenue Per School Year</h1>
+            <h1 className="text-base font-medium">Revenue Per Month</h1>
             {/* Data */}
             <div className=" w-full h-full gap-5">
-              <RevenueChart />
+              <RevenueChart
+                monthlyData={monthlyRevenue}
+                loading={loadingMonthly}
+              />
             </div>
             {/* Last and Current Sem Comparison */}
             <div className="flex gap-5 h-full rounded-xl">
               {/* Last Semester */}
               <div className="flex flex-col justify-center gap-1 h-full bg-white rounded-xl p-5 flex-1 relative">
-                <h2 className="text-sm text-gray-400">Last Semester</h2>
-                <p className="font-semibold text-2xl">&#8369; 1,200.00</p>
-                <div className="flex gap-1 items-center text-xs text-rose-500 p-2 absolute top-5 right-5 rounded-lg bg-rose-100 border border-rose-500 ">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="size-4"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M2.25 6 9 12.75l4.286-4.286a11.948 11.948 0 0 1 4.306 6.43l.776 2.898m0 0 3.182-5.511m-3.182 5.51-5.511-3.181"
-                    />
-                  </svg>
-
-                  <p>+10%</p>
-                </div>
+                <h2 className="text-sm text-gray-400">
+                  {loadingRevenue
+                    ? "Loading..."
+                    : semesterRevenue?.lastSemester?.name || "Last Semester"}
+                </h2>
+                <p className="font-semibold text-2xl">
+                  &#8369;{" "}
+                  {loadingRevenue
+                    ? "..."
+                    : (
+                        semesterRevenue?.lastSemester?.revenue || 0
+                      ).toLocaleString()}
+                </p>
+                {semesterRevenue?.percentageChange !== undefined &&
+                  semesterRevenue?.percentageChange !== null && (
+                    <div
+                      className={`flex gap-1 items-center text-xs p-2 absolute top-5 right-5 rounded-lg border ${
+                        semesterRevenue.percentageChange >= 0
+                          ? "text-green-500 bg-green-100 border-green-500"
+                          : "text-rose-500 bg-rose-100 border-rose-500"
+                      }`}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="size-4"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d={
+                            semesterRevenue.percentageChange >= 0
+                              ? "M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941"
+                              : "M2.25 6 9 12.75l4.286-4.286a11.948 11.948 0 0 1 4.306 6.43l.776 2.898m0 0 3.182-5.511m-3.182 5.51-5.511-3.181"
+                          }
+                        />
+                      </svg>
+                      <p>{Math.abs(semesterRevenue.percentageChange)}%</p>
+                    </div>
+                  )}
               </div>
               <div className="flex flex-col justify-center gap-1 h-full bg-white rounded-xl p-5 flex-1 relative">
-                <h2 className="text-sm text-gray-400">Current Semester</h2>
-                <p className="font-semibold text-2xl">&#8369; 1,500.00</p>
-                <div className="flex gap-1 items-center text-xs text-green-500 p-2 absolute top-5 right-5 rounded-lg bg-green-100 border border-green-500 ">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="size-4"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941"
-                    />
-                  </svg>
-                  <p>+10%</p>
-                </div>
+                <h2 className="text-sm text-gray-400">
+                  {loadingRevenue
+                    ? "Loading..."
+                    : semesterRevenue?.currentSemester?.name ||
+                      "Current Semester"}
+                </h2>
+                <p className="font-semibold text-2xl">
+                  &#8369;{" "}
+                  {loadingRevenue
+                    ? "..."
+                    : (
+                        semesterRevenue?.currentSemester?.revenue || 0
+                      ).toLocaleString()}
+                </p>
+                {semesterRevenue?.percentageChange !== undefined &&
+                  semesterRevenue?.percentageChange !== null && (
+                    <div
+                      className={`flex gap-1 items-center text-xs p-2 absolute top-5 right-5 rounded-lg border ${
+                        semesterRevenue.percentageChange >= 0
+                          ? "text-green-500 bg-green-100 border-green-500"
+                          : "text-rose-500 bg-rose-100 border-rose-500"
+                      }`}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="size-4"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d={
+                            semesterRevenue.percentageChange >= 0
+                              ? "M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941"
+                              : "M2.25 6 9 12.75l4.286-4.286a11.948 11.948 0 0 1 4.306 6.43l.776 2.898m0 0 3.182-5.511m-3.182 5.51-5.511-3.181"
+                          }
+                        />
+                      </svg>
+                      <p>{Math.abs(semesterRevenue.percentageChange)}%</p>
+                    </div>
+                  )}
               </div>
             </div>
           </div>
@@ -375,8 +481,8 @@ export default function Dashboard() {
               <div className="p-5 h-full flex flex-col text-white justify-between">
                 <h1 className="font-medium text-base">Parking Slots</h1>
                 <h2 className="text-center mt-5">
-                  <span className="text-6xl font-medium">5</span> <br /> slots
-                  available
+                  <span className="text-6xl font-medium">{availableSlots}</span>{" "}
+                  <br /> slots available
                 </h2>
                 <button className="bg-white rounded-xl py-4 font-medium mt-5 text-gray-700">
                   View Map

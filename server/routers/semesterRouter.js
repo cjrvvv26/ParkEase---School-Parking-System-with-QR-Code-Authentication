@@ -8,6 +8,9 @@ router.use(verifyUser(), requiredSuperAdmin);
 // Create new semester (Super Admin only)
 router.post("/", semesterController.createSemester);
 
+// Get current and last semester revenue data
+router.get("/revenue/dashboard", semesterController.getSemesterRevenueData);
+
 // Get current active semester
 router.get("/current", semesterController.getCurrentSemester);
 

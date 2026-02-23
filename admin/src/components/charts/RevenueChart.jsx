@@ -2,7 +2,7 @@ import React, { useRef, useEffect } from "react";
 import { Line } from "react-chartjs-2";
 import Chart from "chart.js/auto";
 
-export default function RevenueChart() {
+export default function RevenueChart({ monthlyData = null, loading = false }) {
   Chart.register();
 
   function getGradient(ctx, chartArea) {
@@ -16,6 +16,11 @@ export default function RevenueChart() {
     gradient.addColorStop(1, "rgb(47, 13, 10, 0.00)");
     return gradient;
   }
+
+  // Use provided monthly data or default
+  const chartData = monthlyData || [
+    100, 80, 80, 81, 56, 70, 132, 70, 75, 90, 100, 120,
+  ];
 
   const data = {
     labels: [
@@ -34,7 +39,7 @@ export default function RevenueChart() {
     ],
     datasets: [
       {
-        data: [100, 80, 80, 81, 56, 70, 132, 70, 75, 90, 100, 120],
+        data: chartData,
         fill: true,
         tension: 0.3,
         borderWidth: 2,
@@ -77,32 +82,35 @@ export default function RevenueChart() {
 
   const chartRef = useRef(null);
 
-  useEffect(
-    () => {
-      if (!chartRef.current) return;
-      const container =
-        chartRef.current?.canvas?.parentElement || chartRef.current.canvas;
-      if (!container) return;
+  useEffect(() => {
+    if (!chartRef.current) return;
+    const container =
+      chartRef.current?.canvas?.parentElement || chartRef.current.canvas;
+    if (!container) return;
 
-      const ro = new ResizeObserver(() => {
-        try {
-          chartRef.current?.resize?.();
-        } catch (e) {}
-      });
-      ro.observe(container);
+    const ro = new ResizeObserver(() => {
+      try {
+        chartRef.current?.resize?.();
+      } catch (e) {}
+    });
+    ro.observe(container);
 
-      // small fallback
-      const t = setTimeout(() => chartRef.current?.resize?.(), 350);
+    // small fallback
+    const t = setTimeout(() => chartRef.current?.resize?.(), 350);
 
-      return () => {
-        ro.disconnect();
-        clearTimeout(t);
-      };
-    },
-    [
-      /* deps: data/options if needed */
-    ]
-  );
+    return () => {
+      ro.disconnect();
+      clearTimeout(t);
+    };
+  }, [chartData]);
+
+  if (loading) {
+    return (
+      <div className="h-full w-full flex items-center justify-center">
+        <p className="text-gray-400">Loading chart data...</p>
+      </div>
+    );
+  }
 
   return (
     <Line

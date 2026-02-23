@@ -293,3 +293,64 @@ exports.getSemesterStats = async (req, res) => {
     });
   }
 };
+
+// Get current and last semester revenue
+exports.getSemesterRevenueData = async (req, res) => {
+  try {
+    // Get current active semester
+    const currentSemester = await Semester.findOne({ status: "active" });
+
+    // Get last (most recent expired) semester
+    const lastSemester = await Semester.findOne({ status: "expired" }).sort({
+      createdAt: -1,
+    });
+
+    // Calculate revenue for current semester
+    let currentRevenue = 0;
+    if (currentSemester) {
+      const currentPaidStudents = await Student.countDocuments({
+        "payment.isPaid": true,
+        "payment.semesterId": currentSemester._id,
+      });
+      currentRevenue = currentPaidStudents * currentSemester.slotPrice;
+    }
+
+    // Calculate revenue for last semester
+    let lastRevenue = 0;
+    if (lastSemester) {
+      const lastPaidStudents = await Student.countDocuments({
+        "payment.isPaid": true,
+        "payment.semesterId": lastSemester._id,
+      });
+      lastRevenue = lastPaidStudents * lastSemester.slotPrice;
+    }
+
+    // Calculate percentage change
+    let percentageChange = 0;
+    if (lastRevenue > 0) {
+      percentageChange = Math.round(
+        ((currentRevenue - lastRevenue) / lastRevenue) * 100,
+      );
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        currentSemester: {
+          name: currentSemester?.name || "No active semester",
+          revenue: currentRevenue,
+        },
+        lastSemester: {
+          name: lastSemester?.name || "No previous semester",
+          revenue: lastRevenue,
+        },
+        percentageChange,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+};
