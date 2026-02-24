@@ -209,21 +209,32 @@ exports.expireSemester = async (req, res) => {
     semester.status = "expired";
     await semester.save();
 
-    // Reset all students' paid status, payment amount, and remove slot assignments
+    // Get all students from this semester to unassign from slots
+    const studentsToUnassign = await Student.find({
+      "payment.semesterId": semester._id,
+    }).select("userId");
+
+    const studentUserIds = studentsToUnassign.map((s) => s.userId);
+
+    // Reset all students' paid status, payment amount, and semesterId for this semester
     await Student.updateMany(
-      { hasPaidCurrentSemester: true },
       {
-        hasPaidCurrentSemester: false,
-        assignedSlot: null,
+        "payment.isPaid": true,
+        "payment.semesterId": semester._id,
+      },
+      {
         "payment.isPaid": false,
         "payment.amount": 0,
+        "payment.semesterId": null,
+        hasPaidCurrentSemester: false,
+        assignedSlot: null,
       },
     );
 
-    // Update all slots to remove student assignments
+    // Remove these students from their assigned slots
     await Slot.updateMany(
-      { assignedStudent: { $exists: true, $ne: null } },
-      { $unset: { assignedStudent: 1 } },
+      { assignedStudentId: { $in: studentUserIds } },
+      { $set: { assignedStudentId: null, status: "available" } },
     );
 
     res.status(200).json({

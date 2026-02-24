@@ -148,10 +148,15 @@ exports.updateInformation = async (superAdmin, id, data, session) => {
   const activeSem = await Semester.findOne({ status: "active" });
   let newValue = flattenData["payment.isPaid"];
 
+  // ----- Payment validation for students -----
+  // Super admin can only change payment status if there's an active semester
   if (role === "student" && newValue !== undefined) {
-    if (!activeSem && newValue === true) {
-      newValue = false;
-      flattenData["payment.isPaid"] = false;
+    const oldValue = checkStudentRecord?.payment?.isPaid || false;
+
+    if (oldValue !== newValue && !activeSem) {
+      throw new Error(
+        "Cannot change payment status. No active semester found. Please create an active semester first.",
+      );
     }
   }
 
