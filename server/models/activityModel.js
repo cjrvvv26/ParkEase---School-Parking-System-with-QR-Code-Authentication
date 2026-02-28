@@ -5,7 +5,7 @@ const activityLogSchema = new Schema(
   {
     userId: {
       type: Schema.Types.ObjectId,
-      ref: "User",
+      ref: "user",
       default: null, // null for system actions
     },
 
