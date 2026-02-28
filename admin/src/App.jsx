@@ -31,6 +31,7 @@ import MapEditor from "./pages/MapEditor";
 import Profile from "./pages/Profile";
 import Chat from "./pages/Chats";
 import UserAccount from "./pages/UserAccount";
+import Notification from "./pages/Notification";
 
 export default function App() {
   const { fetchData } = useFetch();
@@ -171,6 +172,10 @@ export default function App() {
             {
               path: "chat",
               element: <Chat />,
+            },
+            {
+              path: "notifications",
+              element: <Notification />,
             },
           ],
         },

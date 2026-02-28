@@ -196,9 +196,9 @@ export default function Header() {
                     <span className="h-3 absolute top-1/2 right-3 -translate-y-1/2 w-3 rounded-full bg-violet-500"></span>
                   </div>
                 ))}
-                <button className="p-2 font-medium text-white bg-violet-500 rounded-xl mx-5 mt-3 mb-2 hover:bg-violet-400">
+                <Link to="/notifications" className="p-2 font-medium text-white bg-violet-500 rounded-xl mx-5 mt-3 mb-2 hover:bg-violet-400">
                   See All
-                </button>
+                </Link>
               </div>
             )}
           </div>
