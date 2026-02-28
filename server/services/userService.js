@@ -148,8 +148,6 @@ exports.updateInformation = async (superAdmin, id, data, session) => {
   const activeSem = await Semester.findOne({ status: "active" });
   let newValue = flattenData["payment.isPaid"];
 
-  // ----- Payment validation for students -----
-  // Super admin can only change payment status if there's an active semester
   if (role === "student" && newValue !== undefined) {
     const oldValue = checkStudentRecord?.payment?.isPaid || false;
 
@@ -225,6 +223,18 @@ exports.updateInformation = async (superAdmin, id, data, session) => {
 
     if (oldValue !== newValue) {
       const amountPaid = newValue && activeSem ? activeSem.slotPrice : 0;
+
+      if (activeSem) {
+        const revenueChange = newValue
+          ? activeSem.slotPrice
+          : -activeSem.slotPrice;
+
+        await Semester.findByIdAndUpdate(
+          activeSem._id,
+          { $inc: { revenue: revenueChange } },
+          { session },
+        );
+      }
 
       const log = new ActivityLog({
         userId: superAdmin,

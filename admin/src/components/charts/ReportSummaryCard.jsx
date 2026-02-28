@@ -1,6 +1,5 @@
 import React from "react";
 import {
-  ShieldCheck,
   SquareDashedBottom,
   TrendingUp,
   BookOpenCheck,

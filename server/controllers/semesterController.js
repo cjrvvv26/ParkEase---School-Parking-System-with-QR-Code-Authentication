@@ -205,8 +205,16 @@ exports.expireSemester = async (req, res) => {
       });
     }
 
-    // Update semester status to expired
+    // Calculate final revenue before expiring
+    const paidStudentsCount = await Student.countDocuments({
+      "payment.isPaid": true,
+      "payment.semesterId": semester._id,
+    });
+    const finalRevenue = paidStudentsCount * semester.slotPrice;
+
+    // Update semester status to expired and save final revenue
     semester.status = "expired";
+    semester.revenue = finalRevenue;
     await semester.save();
 
     // Get all students from this semester to unassign from slots
@@ -256,17 +264,23 @@ exports.getSemesterStats = async (req, res) => {
     // Get all semesters
     const allSemesters = await Semester.find();
 
-    // Calculate total revenue across all semesters in real-time
+    // Calculate total revenue - use stored revenue for expired semesters, calculate for active
     let totalRevenue = 0;
     let highestEarningSemester = null;
     let highestRevenue = 0;
 
     for (const semester of allSemesters) {
-      const paidStudentsCount = await Student.countDocuments({
-        "payment.isPaid": true,
-        "payment.semesterId": semester._id,
-      });
-      const semesterRevenue = paidStudentsCount * semester.slotPrice;
+      let semesterRevenue = semester.revenue || 0;
+
+      // If semester is active, calculate revenue in real-time since stored revenue might be stale
+      if (semester.status === "active") {
+        const paidStudentsCount = await Student.countDocuments({
+          "payment.isPaid": true,
+          "payment.semesterId": semester._id,
+        });
+        semesterRevenue = paidStudentsCount * semester.slotPrice;
+      }
+
       totalRevenue += semesterRevenue;
 
       if (semesterRevenue > highestRevenue) {
@@ -326,14 +340,10 @@ exports.getSemesterRevenueData = async (req, res) => {
       currentRevenue = currentPaidStudents * currentSemester.slotPrice;
     }
 
-    // Calculate revenue for last semester
+    // Use stored revenue for last semester (since it's expired and students are reset)
     let lastRevenue = 0;
     if (lastSemester) {
-      const lastPaidStudents = await Student.countDocuments({
-        "payment.isPaid": true,
-        "payment.semesterId": lastSemester._id,
-      });
-      lastRevenue = lastPaidStudents * lastSemester.slotPrice;
+      lastRevenue = lastSemester.revenue || 0;
     }
 
     // Calculate percentage change

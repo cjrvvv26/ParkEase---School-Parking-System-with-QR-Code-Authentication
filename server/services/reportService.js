@@ -14,14 +14,20 @@ exports.calculateSystemSummary = async () => {
   // Get all semesters
   const allSemesters = await Semester.find();
 
-  // Calculate total revenue by counting paid students per semester and multiplying by slot price
+  // Calculate total revenue - use stored revenue for expired semesters, calculate for active
   let totalRevenue = 0;
   for (const semester of allSemesters) {
-    const paidStudentsCount = await Student.countDocuments({
-      "payment.isPaid": true,
-      "payment.semesterId": semester._id,
-    });
-    const semesterRevenue = paidStudentsCount * semester.slotPrice;
+    let semesterRevenue = semester.revenue || 0;
+
+    // If semester is active, calculate revenue in real-time
+    if (semester.status === "active") {
+      const paidStudentsCount = await Student.countDocuments({
+        "payment.isPaid": true,
+        "payment.semesterId": semester._id,
+      });
+      semesterRevenue = paidStudentsCount * semester.slotPrice;
+    }
+
     totalRevenue += semesterRevenue;
   }
 

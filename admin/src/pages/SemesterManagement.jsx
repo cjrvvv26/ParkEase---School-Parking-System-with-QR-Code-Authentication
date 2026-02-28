@@ -19,14 +19,25 @@ export default function SemesterManagement() {
     const fetchSemesterData = async () => {
       try {
         setLoadingStats(true);
-        const currentRes = await fetchData("/semester/current");
-        if (currentRes?.data) {
-          setCurrentSemester(currentRes.data);
+
+        // Try to get current semester (may not exist)
+        try {
+          const currentRes = await fetchData("/semester/current");
+          if (currentRes?.data) {
+            setCurrentSemester(currentRes.data);
+            console.log(currentRes.data);
+          }
+        } catch (err) {
+          // No active semester is fine, just log it
+          console.log("No active semester found");
+          setCurrentSemester(null);
         }
 
+        // Always fetch stats regardless of whether there's an active semester
         const statsRes = await fetchData("/semester/stats");
         if (statsRes?.data) {
           setStats(statsRes.data);
+          console.log(statsRes);
         }
       } catch (error) {
         console.error("Error fetching semester data:", error);
