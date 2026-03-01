@@ -2,36 +2,37 @@ import {
   createBrowserRouter,
   RouterProvider,
   Navigate,
-} from "react-router-dom";
-import Login from "./auth/Login";
-import DefaultLayout from "./pages/layouts/DefaultLayout";
-import Registration from "./auth/Registration";
-import Dashboard from "./pages/Dashboard";
-import Users from "./pages/Users";
-import EmailConfirmation from "./auth/EmailConfirmation";
-import { useEffect, useState } from "react";
-import useFetch from "./hooks/useFetch";
-import { useDispatch } from "react-redux";
-import { login, logout } from "./features/authSlice";
-import ProtectedRoute from "./routers/ProtectedRoute";
-import PublicRoutes from "./routers/PublicRoutes";
-import Logs from "./pages/Logs";
-import Analytics from "./pages/Analytics";
-import Parking from "./pages/Parking";
-import SimpleLayout from "./pages/layouts/SimpleLayout";
-import Settings from "./pages/Settings";
-import AddGuard from "./pages/AddGuard";
-import AddFaculty from "./pages/AddFaculty";
-import AddStudent from "./pages/AddStudent";
-import SemesterManagement from "./pages/SemesterManagement";
-import AddSemester from "./pages/AddSemester";
-import SemesterDetails from "./pages/SemesterDetails";
-import EmailEditor from "./EmailEditor";
-import MapEditor from "./pages/MapEditor";
-import Profile from "./pages/Profile";
-import Chat from "./pages/Chats";
-import UserAccount from "./pages/UserAccount";
-import Notification from "./pages/Notification";
+} from 'react-router-dom';
+import Login from './auth/Login';
+import DefaultLayout from './pages/layouts/DefaultLayout';
+import Registration from './auth/Registration';
+import Dashboard from './pages/Dashboard';
+import Users from './pages/Users';
+import EmailConfirmation from './auth/EmailConfirmation';
+import { useEffect, useState } from 'react';
+import useFetch from './hooks/useFetch';
+import { useDispatch } from 'react-redux';
+import { login, logout } from './features/authSlice';
+import ProtectedRoute from './routers/ProtectedRoute';
+import PublicRoutes from './routers/PublicRoutes';
+import Logs from './pages/Logs';
+import Analytics from './pages/Analytics';
+import Parking from './pages/Parking';
+import SimpleLayout from './pages/layouts/SimpleLayout';
+import Settings from './pages/Settings';
+import AddGuard from './pages/AddGuard';
+import AddFaculty from './pages/AddFaculty';
+import AddStudent from './pages/AddStudent';
+import SemesterManagement from './pages/SemesterManagement';
+import AddSemester from './pages/AddSemester';
+import SemesterDetails from './pages/SemesterDetails';
+import EmailEditor from './EmailEditor';
+import MapEditor from './pages/MapEditor';
+import Profile from './pages/Profile';
+import Chat from './pages/Chats';
+import UserAccount from './pages/UserAccount';
+import Notification from './pages/Notification';
+import NotificationDetails from './pages/NotificationDetails';
 
 export default function App() {
   const { fetchData } = useFetch();
@@ -41,8 +42,8 @@ export default function App() {
   useEffect(() => {
     const verifyUserSession = async () => {
       try {
-        const data = await fetchData("super-admin/me", {
-          method: "GET",
+        const data = await fetchData('super-admin/me', {
+          method: 'GET',
           timeout: 5000,
         });
         console.log(data);
@@ -51,15 +52,15 @@ export default function App() {
       } catch (error) {
         dispatch(logout());
 
-        if (error.code === "ECONNABORTED") {
-          console.error("Session check timed out");
+        if (error.code === 'ECONNABORTED') {
+          console.error('Session check timed out');
         } else if (error.response) {
           console.error(
-            "Session check error:",
-            error.response.data?.error || "Unauthorized",
+            'Session check error:',
+            error.response.data?.error || 'Unauthorized',
           );
         } else {
-          console.error("Network or unknown error:", error.message);
+          console.error('Network or unknown error:', error.message);
         }
       } finally {
         setCheckSession(false);
@@ -71,41 +72,41 @@ export default function App() {
 
   if (checkSession) {
     return (
-      <div className="min-h-screen w-full flex items-center justify-center">
-        <div className="h-12 w-12 rounded-full border-t-blue-500 border-4 border-blue-200 animate-spin"></div>
+      <div className='min-h-screen w-full flex items-center justify-center'>
+        <div className='h-12 w-12 rounded-full border-t-blue-500 border-4 border-blue-200 animate-spin'></div>
       </div>
     );
   }
 
   const router = createBrowserRouter([
     {
-      path: "/otp-verification",
+      path: '/otp-verification',
       element: <EmailConfirmation />,
     },
     {
-      path: "/",
+      path: '/',
       element: <PublicRoutes />,
       children: [
         {
           index: true,
-          element: <Navigate to="sign-in" replace />,
+          element: <Navigate to='sign-in' replace />,
         },
         {
-          path: "sign-in",
+          path: 'sign-in',
           element: <Login />,
         },
         {
-          path: "sign-up",
+          path: 'sign-up',
           element: <Registration />,
         },
         {
-          path: "email",
+          path: 'email',
           element: <EmailEditor />,
         },
       ],
     },
     {
-      path: "/",
+      path: '/',
       element: <ProtectedRoute />,
       children: [
         //Default Layout
@@ -113,69 +114,73 @@ export default function App() {
           element: <DefaultLayout />,
           children: [
             {
-              path: "dashboard",
+              path: 'dashboard',
               element: <Dashboard />,
               index: true,
             },
             {
-              path: "semester",
+              path: 'semester',
               element: <SemesterManagement />,
             },
             {
-              path: "semesters",
+              path: 'semesters',
               element: <SemesterManagement />,
             },
             {
-              path: "semesters/add",
+              path: 'semesters/add',
               element: <AddSemester />,
             },
             {
-              path: "semesters/:id",
+              path: 'semesters/:id',
               element: <SemesterDetails />,
             },
             {
-              path: "users",
+              path: 'users',
               element: <Users />,
             },
             {
-              path: "users/:id",
+              path: 'users/:id',
               element: <UserAccount />,
             },
             {
-              path: "add-student",
+              path: 'add-student',
               element: <AddStudent />,
             },
             {
-              path: "add-guard",
+              path: 'add-guard',
               element: <AddGuard />,
             },
             {
-              path: "add-faculty",
+              path: 'add-faculty',
               element: <AddFaculty />,
             },
             {
-              path: "activity-logs",
+              path: 'activity-logs',
               element: <Logs />,
             },
             {
-              path: "analytics",
+              path: 'analytics',
               element: <Analytics />,
             },
             {
-              path: "parking",
+              path: 'parking',
               element: <Parking />,
             },
             {
-              path: "account-details",
+              path: 'account-details',
               element: <Profile />,
             },
             {
-              path: "chat",
+              path: 'chat',
               element: <Chat />,
             },
             {
-              path: "notifications",
+              path: 'notifications',
               element: <Notification />,
+            },
+            {
+              path: 'notification/:id',
+              element: <NotificationDetails />,
             },
           ],
         },
@@ -184,14 +189,14 @@ export default function App() {
           element: <SimpleLayout />,
           children: [
             {
-              path: "settings",
+              path: 'settings',
               element: <Settings />,
             },
           ],
         },
         //Independent Pages
         {
-          path: "/map-editor",
+          path: '/map-editor',
           element: <MapEditor />,
         },
       ],

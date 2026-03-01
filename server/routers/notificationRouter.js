@@ -7,6 +7,7 @@ const requiredSuperAdmin = require('../middlewares/requiredSuperAdmin');
 router.use(verifyUser(), requiredSuperAdmin);
 
 router.get('/', notificationController.getNotifications);
+router.get('/:id', notificationController.getNotificationById);
 router.delete('/:id', notificationController.deleteNotification);
 router.put('/:id/read', notificationController.markAsRead);
 
