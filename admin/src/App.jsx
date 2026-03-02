@@ -33,6 +33,7 @@ import Chat from './pages/Chats';
 import UserAccount from './pages/UserAccount';
 import Notification from './pages/Notification';
 import NotificationDetails from './pages/NotificationDetails';
+import Password from './pages/Password';
 
 export default function App() {
   const { fetchData } = useFetch();
@@ -169,6 +170,10 @@ export default function App() {
             {
               path: 'account-details',
               element: <Profile />,
+            },
+            {
+              path: 'change-password',
+              element: <Password />,
             },
             {
               path: 'chat',

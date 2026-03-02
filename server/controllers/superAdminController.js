@@ -1,17 +1,18 @@
-const mongoose = require("mongoose");
-const cloudinary = require("cloudinary").v2;
-const User = require("../models/userModel");
-const SuperAdmin = require("../models/superAdminModel");
-const Student = require("../models/studentModel");
-const mediaService = require("../services/mediaService");
-const superAdminService = require("../services/superAdminService");
+const mongoose = require('mongoose');
+const cloudinary = require('cloudinary').v2;
+const User = require('../models/userModel');
+const SuperAdmin = require('../models/superAdminModel');
+const Student = require('../models/studentModel');
+const mediaService = require('../services/mediaService');
+const superAdminService = require('../services/superAdminService');
+const userService = require('../services/userService');
 const {
   sendAccountDetails,
   sendAccountVerification,
-} = require("../emails/index");
-const generateEmailToken = require("../utils/generateEmailJWT");
-const notificationService = require("../services/notificationService");
-const ActivityLogs = require("../models/activityModel");
+} = require('../emails/index');
+const generateEmailToken = require('../utils/generateEmailJWT');
+const notificationService = require('../services/notificationService');
+const ActivityLogs = require('../models/activityModel');
 
 exports.getDataBySession = async (req, res) => {
   try {
@@ -19,7 +20,7 @@ exports.getDataBySession = async (req, res) => {
     const data = await superAdminService.getDataBySession(user);
 
     res.status(200).json({
-      message: "Successfully fetched data",
+      message: 'Successfully fetched data',
       user: data,
     });
   } catch (error) {
@@ -56,7 +57,7 @@ exports.updateInformation = async (req, res) => {
 
     res
       .status(200)
-      .json({ message: "Information was successfully updated", user });
+      .json({ message: 'Information was successfully updated', user });
   } catch (error) {
     await session.abortTransaction();
     session.endSession();
@@ -71,7 +72,7 @@ exports.updateInformation = async (req, res) => {
 exports.registerUser = async (req, res) => {
   try {
     const data = req.body;
-    console.log(req.body, "asd");
+    console.log(req.body, 'asd');
     console.log(req.file);
 
     if (req.file) {
@@ -107,16 +108,16 @@ exports.registerUser = async (req, res) => {
     const notifData = {
       userId: userVM._id,
       message: `Your account has been successfully registered. Welcome to the system! You may now log in, complete your profile, and proceed with the next steps to access all available features.`,
-      title: "Account Registration Successful",
+      title: 'Account Registration Successful',
     };
     await notificationService.createNotification(notifData);
 
     await ActivityLogs.create({
       userId: req.user._id, // or adminId if created by admin
-      actionType: "users",
-      action: "REGISTER",
+      actionType: 'users',
+      action: 'REGISTER',
       description: `A new account has been successfully created in the system.`,
-      entityType: "User",
+      entityType: 'User',
       entityId: userVM._id,
       metadata: {
         role: userVM.role,
@@ -126,7 +127,7 @@ exports.registerUser = async (req, res) => {
 
     res
       .status(200)
-      .json({ message: "Account was successfully created", user: userVM });
+      .json({ message: 'Account was successfully created', user: userVM });
   } catch (error) {
     if (req.file?.filename) {
       await cloudinary.uploader.destroy(req.file.filename);
@@ -141,7 +142,18 @@ exports.deactivateUser = async (req, res) => {
 
     await superAdminService.deactivateUserAccount(id);
 
-    res.status(200).json({ message: "User account is now deactivated" });
+    res.status(200).json({ message: 'User account is now deactivated' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.updatePassword = async (req, res) => {
+  try {
+    const { _id } = req.user;
+    const { password } = req.body;
+    await userService.updatePassword(_id, password);
+    res.status(200).json({ message: 'Password was successfully updated' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

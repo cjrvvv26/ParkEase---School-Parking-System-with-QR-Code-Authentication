@@ -1,45 +1,46 @@
-const Guard = require("../models/guardModel");
-const Student = require("../models/studentModel");
-const User = require("../models/userModel");
-const Semester = require("../models/semesterModel");
-const ActivityLog = require("../models/activityModel");
-const notificationService = require("../services/notificationService");
-const definedFilterData = require("../utils/definedDataFilter");
-const mongoose = require("mongoose");
+const Guard = require('../models/guardModel');
+const Student = require('../models/studentModel');
+const User = require('../models/userModel');
+const Semester = require('../models/semesterModel');
+const ActivityLog = require('../models/activityModel');
+const notificationService = require('../services/notificationService');
+const definedFilterData = require('../utils/definedDataFilter');
+const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
 
 exports.getUserData = async (id) => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    throw new Error("Invalid User Id");
+    throw new Error('Invalid User Id');
   }
 
   const user = await User.findById(id);
 
   if (!user) {
-    throw new Error("User not found");
+    throw new Error('User not found');
   }
 
   let viewModel = user.toObject();
   let userData = null;
 
   switch (user.role) {
-    case "student":
+    case 'student':
       userData = await Student.findOne({ userId: id }).select(
-        "-_id name course phoneNo studentNo payment entryTime outTime yearLevel motorDetails ",
+        '-_id name course phoneNo studentNo payment entryTime outTime yearLevel motorDetails ',
       );
       viewModel = { ...viewModel, ...userData.toObject() };
       break;
-    case "faculty":
+    case 'faculty':
       break;
-    case "guard":
+    case 'guard':
       userData = await Guard.findOne({ userId: id }).select(
-        "-_id name workShift phoneNo permissions",
+        '-_id name workShift phoneNo permissions',
       );
 
       viewModel = { ...viewModel, ...userData.toObject() };
       break;
 
     default:
-      throw new Error("Invalid user role");
+      throw new Error('Invalid user role');
   }
 
   return viewModel;
@@ -48,26 +49,26 @@ exports.getUserData = async (id) => {
 exports.getUsersInformation = async (req) => {
   const { page } = req.query || 1;
   const { limit } = req.query || 10;
-  const { role } = req.query || "";
-  const { status } = req.query || "";
+  const { role } = req.query || '';
+  const { status } = req.query || '';
   const skip = (page - 1) * limit;
 
   const query = {
-    role: { $nin: ["super admin"] },
+    role: { $nin: ['super admin'] },
   };
 
-  if (role !== "all") {
+  if (role !== 'all') {
     query.role = role;
   }
 
-  if (status !== "all") {
+  if (status !== 'all') {
     query.status = status;
   }
 
   const users = await User.find(query).skip(skip).limit(limit);
 
   if (users.length <= 0) {
-    throw new Error("No users found");
+    throw new Error('No users found');
   }
 
   const allUsers = [];
@@ -77,16 +78,16 @@ exports.getUsersInformation = async (req) => {
     let userVM = null;
 
     switch (user.role) {
-      case "student":
+      case 'student':
         userVM = await Student.findOne({ userId: user._id }).select(
-          "name phoneNo -_id",
+          'name phoneNo -_id',
         );
         viewModel.name = userVM.name;
         viewModel.phoneNo = userVM.phoneNo;
         break;
-      case "guard":
+      case 'guard':
         userVM = await Guard.findOne({ userId: user._id }).select(
-          "name phoneNo -_id",
+          'name phoneNo -_id',
         );
         viewModel.name = userVM.name;
         viewModel.phoneNo = userVM.phoneNo;
@@ -102,87 +103,87 @@ exports.updateInformation = async (superAdmin, id, data, session) => {
   const { info, role } = data;
   let nested = {};
   switch (role) {
-    case "student":
+    case 'student':
       nested = {
-        url: "profileDetails",
-        public_id: "profileDetails",
-        firstName: "name",
-        middleName: "name",
-        lastName: "name",
-        plateNo: "motorDetails",
-        brand: "motorDetails",
-        model: "motorDetails",
-        color: "motorDetails",
-        isPaid: "payment",
-        amount: "payment",
+        url: 'profileDetails',
+        public_id: 'profileDetails',
+        firstName: 'name',
+        middleName: 'name',
+        lastName: 'name',
+        plateNo: 'motorDetails',
+        brand: 'motorDetails',
+        model: 'motorDetails',
+        color: 'motorDetails',
+        isPaid: 'payment',
+        amount: 'payment',
       };
       break;
 
-    case "guard":
+    case 'guard':
       nested = {
-        url: "profileDetails",
-        public_id: "profileDetails",
-        firstName: "name",
-        lastName: "name",
-        canScan: "permissions",
-        canMarkParking: "permissions",
-        canViewAnalytics: "permissions",
+        url: 'profileDetails',
+        public_id: 'profileDetails',
+        firstName: 'name',
+        lastName: 'name',
+        canScan: 'permissions',
+        canMarkParking: 'permissions',
+        canViewAnalytics: 'permissions',
       };
       break;
   }
 
-  if (!role) throw new Error("User role is null");
+  if (!role) throw new Error('User role is null');
 
   const checkUser = await User.findById(id);
-  if (!checkUser) throw new Error("User not found");
+  if (!checkUser) throw new Error('User not found');
 
   const checkStudentRecord =
-    role === "student" ? await Student.findOne({ userId: id }) : null;
+    role === 'student' ? await Student.findOne({ userId: id }) : null;
 
   // Flatten input data
   const flattenData = definedFilterData(info, nested);
   if (!flattenData)
-    throw new Error("Something went wrong while updating information");
+    throw new Error('Something went wrong while updating information');
 
   // Get active semester early for payment processing
-  const activeSem = await Semester.findOne({ status: "active" });
-  let newValue = flattenData["payment.isPaid"];
+  const activeSem = await Semester.findOne({ status: 'active' });
+  let newValue = flattenData['payment.isPaid'];
 
-  if (role === "student" && newValue !== undefined) {
+  if (role === 'student' && newValue !== undefined) {
     const oldValue = checkStudentRecord?.payment?.isPaid || false;
 
     if (oldValue !== newValue && !activeSem) {
       throw new Error(
-        "Cannot change payment status. No active semester found. Please create an active semester first.",
+        'Cannot change payment status. No active semester found. Please create an active semester first.',
       );
     }
   }
 
-  if (role === "student" && newValue !== undefined) {
+  if (role === 'student' && newValue !== undefined) {
     const amountPaid = newValue && activeSem ? activeSem.slotPrice : 0;
-    flattenData["payment.amount"] = amountPaid;
+    flattenData['payment.amount'] = amountPaid;
     if (newValue && activeSem) {
-      flattenData["payment.semesterId"] = activeSem._id;
+      flattenData['payment.semesterId'] = activeSem._id;
     } else {
-      flattenData["payment.semesterId"] = null;
+      flattenData['payment.semesterId'] = null;
     }
   }
 
   const userFields = [
-    "username",
-    "email",
-    "password",
-    "role",
-    "status",
-    "emailVerified",
-    "lastActive",
+    'username',
+    'email',
+    'password',
+    'role',
+    'status',
+    'emailVerified',
+    'lastActive',
   ];
 
   const userUpdateData = Object.fromEntries(
     Object.entries(flattenData).filter(
       ([key, value]) =>
         userFields.includes(key) ||
-        (key.startsWith("profileDetails.") && value !== undefined),
+        (key.startsWith('profileDetails.') && value !== undefined),
     ),
   );
 
@@ -196,18 +197,18 @@ exports.updateInformation = async (superAdmin, id, data, session) => {
   const roleSpecificData = Object.fromEntries(
     Object.entries(flattenData).filter(
       ([key]) =>
-        !userFields.includes(key) && !key.startsWith("profileDetails."),
+        !userFields.includes(key) && !key.startsWith('profileDetails.'),
     ),
   );
 
   let additionalData = null;
-  if (role === "student") {
+  if (role === 'student') {
     additionalData = await Student.findOneAndUpdate(
       { userId: id },
       { $set: roleSpecificData },
       { new: true, session },
     );
-  } else if (role === "guard") {
+  } else if (role === 'guard') {
     additionalData = await Guard.findOneAndUpdate(
       { userId: id },
       { $set: roleSpecificData },
@@ -218,7 +219,7 @@ exports.updateInformation = async (superAdmin, id, data, session) => {
   if (!additionalData) additionalData = {};
 
   // ----- Payment log for students (after student update) -----
-  if (role === "student" && newValue !== undefined) {
+  if (role === 'student' && newValue !== undefined) {
     const oldValue = checkStudentRecord?.payment?.isPaid || false;
 
     if (oldValue !== newValue) {
@@ -238,12 +239,12 @@ exports.updateInformation = async (superAdmin, id, data, session) => {
 
       const log = new ActivityLog({
         userId: superAdmin,
-        actionType: "users",
-        action: "UPDATE_PAYMENT_STATUS",
+        actionType: 'users',
+        action: 'UPDATE_PAYMENT_STATUS',
         description: newValue
           ? `${checkStudentRecord?.name?.firstName} ${checkStudentRecord?.name?.lastName} sent a payment for exclusive slot.`
           : `${checkStudentRecord?.name?.firstName} ${checkStudentRecord?.name?.lastName} payment status updated to unpaid.`,
-        entityType: "User",
+        entityType: 'User',
         entityId: id,
         metadata: {
           oldValue: checkStudentRecord?.payment?.amount || 0,
@@ -257,9 +258,9 @@ exports.updateInformation = async (superAdmin, id, data, session) => {
       const paymentNotif = {
         userId: id,
         message: newValue
-          ? `Hey ${roleSpecificData["name.firstName"]}! You're now eligible to have an exclusive slot. Your recent payment has been successfully verified and processed. You may now proceed to reserve and secure your preferred slot before it becomes unavailable.`
-          : `Hey ${roleSpecificData["name.firstName"]}! Your payment status has been reset. This means your previous verification is no longer valid at the moment. Please review your payment details and complete the process again to regain eligibility for an exclusive slot.`,
-        title: newValue ? "Payment Verified" : "Payment Reset",
+          ? `Hey ${roleSpecificData['name.firstName']}! You're now eligible to have an exclusive slot. Your recent payment has been successfully verified and processed. You may now proceed to reserve and secure your preferred slot before it becomes unavailable.`
+          : `Hey ${roleSpecificData['name.firstName']}! Your payment status has been reset. This means your previous verification is no longer valid at the moment. Please review your payment details and complete the process again to regain eligibility for an exclusive slot.`,
+        title: newValue ? 'Payment Verified' : 'Payment Reset',
       };
 
       await notificationService.createNotification(paymentNotif, session);
@@ -268,10 +269,10 @@ exports.updateInformation = async (superAdmin, id, data, session) => {
 
   const log = new ActivityLog({
     userId: superAdmin,
-    actionType: "users",
-    action: "UPDATE_ACCOUNT",
-    description: `${roleSpecificData["name.firstName"]} ${roleSpecificData["name.lastName"]} account has been successfully updated.`,
-    entityType: "User",
+    actionType: 'users',
+    action: 'UPDATE_ACCOUNT',
+    description: `${roleSpecificData['name.firstName']} ${roleSpecificData['name.lastName']} account has been successfully updated.`,
+    entityType: 'User',
     entityId: id,
   });
 
@@ -279,8 +280,8 @@ exports.updateInformation = async (superAdmin, id, data, session) => {
 
   const notifData = {
     userId: id,
-    message: `Hey ${roleSpecificData["name.firstName"]}! Your account has been successfully updated by super admin.`,
-    title: "Account Update",
+    message: `Hey ${roleSpecificData['name.firstName']}! Your account has been successfully updated by super admin.`,
+    title: 'Account Update',
   };
 
   await notificationService.createNotification(notifData, session);
@@ -309,4 +310,24 @@ exports.updateInformation = async (superAdmin, id, data, session) => {
   };
 
   return viewModel;
+};
+
+exports.updatePassword = async (id, newPassword) => {
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new Error('Invalid User Id');
+  }
+
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+  const user = await User.findByIdAndUpdate(
+    id,
+    { password: hashedPassword },
+    { new: true },
+  );
+
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  return user;
 };
