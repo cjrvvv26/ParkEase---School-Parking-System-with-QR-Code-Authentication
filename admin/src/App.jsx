@@ -35,6 +35,7 @@ import Notification from './pages/Notification';
 import NotificationDetails from './pages/NotificationDetails';
 import Password from './pages/Password';
 import AccountRecovery from './pages/AccountRecovery';
+import ResetPassword from './pages/ResetPassword';
 
 export default function App() {
   const { fetchData } = useFetch();
@@ -111,7 +112,7 @@ export default function App() {
         },
         {
           path: 'recovery/reset-password/:token',
-          element: <AccountRecovery />,
+          element: <ResetPassword />,
         },
       ],
     },

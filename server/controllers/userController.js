@@ -1,18 +1,18 @@
-const mongoose = require("mongoose");
-const Student = require("../models/studentModel");
-const Guard = require("../models/guardModel");
-const User = require("../models/userModel");
-const Slot = require("../models/slotModel");
-const userService = require("../services/userService");
-const mediaService = require("../services/mediaService");
-const cloudinary = require("../utils/cloudinary");
+const mongoose = require('mongoose');
+const Student = require('../models/studentModel');
+const Guard = require('../models/guardModel');
+const User = require('../models/userModel');
+const Slot = require('../models/slotModel');
+const userService = require('../services/userService');
+const mediaService = require('../services/mediaService');
+const cloudinary = require('../utils/cloudinary');
 
 //GET user by Id
 exports.getUserById = async (req, res) => {
   try {
     const user = await userService.getUserData(req.params.id);
 
-    res.status(200).json({ message: "User found", user });
+    res.status(200).json({ message: 'User found', user });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -29,7 +29,7 @@ exports.updateUserDataBySA = async (req, res) => {
     // Parse user data from FormData
     if (req.body.user) {
       userData =
-        typeof req.body.user === "string"
+        typeof req.body.user === 'string'
           ? JSON.parse(req.body.user)
           : req.body.user;
     }
@@ -78,7 +78,7 @@ exports.updateUserDataBySA = async (req, res) => {
 
     res
       .status(200)
-      .json({ message: "User information updated successfully", user });
+      .json({ message: 'User information updated successfully', user });
   } catch (error) {
     try {
       await session.abortTransaction();
@@ -110,7 +110,7 @@ exports.getAllUsers = async (req, res) => {
       await userService.getUsersInformation(req);
 
     res.status(200).json({
-      message: "Successfully fetched users data",
+      message: 'Successfully fetched users data',
       users: allUsers,
       current,
       total,
@@ -127,8 +127,8 @@ exports.getAvailableUsers = async (req, res) => {
     let assignedUser = null;
 
     const selectedSlot = await Slot.findOne({ slotId: id }).populate(
-      "assignedStudentId",
-      "profileDetails email role",
+      'assignedStudentId',
+      'profileDetails email role',
     );
 
     if (selectedSlot?.assignedStudentId) {
@@ -136,7 +136,7 @@ exports.getAvailableUsers = async (req, res) => {
 
       const studentData = await Student.findOne({
         userId: assignedUser._id,
-      }).select("name -_id");
+      }).select('name -_id');
 
       assignedUser.name = studentData?.name || assignedUser.name;
 
@@ -144,7 +144,7 @@ exports.getAvailableUsers = async (req, res) => {
     }
 
     const users = await User.find({
-      $or: [{ role: "student" }, { role: "faculty" }],
+      $or: [{ role: 'student' }, { role: 'faculty' }],
     });
 
     const exclusiveSlots = await Slot.find({
@@ -161,9 +161,9 @@ exports.getAvailableUsers = async (req, res) => {
 
       const userObj = user.toObject();
 
-      if (user.role === "student") {
+      if (user.role === 'student') {
         const studentData = await Student.findOne({ userId: user._id }).select(
-          "name",
+          'name',
         );
         userObj.profile = studentData;
       }
@@ -177,14 +177,41 @@ exports.getAvailableUsers = async (req, res) => {
     }
 
     if (users.length <= 0) {
-      throw new Error("No users available");
+      throw new Error('No users available');
     }
 
     res.status(201).json({
-      message: "Successfully fetched available users",
+      message: 'Successfully fetched available users',
       assignedUser,
       users: availableUsers,
     });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.resetUserPassword = async (req, res) => {
+  try {
+    const { password, token } = req.body;
+    const user = await User.findOne({ 'recoveryDetails.token': token });
+    const today = new Date();
+    if (!user) {
+      return res
+        .status(404)
+        .json({ message: "You're not authorized for this action." });
+    }
+
+    if (user.recoveryDetails.expires < today) {
+      user.recoveryDetails.token = null;
+      user.recoveryDetails.expires = null;
+      user.save();
+      return res
+        .status(404)
+        .json({ message: 'Token has been expired already.' });
+    }
+
+    await userService.updatePassword(user._id, password);
+    res.status(200).json({ message: 'Success' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
