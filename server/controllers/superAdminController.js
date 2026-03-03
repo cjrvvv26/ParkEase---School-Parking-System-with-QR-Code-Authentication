@@ -158,3 +158,33 @@ exports.updatePassword = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+exports.identifyAccountByEmail = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email }).select(
+      'email username role profileDetails _id',
+    );
+    const data = {};
+    if (!user) {
+      return res.status(404).json({ message: 'No account found' });
+    }
+
+    data.exists = true;
+    data.account = {
+      email: user.email,
+      username: user.username,
+      role: user.role,
+      profileDetails: user.profileDetails,
+    };
+
+    const SAData = await SuperAdmin.findOne({ userId: user._id }).select(
+      'name',
+    );
+    data.account.fullName = SAData?.name || null;
+
+    res.status(200).json(data);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};

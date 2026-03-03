@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const userSchema = new Schema(
@@ -12,19 +12,23 @@ const userSchema = new Schema(
     password: { type: String, required: true },
     role: {
       type: String,
-      enum: ["super admin", "student", "guard"],
+      enum: ['super admin', 'student', 'guard'],
       required: true,
     },
     status: {
       type: String,
-      enum: ["active", "offline", "deactivate"],
-      default: "active",
+      enum: ['active', 'offline', 'deactivate'],
+      default: 'active',
       required: true,
     },
     emailVerified: { type: Boolean, default: false, required: true },
+    recoveryDetails: {
+      token: String,
+      expires: Date,
+    },
     lastActive: Date,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-module.exports = mongoose.model("user", userSchema);
+module.exports = mongoose.model('user', userSchema);

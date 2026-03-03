@@ -5,6 +5,8 @@ const superAdminController = require('../controllers/superAdminController');
 const authController = require('../controllers/authController');
 const upload = require('../middlewares/uploadImage');
 
+router.post('/check-account', superAdminController.identifyAccountByEmail);
+
 //Protected API endpoints
 router.use(verifySession(), requiredSuperAdmin);
 
