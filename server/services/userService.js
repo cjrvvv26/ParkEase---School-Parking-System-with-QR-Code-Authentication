@@ -373,5 +373,6 @@ exports.updatePassword = async ({ token, password }) => {
 
   newUser.recoveryDetails.token = null;
   newUser.recoveryDetails.expiresAt = null;
+  await newUser.save();
   return newUser;
 };

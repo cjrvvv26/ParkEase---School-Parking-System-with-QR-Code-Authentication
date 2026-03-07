@@ -14,7 +14,7 @@ export default function ResetPassword() {
     new: false,
     confirm: false,
   });
-  const { fetchData, loading, error } = useFetch();
+  const { fetchData, loading, error, setError } = useFetch();
 
   useEffect(() => {
     const verifyRequest = async () => {
@@ -32,6 +32,10 @@ export default function ResetPassword() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (newPassword !== confirm) {
+      return setError('Password is not matched. Please try again');
+    }
 
     const data = await fetchData('user/recovery/reset-password', {
       method: 'PATCH',
@@ -71,7 +75,7 @@ export default function ResetPassword() {
           <p className='text-sm'>secure your account with a strong password</p>
         </header>
 
-        <form action='' className='flex flex-col'>
+        <form oonSubmit={handleSubmit} action='' className='flex flex-col'>
           <div className='relative'>
             <input
               type={showPassword.new ? 'text' : 'password'}
@@ -126,6 +130,9 @@ export default function ResetPassword() {
               />
             )}
           </div>
+          {error === 'Password is not matched. Please try again' && (
+            <p className='text-xs -mt-4 mb-4 text-red-500'>{error}</p>
+          )}
           <div className='flex gap-3'>
             <Link
               to='/sign-in'
@@ -134,7 +141,6 @@ export default function ResetPassword() {
               <ChevronLeft strokeWidth={1.5} className='size-6' />
             </Link>
             <input
-              onClick={handleSubmit}
               disabled={loading}
               type='submit'
               value={loading ? 'Processing...' : 'Reset Password'}

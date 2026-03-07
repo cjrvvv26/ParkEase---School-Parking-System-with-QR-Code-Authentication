@@ -16,13 +16,17 @@ export default function AccountRecovery() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    e.stopPropagation();
     const data = await fetchData('/user/recovery/send-request', {
       method: 'POST',
       data: { email },
     });
 
-    if (data.message === 'Recovery email sent') {
-      navigate('/sign-in', { replace: true, state: { recoverySuccess: true } });
+    if (data.message === 'Successfully sent the account recovery request.') {
+      navigate('/sign-in', {
+        replace: true,
+        state: { recoverySuccess: true, message: data.message },
+      });
     }
   };
 
@@ -102,7 +106,7 @@ export default function AccountRecovery() {
           </>
         ) : null}
 
-        <form action='' className='w-[400px]'>
+        <form onSubmit={handleSubmit} action='' className='w-[400px]'>
           <input
             type='text'
             value={email}
@@ -110,6 +114,7 @@ export default function AccountRecovery() {
             className='p-4 rounded-lg ring ring-gray-400 hover:ring-2 hover:ring-violet-500 focus:ring-2 focus:ring-violet-500 outline-none w-full'
             placeholder='Enter email address'
           />
+          {error && <p className='text-xs text-red-500 mt-1'>{error}</p>}
           {isIdentify ? (
             <div className='flex mt-5 justify-center items-center gap-3'>
               <Link
@@ -119,11 +124,14 @@ export default function AccountRecovery() {
                 <ChevronLeft strokeWidth={1.5} className='size-6' />
               </Link>
               <input
-                disabled={!isIdentify}
-                onClick={handleSubmit}
+                disabled={!isIdentify || loading}
                 type='submit'
-                value='Send Recovery Email'
-                className={`${isIdentify ? 'bg-violet-500 hover:bg-violet-400 text-white cursor-pointer' : 'cursor-not-allowed bg-gray-200 text-gray-400'} flex-1 p-4 rounded-lg w-full`}
+                value={loading ? 'Processing...' : 'Send Recovery Email'}
+                className={`${
+                  isIdentify
+                    ? 'bg-violet-500 hover:bg-violet-400 text-white cursor-pointer'
+                    : 'cursor-not-allowed bg-gray-200 text-gray-400'
+                } flex-1 p-4 rounded-lg w-full`}
               />
             </div>
           ) : (
