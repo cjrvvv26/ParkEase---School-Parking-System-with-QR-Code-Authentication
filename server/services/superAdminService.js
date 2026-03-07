@@ -1,18 +1,18 @@
-const QRCode = require("qrcode");
-const bcrypt = require("bcrypt");
-const User = require("../models/userModel");
-const Guard = require("../models/guardModel");
-const Student = require("../models/studentModel");
-const SuperAdmin = require("../models/superAdminModel");
-const generatePassword = require("../utils/generatePassword");
-const flattenFilteredData = require("../utils/definedDataFilter");
+const QRCode = require('qrcode');
+const bcrypt = require('bcrypt');
+const User = require('../models/userModel');
+const Guard = require('../models/guardModel');
+const Student = require('../models/studentModel');
+const SuperAdmin = require('../models/superAdminModel');
+const generatePassword = require('../utils/generatePassword');
+const flattenFilteredData = require('../utils/definedDataFilter');
 
 exports.getDataBySession = async (data) => {
   const user = await User.findById(data.id).lean();
   const superAdmin = await SuperAdmin.findOne({ userId: user._id }).lean();
 
   if (!user || !superAdmin) {
-    throw new Error("User not found");
+    throw new Error('User not found');
   }
 
   const viewModel = {
@@ -31,7 +31,7 @@ exports.getDataBySession = async (data) => {
   };
 
   for (const [key, value] of Object.entries(user)) {
-    if (key === "_id") continue;
+    if (key === '_id') continue;
     viewModel[key] = value;
 
     for (const [key, value] of Object.entries(superAdmin)) {
@@ -58,18 +58,18 @@ exports.updateData = async (id, data, session) => {
     );
 
     if (!additionalData) {
-      throw new Error("Something went wrong while updating information.");
+      throw new Error('Something went wrong while updating information.');
     }
+  } else {
+    additionalData = await SuperAdmin.findOne({ userId: id });
   }
 
   if (!updateFilterData) {
-    throw new Error("Something went wrong while updating information.");
+    throw new Error('Something went wrong while updating information.');
   }
-
-  // const { __v, _id, ...moreData } = additionalData;
-  console.log(additionalData);
-
-  return { updatedData };
+  const updatedObj = updatedData.toObject();
+  if (additionalData) updatedObj.name = additionalData.name;
+  return updatedObj;
 };
 
 exports.registerUserAccount = async (data) => {
@@ -80,11 +80,11 @@ exports.registerUserAccount = async (data) => {
   const verifyEmail = await User.findOne({ email: info.email });
 
   if (verifyEmail) {
-    throw new Error("Email already in use");
+    throw new Error('Email already in use');
   }
 
   if (!username) {
-    throw new Error("All fields must be filled");
+    throw new Error('All fields must be filled');
   }
 
   const generatedPassword = generatePassword();
@@ -98,7 +98,7 @@ exports.registerUserAccount = async (data) => {
     role,
   });
 
-  if (role === "student") {
+  if (role === 'student') {
     //Must be verified first before having a qr code
     specificData = await Student.create({
       userId: user._id,
@@ -119,7 +119,7 @@ exports.registerUserAccount = async (data) => {
       },
     });
   }
-  if (role === "guard") {
+  if (role === 'guard') {
     specificData = await Guard.create({
       userId: user._id,
       name: {
@@ -134,7 +134,7 @@ exports.registerUserAccount = async (data) => {
     });
   }
 
-  if (!user) throw new Error("An error occurred while creating an account");
+  if (!user) throw new Error('An error occurred while creating an account');
 
   const { __v, _id, userId, ...moreData } = specificData._doc;
   const userVM = {
@@ -148,8 +148,8 @@ exports.registerUserAccount = async (data) => {
 exports.deactivateUserAccount = async (id) => {
   const user = await User.findById(id);
 
-  if (!user) throw new Error("User not found");
+  if (!user) throw new Error('User not found');
 
-  user.status = "deactivate";
+  user.status = 'deactivate';
   user.save();
 };
