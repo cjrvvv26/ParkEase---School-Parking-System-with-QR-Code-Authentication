@@ -6,6 +6,8 @@ const Slot = require('../models/slotModel');
 const userService = require('../services/userService');
 const mediaService = require('../services/mediaService');
 const cloudinary = require('../utils/cloudinary');
+const { sendAccountRecoveryRequest } = require('../emails/index');
+const { randomBytes } = require('crypto');
 
 //GET user by Id
 exports.getUserById = async (req, res) => {
@@ -190,27 +192,41 @@ exports.getAvailableUsers = async (req, res) => {
   }
 };
 
+exports.sendRecoveryRequest = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const token = randomBytes(32).toString('hex');
+
+    if (!token) {
+      throw new Error('Something went wrong. Please try again');
+    }
+
+    await userService.storeRecoveryToken({ email, token });
+    await sendAccountRecoveryRequest({ email, token });
+    res
+      .status(200)
+      .json({ message: 'Successfully sent the account recovery request.' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.verifyAccountRequest = async (req, res) => {
+  try {
+    const { token } = req.params;
+    await userService.verifyRecoveryToken({ token });
+    res
+      .status(200)
+      .json({ status: 'OK', message: 'Account recovery request granted' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 exports.resetUserPassword = async (req, res) => {
   try {
     const { password, token } = req.body;
-    const user = await User.findOne({ 'recoveryDetails.token': token });
-    const today = new Date();
-    if (!user) {
-      return res
-        .status(404)
-        .json({ message: "You're not authorized for this action." });
-    }
-
-    if (user.recoveryDetails.expires < today) {
-      user.recoveryDetails.token = null;
-      user.recoveryDetails.expires = null;
-      user.save();
-      return res
-        .status(404)
-        .json({ message: 'Token has been expired already.' });
-    }
-
-    await userService.updatePassword(user._id, password);
+    await userService.updatePassword({ token, password });
     res.status(200).json({ message: 'Success' });
   } catch (error) {
     res.status(500).json({ error: error.message });

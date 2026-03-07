@@ -71,7 +71,7 @@ export default function App() {
     };
 
     verifyUserSession();
-  }, []); // IMPORTANT: empty dependency array
+  }, []);
 
   if (checkSession) {
     return (

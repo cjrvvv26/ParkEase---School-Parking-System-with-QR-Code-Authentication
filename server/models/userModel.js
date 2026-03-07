@@ -23,8 +23,8 @@ const userSchema = new Schema(
     },
     emailVerified: { type: Boolean, default: false, required: true },
     recoveryDetails: {
-      token: String,
-      expires: Date,
+      token: { type: String, default: null },
+      expiresAt: { type: Date, default: null },
     },
     lastActive: Date,
   },

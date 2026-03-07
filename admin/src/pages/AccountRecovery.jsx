@@ -16,7 +16,7 @@ export default function AccountRecovery() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const data = await fetchData('auth/account-recovery', {
+    const data = await fetchData('/user/recovery/send-request', {
       method: 'POST',
       data: { email },
     });
@@ -29,6 +29,8 @@ export default function AccountRecovery() {
   useEffect(() => {
     if (debounceAccount) {
       setError(null);
+      setIsIdentify(false);
+      setAccountInfo(null);
       const checkAccount = async () => {
         setChecking(true);
 
@@ -117,11 +119,11 @@ export default function AccountRecovery() {
                 <ChevronLeft strokeWidth={1.5} className='size-6' />
               </Link>
               <input
-                disabled={loading}
+                disabled={!isIdentify}
                 onClick={handleSubmit}
                 type='submit'
                 value='Send Recovery Email'
-                className='flex-1 cursor-pointer bg-violet-500 hover:bg-violet-400 text-white p-4 rounded-lg w-full'
+                className={`${isIdentify ? 'bg-violet-500 hover:bg-violet-400 text-white cursor-pointer' : 'cursor-not-allowed bg-gray-200 text-gray-400'} flex-1 p-4 rounded-lg w-full`}
               />
             </div>
           ) : (

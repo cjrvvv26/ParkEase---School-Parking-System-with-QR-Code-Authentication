@@ -7,6 +7,7 @@ const notificationService = require('../services/notificationService');
 const definedFilterData = require('../utils/definedDataFilter');
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
+const crypto = require('crypto');
 
 exports.getUserData = async (id) => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -312,22 +313,65 @@ exports.updateInformation = async (superAdmin, id, data, session) => {
   return viewModel;
 };
 
-exports.updatePassword = async (id, newPassword) => {
-  if (!mongoose.Types.ObjectId.isValid(id)) {
+exports.storeRecoveryToken = async ({ email, token }) => {
+  if (!email || !token) {
+    throw new Error('Invalid request');
+  }
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    throw new Error('No user found');
+  }
+
+  if (user.recoveryDetails?.token) {
+    throw new Error('Already sent an account recovery request.');
+  }
+
+  user.recoveryDetails = user.recoveryDetails || {};
+  user.recoveryDetails.token = token;
+  user.recoveryDetails.expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+  await user.save();
+};
+
+exports.verifyRecoveryToken = async ({ token }) => {
+  if (!token) {
+    throw new Error('Invalid request');
+  }
+
+  const user = await User.findOne({ 'recoveryDetails.token': token });
+
+  if (!user || !user.recoveryDetails?.token) {
+    throw new Error('Unauthorized access');
+  }
+
+  if (user.recoveryDetails.expiresAt < new Date()) {
+    user.recoveryDetails.token = null;
+    user.recoveryDetails.expiresAt = null;
+    throw new Error('Request was already expired');
+  }
+};
+
+exports.updatePassword = async ({ token, password }) => {
+  const user = await User.findOne({ 'recoveryDetails.token': token });
+
+  if (!mongoose.Types.ObjectId.isValid(user._id)) {
     throw new Error('Invalid User Id');
   }
 
-  const hashedPassword = await bcrypt.hash(newPassword, 10);
+  const hashedPassword = await bcrypt.hash(password, 10);
 
-  const user = await User.findByIdAndUpdate(
-    id,
+  const newUser = await User.findByIdAndUpdate(
+    user._id,
     { password: hashedPassword },
     { new: true },
   );
 
-  if (!user) {
+  if (!newUser) {
     throw new Error('User not found');
   }
 
-  return user;
+  newUser.recoveryDetails.token = null;
+  newUser.recoveryDetails.expiresAt = null;
+  return newUser;
 };

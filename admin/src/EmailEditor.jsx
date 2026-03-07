@@ -1,5 +1,5 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React from 'react';
+import { Link } from 'react-router-dom';
 
 export default function EmailEditor() {
   //Verification Link Design
@@ -155,59 +155,68 @@ export default function EmailEditor() {
 
   return (
     <div className="min-h-screen bg-gray-50 font-['Poppins','Segoe_UI',Arial,Helvetica,sans-serif] text-gray-800">
-      <div className="w-full px-4 py-8 box-border">
-        <div className="max-w-[420px] mx-auto bg-white p-6">
+      <div className='w-full px-4 py-8 box-border'>
+        <div className='max-w-[420px] mx-auto bg-white p-6'>
           {/* Header */}
-          <div className="text-center text-[22px] font-bold text-violet-500 mb-6">
+          <div className='text-center text-[22px] font-bold text-violet-500 mb-6'>
             ParkEase
           </div>
 
           {/* Greeting */}
-          <p className="text-sm mb-2">
+          <p className='text-sm mb-2'>
             Hello <strong>Clarence</strong>,
           </p>
 
-          <p className="text-sm leading-relaxed mb-5">
-            Your student account has been successfully created in{" "}
-            <strong>ParkEase – URSC Motor Parking Management System</strong>.
-            Below are your account details.
+          <p className='text-sm leading-relaxed mb-5'>
+            We received a request to recover your account for
+            <strong> ParkEase – URSC Motor Parking Management System</strong>.
+            If you made this request, click the button below to reset your
+            password.
           </p>
 
-          {/* Account Details */}
-          <div className="bg-gray-100 p-4 rounded-md text-sm mb-5">
-            <p className="mb-2">
-              <strong>Email:</strong> example@gmail.com
+          {/* Recovery Notice */}
+          <div className='bg-gray-100 p-4 rounded-md text-sm mb-5'>
+            <p className='mb-2'>
+              <strong>Account Email:</strong> example@gmail.com
             </p>
-            <p className="mb-2">
-              <strong>Name:</strong> Clarence James
-            </p>
+
             <p>
-              <strong>Temporary Password:</strong>{" "}
-              <span className="text-violet-500 font-semibold">JskERfc0</span>
+              <strong>Request Time:</strong> March 7, 2026
             </p>
           </div>
 
           {/* Warning */}
-          <div className="bg-yellow-50 border-l-4 border-yellow-400 p-3 text-[13px] text-yellow-800 mb-5 rounded">
+          <div className='bg-yellow-50 border-l-4 border-yellow-400 p-3 text-[13px] text-yellow-800 mb-5 rounded'>
             <strong>Important:</strong>
             <br />
-            This is a temporary password. Please log in and change your password
-            immediately to secure your account.
+            This recovery link will expire in <strong>10 minutes</strong> for
+            security reasons.
           </div>
 
           {/* CTA */}
-          <div className="text-center mb-6">
+          <div className='text-center mb-6'>
             <a
-              href="/login"
-              className="inline-block bg-violet-500 hover:bg-violet-600 text-white text-sm font-semibold px-6 py-3 rounded-lg transition"
+              href='https://parkease.com/reset-password?token=TOKEN_HERE'
+              className='inline-block bg-violet-500 hover:bg-violet-600 text-white text-sm font-semibold px-6 py-3 rounded-lg transition'
             >
-              Log In to ParkEase
+              Reset Your Password
             </a>
           </div>
 
+          {/* Alternative Link */}
+          <p className='text-xs text-gray-500 mb-4 text-center break-all'>
+            If the button above does not work, copy and paste this link into
+            your browser:
+            <br />
+            <span className='text-violet-500'>
+              https://parkease.com/reset-password?token=TOKEN_HERE
+            </span>
+          </p>
+
           {/* Footer */}
-          <p className="text-xs text-gray-400 text-center leading-relaxed">
-            If you did not request this account, please ignore this email.
+          <p className='text-xs text-gray-400 text-center leading-relaxed'>
+            If you did not request account recovery, you can safely ignore this
+            email. Your account will remain secure.
             <br />© 2025 ParkEase – URSC Motor Parking Management System
           </p>
         </div>

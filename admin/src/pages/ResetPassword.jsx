@@ -1,12 +1,13 @@
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import useFetch from '../hooks/useFetch';
 import { Eye, EyeOff } from 'lucide-react';
 
 export default function ResetPassword() {
   const navigate = useNavigate();
   const { token } = useParams();
+  const [requestGranted, setRequestGranted] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [showPassword, setShowPassword] = useState({
@@ -14,6 +15,20 @@ export default function ResetPassword() {
     confirm: false,
   });
   const { fetchData, loading, error } = useFetch();
+
+  useEffect(() => {
+    const verifyRequest = async () => {
+      const req = await fetchData(`/user/recovery/verify-request/${token}`, {
+        method: 'GET',
+      });
+
+      if (req.status === 'OK') {
+        setRequestGranted(true);
+      }
+    };
+
+    verifyRequest();
+  }, [requestGranted]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -29,6 +44,7 @@ export default function ResetPassword() {
   };
 
   if (
+    !requestGranted ||
     error === "You're not authorized for this action." ||
     error === 'Token has been expired already.'
   ) {
