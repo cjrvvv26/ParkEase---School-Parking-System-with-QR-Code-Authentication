@@ -1,15 +1,16 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useDispatch } from 'react-redux';
 import { logout } from '../features/authSlice';
 import useFetch from '../hooks/useFetch';
-import { useNavigate } from 'react-router-dom';
-import timeAgo from '../utils/timeConfig';
+import useDebounce from '../hooks/useDebounce';
 
 export default function Header() {
   const [showSettings, setShowSettings] = useState(false);
   const { error, setError, fetchData } = useFetch();
+  const [onFocus, setOnFocus] = useState(false);
+  const searchRef = useRef(null);
   const { user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
 
@@ -39,25 +40,6 @@ export default function Header() {
         </svg>
       ),
     },
-    // {
-    //   label: "Help and Support",
-    //   icon: (
-    //     <svg
-    //       xmlns="http://www.w3.org/2000/svg"
-    //       fill="none"
-    //       viewBox="0 0 24 24"
-    //       strokeWidth={1.5}
-    //       stroke="currentColor"
-    //       className="size-6"
-    //     >
-    //       <path
-    //         strokeLinecap="round"
-    //         strokeLinejoin="round"
-    //         d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z"
-    //       />
-    //     </svg>
-    //   ),
-    // },
     {
       label: 'Sign out',
       icon: (
@@ -95,12 +77,27 @@ export default function Header() {
     console.log(showSettings);
   };
 
+  const handleSearchShortcut = (e) => {
+    setOnFocus(false);
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
+      e.preventDefault();
+      searchRef.current?.focus();
+      setOnFocus(true);
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleSearchShortcut);
+
+    return () => {
+      window.removeEventListener('keydown', handleSearchShortcut);
+    };
+  }, []);
+
   return (
     <div className='h-[80px] bg-white rounded-xl text-gray-700 flex items-center justify-between px-4'>
-      <div
-        type='text'
-        className='flex gap-2 rounded-full bg-gray-100 h-[50px] w-[400px] items-center justify-center'
-      >
+      {/* Search */}
+      <div className='flex gap-2 rounded-full bg-gray-100 h-[50px] w-[400px] items-center justify-center'>
         <div className='flex ml-2 items-center justify-center rounded-full bg-white h-9 w-9'>
           <svg
             xmlns='http://www.w3.org/2000/svg'
@@ -118,6 +115,7 @@ export default function Header() {
           </svg>
         </div>
         <input
+          ref={searchRef}
           type='text'
           placeholder='Search'
           className='flex-1 h-full outline-none'
