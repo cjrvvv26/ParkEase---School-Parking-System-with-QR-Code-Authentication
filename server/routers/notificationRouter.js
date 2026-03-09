@@ -4,8 +4,6 @@ const notificationController = require('../controllers/notificationController');
 const verifyUser = require('../middlewares/verifyUser');
 const requiredSuperAdmin = require('../middlewares/requiredSuperAdmin');
 
-router.use(verifyUser(), requiredSuperAdmin);
-
 router.get('/', notificationController.getNotifications);
 router.get('/:id', notificationController.getNotificationById);
 router.delete('/:id', notificationController.deleteNotification);

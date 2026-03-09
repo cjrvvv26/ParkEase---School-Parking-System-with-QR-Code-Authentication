@@ -14,6 +14,7 @@ router.patch('/recovery/reset-password', userController.resetUserPassword);
 router.use(verifyUser(), requiredSuperAdmin);
 
 router.get('/', userController.getAllUsers);
+router.get('/search', userController.getUsersByName);
 router.get('/:id', userController.getUserById);
 router.patch(
   '/:id',

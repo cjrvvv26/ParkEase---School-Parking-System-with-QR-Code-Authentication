@@ -3,16 +3,20 @@ const Student = require('../models/studentModel');
 const Guard = require('../models/guardModel');
 const SuperAdmin = require('../models/superAdminModel');
 //const Faculty = require('../models/facultyModel');
+const mongoose = require('mongoose');
 
 exports.getNotifications = async (req, res) => {
   try {
-    const page = Number(req.query.page) || 1;
-    const limit = Number(req.query.limit) || 10;
-    const type = req.query.type || 'all';
+    const { userId, page = 1, limit = 10, type = 'all' } = req.query;
+    console.log(req.query);
 
-    const skip = (page - 1) * limit;
+    if (!userId) return res.status(400).json({ error: 'Missing userId' });
 
-    let query = {};
+    const pageNum = Number(page);
+    const limitNum = Number(limit);
+    const skip = (pageNum - 1) * limitNum;
+
+    const query = { userId: new mongoose.Types.ObjectId(userId) };
 
     if (type === 'read') query.read = true;
     if (type === 'unread') query.read = false;
@@ -21,7 +25,7 @@ exports.getNotifications = async (req, res) => {
       .populate('userId', 'role profileDetails username')
       .sort({ createdAt: -1 })
       .skip(skip)
-      .limit(limit);
+      .limit(limitNum);
 
     const total = await Notification.countDocuments(query);
 
@@ -62,7 +66,7 @@ exports.getNotifications = async (req, res) => {
     res.status(200).json({
       notifications: notificationsData,
       total,
-      current: notificationsData.length + skip,
+      current: notifications.length + skip,
     });
   } catch (error) {
     res.status(500).json({ error: error.message });

@@ -7,7 +7,6 @@ const notificationService = require('../services/notificationService');
 const definedFilterData = require('../utils/definedDataFilter');
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
-const crypto = require('crypto');
 
 exports.getUserData = async (id) => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -375,4 +374,32 @@ exports.updatePassword = async ({ token, password }) => {
   newUser.recoveryDetails.expiresAt = null;
   await newUser.save();
   return newUser;
+};
+
+exports.getSearchUserData = async ({ username }) => {
+  const users = await User.find({
+    username: { $regex: username, $options: 'i' },
+    role: { $nin: 'super admin' },
+  }).limit(6);
+
+  let userData = [];
+  for (const user of users) {
+    let data = {};
+    switch (user.role) {
+      case 'student':
+        data = await Student.findOne({ userId: user._id }).select('-_id');
+        break;
+      case 'guard':
+        DataTransferItem = await Student.findOne({ userId: user._id }).select(
+          '-_id',
+        );
+        break;
+      case 'faculty':
+        data = await Student.findOne({ userId: user._id }).select('-_id');
+        break;
+    }
+
+    userData.push({ ...user.toObject(), data });
+  }
+  return userData;
 };

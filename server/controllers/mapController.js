@@ -1,10 +1,10 @@
-const mongoose = require("mongoose");
-const Map = require("../models/mapModel");
-const Shape = require("../models/shapeModel");
-const Slot = require("../models/slotModel");
-const generateQRCode = require("../utils/generateQRCode");
-const ActivityLogs = require("../models/activityModel");
-const notificationService = require("../services/notificationService");
+const mongoose = require('mongoose');
+const Map = require('../models/mapModel');
+const Shape = require('../models/shapeModel');
+const Slot = require('../models/slotModel');
+const generateQRCode = require('../utils/generateQRCode');
+const ActivityLogs = require('../models/activityModel');
+const notificationService = require('../services/notificationService');
 
 // Create a new map with shapes
 exports.createMap = async (req, res) => {
@@ -15,13 +15,13 @@ exports.createMap = async (req, res) => {
     // Validate required fields
     if (!name || !height || !width) {
       return res.status(400).json({
-        error: "Missing required fields: name, height, and width are required.",
+        error: 'Missing required fields: name, height, and width are required.',
       });
     }
 
     if (!req.body.shapes) {
       return res.status(400).json({
-        error: "Missing required field: shapes.",
+        error: 'Missing required field: shapes.',
       });
     }
 
@@ -31,7 +31,7 @@ exports.createMap = async (req, res) => {
       shapes = JSON.parse(req.body.shapes);
     } catch (parseError) {
       return res.status(400).json({
-        error: "Invalid shapes format. Shapes must be valid JSON.",
+        error: 'Invalid shapes format. Shapes must be valid JSON.',
       });
     }
 
@@ -60,7 +60,7 @@ exports.createMap = async (req, res) => {
         mapId: map._id,
       });
 
-      if (shape.metadata?.type === "building" && imageMap[shape.tempId]) {
+      if (shape.metadata?.type === 'building' && imageMap[shape.tempId]) {
         newShape.metadata.information.picture = {
           url: imageMap[shape.tempId].path,
           public_id: imageMap[shape.tempId].filename,
@@ -72,7 +72,7 @@ exports.createMap = async (req, res) => {
     }
 
     // 4. Create slots
-    const slotShapes = savedShapes.filter((s) => s.metadata?.type === "slot");
+    const slotShapes = savedShapes.filter((s) => s.metadata?.type === 'slot');
 
     if (slotShapes.length) {
       const slots = [];
@@ -88,7 +88,7 @@ exports.createMap = async (req, res) => {
           slotNumber,
           QRCode: qrCode,
           assignedStudentId: null,
-          status: "available",
+          status: 'available',
         });
       }
 
@@ -97,10 +97,10 @@ exports.createMap = async (req, res) => {
 
     await ActivityLogs.create({
       userId: req.user._id,
-      actionType: "parking",
-      action: "REGISTER",
+      actionType: 'parking',
+      action: 'REGISTER',
       description: `A new parking map "${map.name}" has been created with ${slotShapes.length} slots.`,
-      entityType: "Slot",
+      entityType: 'Slot',
       entityId: map._id,
       metadata: {
         mapName: map.name,
@@ -110,14 +110,14 @@ exports.createMap = async (req, res) => {
 
     const mapNotif = {
       userId: req.user._id,
-      title: "New Parking Map Created",
+      title: 'New Parking Map Created',
       message: `You have created a new parking area. The updated layout is now available in the system. You may review and manage the slots as needed.`,
     };
 
     await notificationService.createNotification(mapNotif);
 
     res.status(201).json({
-      message: "Map created successfully",
+      message: 'Map created successfully',
       map,
       shapes: savedShapes,
     });
@@ -159,7 +159,7 @@ exports.getMapById = async (req, res) => {
     const { id } = req.params;
     const map = await Map.findById(id);
     if (!map) {
-      return res.status(404).json({ error: "Map not found" });
+      return res.status(404).json({ error: 'Map not found' });
     }
 
     const shapes = await Shape.find({ mapId: id });
@@ -178,7 +178,7 @@ exports.updateMap = async (req, res) => {
     // Validate required fields
     if (!name || !height || !width) {
       return res.status(400).json({
-        error: "Missing required fields: name, height, and width are required.",
+        error: 'Missing required fields: name, height, and width are required.',
       });
     }
 
@@ -189,7 +189,7 @@ exports.updateMap = async (req, res) => {
         shapes = JSON.parse(req.body.shapes);
       } catch (parseError) {
         return res.status(400).json({
-          error: "Invalid shapes format. Shapes must be valid JSON.",
+          error: 'Invalid shapes format. Shapes must be valid JSON.',
         });
       }
     }
@@ -202,7 +202,7 @@ exports.updateMap = async (req, res) => {
     );
 
     if (!updatedMap) {
-      return res.status(404).json({ error: "Map not found" });
+      return res.status(404).json({ error: 'Map not found' });
     }
 
     let savedShapes = [];
@@ -227,7 +227,7 @@ exports.updateMap = async (req, res) => {
           mapId: id,
         });
 
-        if (shape.metadata?.type === "building" && imageMap[shape.tempId]) {
+        if (shape.metadata?.type === 'building' && imageMap[shape.tempId]) {
           newShape.metadata.information.picture = {
             url: imageMap[shape.tempId].path,
             public_id: imageMap[shape.tempId].filename,
@@ -239,7 +239,7 @@ exports.updateMap = async (req, res) => {
       }
 
       // Update slots if there are slot shapes
-      const slotShapes = savedShapes.filter((s) => s.metadata?.type === "slot");
+      const slotShapes = savedShapes.filter((s) => s.metadata?.type === 'slot');
 
       if (slotShapes.length) {
         // Delete existing slots for this map's shapes
@@ -260,7 +260,7 @@ exports.updateMap = async (req, res) => {
             slotNumber,
             QRCode: qrCode,
             assignedStudentId: null,
-            status: "available",
+            status: 'available',
           });
         }
 
@@ -269,10 +269,10 @@ exports.updateMap = async (req, res) => {
 
       await ActivityLogs.create({
         userId: req.user._id,
-        actionType: "parking",
-        action: "UPDATE_MAP",
+        actionType: 'parking',
+        action: 'UPDATE_MAP',
         description: `Parking map "${updatedMap.name}" has been updated with ${slotShapes.length} slots.`,
-        entityType: "Slot",
+        entityType: 'Slot',
         entityId: id,
         metadata: {
           mapName: updatedMap.name,
@@ -282,15 +282,16 @@ exports.updateMap = async (req, res) => {
 
       const mapNotif = {
         userId: req.user._id,
-        title: "Parking Map Updated",
+        title: 'Parking Map Updated',
         message: `The parking area "${updatedMap.name}" has been updated. The new layout is now available in the system.`,
       };
+      console.log(mapNotif);
 
       await notificationService.createNotification(mapNotif);
     }
 
     res.status(200).json({
-      message: "Map updated successfully",
+      message: 'Map updated successfully',
       map: updatedMap,
       shapes: savedShapes,
     });
@@ -319,10 +320,10 @@ exports.deleteMap = async (req, res) => {
     const deletedMap = await Map.findByIdAndDelete(id);
 
     if (!deletedMap) {
-      return res.status(404).json({ error: "Map not found" });
+      return res.status(404).json({ error: 'Map not found' });
     }
 
-    res.status(200).json({ message: "Map deleted successfully" });
+    res.status(200).json({ message: 'Map deleted successfully' });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }

@@ -5,14 +5,29 @@ import { useDispatch } from 'react-redux';
 import { logout } from '../features/authSlice';
 import useFetch from '../hooks/useFetch';
 import useDebounce from '../hooks/useDebounce';
+import useClickOutside from '../hooks/useClickOutside';
+import {
+  LayoutDashboard,
+  ChartPie,
+  CircleParking,
+  GraduationCap,
+  UsersRound,
+  MessagesSquare,
+  BookOpen,
+  CircleUserRound,
+} from 'lucide-react';
 
 export default function Header() {
   const [showSettings, setShowSettings] = useState(false);
   const { error, setError, fetchData } = useFetch();
   const [onFocus, setOnFocus] = useState(false);
+  const [query, setQuery] = useState('');
+  const [users, setUsers] = useState([]);
   const searchRef = useRef(null);
+  const settingsRef = useRef(null);
   const { user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
+  const debounceQuery = useDebounce(query, 500);
 
   const floatFeatures = [
     {
@@ -72,6 +87,64 @@ export default function Header() {
     },
   ];
 
+  const searchPages = [
+    {
+      icon: <LayoutDashboard strokeWidth={1.5} />,
+      name: 'Dashboard',
+      link: '/dashboard',
+    },
+    {
+      icon: <ChartPie strokeWidth={1.5} />,
+      name: 'Analytics',
+      link: '/analytics',
+    },
+    {
+      icon: <CircleParking strokeWidth={1.5} />,
+      name: 'Parking',
+      link: '/parking',
+    },
+    {
+      icon: <GraduationCap strokeWidth={1.5} />,
+      name: 'Semester',
+      link: '/semester',
+    },
+    {
+      icon: <UsersRound strokeWidth={1.5} />,
+      name: 'Users',
+      link: '/users',
+    },
+    {
+      icon: <MessagesSquare strokeWidth={1.5} />,
+      name: 'Chats',
+      link: '/chat',
+    },
+    {
+      icon: <BookOpen strokeWidth={1.5} />,
+      name: 'Activity Logs',
+      link: '/activity-logs',
+    },
+  ];
+
+  useClickOutside(settingsRef, () => setShowSettings(false));
+
+  useClickOutside(searchRef, () => setOnFocus(false));
+
+  const filterSearchPages = searchPages.filter((page) =>
+    page.name.toLowerCase().includes(debounceQuery.toLowerCase()),
+  );
+
+  const handleUserSearch = async () => {
+    const result = await fetchData(`/user/search?username=${debounceQuery}`, {
+      method: 'GET',
+    });
+    console.log(result);
+    setUsers(result);
+  };
+
+  useEffect(() => {
+    handleUserSearch();
+  }, [debounceQuery]);
+
   const handleShowSettings = () => {
     setShowSettings(!showSettings);
     console.log(showSettings);
@@ -95,9 +168,12 @@ export default function Header() {
   }, []);
 
   return (
-    <div className='h-[80px] bg-white rounded-xl text-gray-700 flex items-center justify-between px-4'>
+    <div className='h-[80px] relative bg-white rounded-xl text-gray-700 flex items-center justify-between px-4'>
       {/* Search */}
-      <div className='flex gap-2 rounded-full bg-gray-100 h-[50px] w-[400px] items-center justify-center'>
+      <div
+        ref={searchRef}
+        className='flex relative gap-2 rounded-full bg-gray-100 h-[50px] w-[400px] items-center justify-center'
+      >
         <div className='flex ml-2 items-center justify-center rounded-full bg-white h-9 w-9'>
           <svg
             xmlns='http://www.w3.org/2000/svg'
@@ -115,28 +191,80 @@ export default function Header() {
           </svg>
         </div>
         <input
-          ref={searchRef}
           type='text'
           placeholder='Search'
+          onFocus={() => setOnFocus(true)}
+          onChange={(e) => setQuery(e.target.value)}
           className='flex-1 h-full outline-none'
         />
         <div className='flex text-xs text-gray-400 mr-2 items-center justify-center gap-1 px-2 bg-white rounded-xl h-9'>
-          <svg
-            xmlns='http://www.w3.org/2000/svg'
-            fill='none'
-            viewBox='0 0 24 24'
-            strokeWidth={1.5}
-            stroke='currentColor'
-            className='size-3.5'
-          >
-            <path
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              d='M3.75 6A2.25 2.25 0 0 1 6 3.75h2.25A2.25 2.25 0 0 1 10.5 6v2.25a2.25 2.25 0 0 1-2.25 2.25H6a2.25 2.25 0 0 1-2.25-2.25V6ZM3.75 15.75A2.25 2.25 0 0 1 6 13.5h2.25a2.25 2.25 0 0 1 2.25 2.25V18a2.25 2.25 0 0 1-2.25 2.25H6A2.25 2.25 0 0 1 3.75 18v-2.25ZM13.5 6a2.25 2.25 0 0 1 2.25-2.25H18A2.25 2.25 0 0 1 20.25 6v2.25A2.25 2.25 0 0 1 18 10.5h-2.25a2.25 2.25 0 0 1-2.25-2.25V6ZM13.5 15.75a2.25 2.25 0 0 1 2.25-2.25H18a2.25 2.25 0 0 1 2.25 2.25V18A2.25 2.25 0 0 1 18 20.25h-2.25A2.25 2.25 0 0 1 13.5 18v-2.25Z'
-            />
-          </svg>
+          <span className='py-1 px-2 text-[10px] bg-gray-100 rounded-lg'>
+            ctrl
+          </span>{' '}
           +<p>F</p>
         </div>
+        {/* Show search result */}
+        {debounceQuery || onFocus ? (
+          <div className='absolute z-20 flex flex-col top-13 gap-1 text-gray-400 border-gray-200 border rounded-xl p-3 bg-white w-full self-start'>
+            {filterSearchPages.length > 0 && (
+              <p className='text-[10px] text-gray-400'>Pages</p>
+            )}
+            {filterSearchPages.map((p, i) => (
+              <Link
+                to={p.link}
+                key={i}
+                onClick={() => {
+                  setOnFocus(false);
+                  setQuery('');
+                }}
+                className='flex items-center gap-3 text-gray-500 hover:text-gray-700 p-2 rounded-lg hover:bg-gray-50 cursor-pointer'
+              >
+                {p.icon}
+                <span>{p.name}</span>
+              </Link>
+            ))}
+
+            {users.length > 0 ? (
+              <>
+                <p className='text-[10px] text-gray-400 mt-1'>Users</p>
+                {users.map((user, _) => (
+                  <Link
+                    to={`/users/${user._id}`}
+                    onClick={() => {
+                      setOnFocus(false);
+                      setQuery('');
+                    }}
+                    key={user._id}
+                    className='flex items-center group gap-3 text-gray-500 hover:text-gray-700 p-2 rounded-lg hover:bg-gray-50 cursor-pointer'
+                  >
+                    {user?.profileDetails?.url ? (
+                      <img
+                        src={user.profileDetails.url}
+                        alt=''
+                        className='w-8 h-8 rounded-full'
+                      />
+                    ) : (
+                      <CircleUserRound strokeWidth={1.5} size={30} />
+                    )}
+
+                    <div className='flex flex-col'>
+                      <span>{`${user.data.name?.firstName} ${user.data.name?.middleName} ${user.data.name?.lastName}`}</span>
+                      <span className='text-[10px] group-hover:text-gray-500 text-gray-400'>
+                        {user.role}
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+              </>
+            ) : null}
+          </div>
+        ) : !debounceQuery && onFocus ? (
+          <div className='absolute top-13 w-full border-gray-200 border bg-white rounded-xl py-5'>
+            <p className='text-center text-xs text-gray-400'>
+              You can search username and pages
+            </p>
+          </div>
+        ) : null}
       </div>
 
       {/* Right Header Section */}
@@ -170,6 +298,7 @@ export default function Header() {
         </div>
         {/* User Profile */}
         <div
+          ref={settingsRef}
           onClick={handleShowSettings}
           className='flex gap-2 relative select-none items-center hover:bg-gray-100 duration-75 cursor-pointer p-2 rounded-xl'
         >

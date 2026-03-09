@@ -75,3 +75,14 @@ MVP FOR MAP EDITOR
 ✅ Delete
 ✅ Properties panel (basic)
 ✅ Save & Load layout
+
+Super admin: Website 85%
+- some display in dashboard and analytics
+- data in pdf generator
+- search bar
+- search bar in slot assignment
+- system theme
+- chats
+
+Mobile
+- Design

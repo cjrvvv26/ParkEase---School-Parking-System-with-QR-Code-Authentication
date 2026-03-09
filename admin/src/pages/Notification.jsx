@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Trash } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import useFetch from '../hooks/useFetch';
+import { useSelector } from 'react-redux';
 
 export default function Notification() {
   const { fetchData, loading, error } = useFetch();
+  const { user } = useSelector((state) => state.auth);
   const [notifications, setNotifications] = useState([]);
   const [page, setPage] = useState(1);
   const [type, setType] = useState('all');
@@ -13,7 +15,7 @@ export default function Notification() {
   useEffect(() => {
     const getNotifications = async () => {
       const data = await fetchData(
-        `/notifications?page=${page}&limit=10&type=${type}`,
+        `/notifications?page=${page}&limit=10&type=${type}&userId=${user.userId}`,
         {
           method: 'GET',
         },
@@ -23,7 +25,7 @@ export default function Notification() {
       console.log(data);
     };
     getNotifications();
-  }, [type, page, notifications]);
+  }, [type, page]);
 
   const handleDelete = async (id) => {
     await fetchData(`/notifications/${id}`, {
@@ -31,10 +33,6 @@ export default function Notification() {
     });
     navigate('/notifications');
   };
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
 
   return (
     <>
@@ -93,9 +91,18 @@ export default function Notification() {
             </div>
           </div>
         </header>
-        {notifications.length === 0 && (
-          <div className='flex-1 mt-30 text-gray-500'>No messages</div>
+        {loading ? (
+          <div className='flex-1 flex items-center justify-center'>
+            <div className='border-2 mb-30 border-t-violet-500 border-violet-100 h-12 w-12 rounded-full animate-spin'></div>
+          </div>
+        ) : (
+          notifications.length === 0 && (
+            <div className='flex-1 flex items-center justify-center mt-30 text-gray-500'>
+              <span className='mb-30'>No messages</span>
+            </div>
+          )
         )}
+
         {notifications.map((notification, _) => (
           <Link
             key={notification._id}
