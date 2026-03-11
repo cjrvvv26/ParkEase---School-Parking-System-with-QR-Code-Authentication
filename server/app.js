@@ -18,6 +18,7 @@ const studentRouters = require('./routers/studentRouter');
 const activityRouters = require('./routers/activityRouter');
 const superAdminRouters = require('./routers/superAdminRouter');
 const socketHandler = require('./socket/socketHandler');
+const courseRouter = require('./routers/courseRouter');
 const notificationRouters = require('./routers/notificationRouter');
 const app = express();
 const server = http.createServer(app);
@@ -55,6 +56,7 @@ app.use('/semester', semesterRouters);
 app.use('/map', mapRouters);
 app.use('/activity', activityRouters);
 app.use('/report', reportRouters);
+app.use('/course', courseRouter);
 app.use('/notifications', notificationRouters);
 
 //Initialize Server

@@ -103,49 +103,54 @@ export default function Notification() {
           )
         )}
 
-        {notifications.map((notification, _) => (
-          <Link
-            key={notification._id}
-            to={`/notification/${notification._id}`}
-            state={{ notification }}
-            className='py-4 px-5 max-w-3xl overflow-hidden group hover:bg-gray-100 rounded-md cursor-pointer items-center grid grid-cols-[auto_1fr_auto] gap-5'
-          >
-            <div className='flex gap-2'>
-              <img
-                src={notification.userId?.profileDetails?.url}
-                alt=''
-                className='h-12 w-12 object-cover rounded-full'
-              />
-              <div className='flex flex-col'>
-                <h2 className='font-medium overflow-hidden text-pretty whitespace-nowrap w-32'>
-                  {notification.userFullName}
-                </h2>
-                <p className='text-sm text-green-500'>Online</p>
+        {!loading &&
+          notifications.map((notification, _) => (
+            <Link
+              key={notification._id}
+              to={`/notification/${notification._id}`}
+              state={{ notification }}
+              className='py-4 px-5 max-w-3xl overflow-hidden group hover:bg-gray-100 rounded-md cursor-pointer items-center grid grid-cols-[auto_1fr_auto] gap-5'
+            >
+              <div className='flex gap-2'>
+                <img
+                  src={notification.userId?.profileDetails?.url}
+                  alt=''
+                  className='h-12 w-12 object-cover rounded-full'
+                />
+                <div className='flex flex-col'>
+                  <h2 className='font-medium overflow-hidden text-pretty whitespace-nowrap w-32'>
+                    {notification.userFullName}
+                  </h2>
+                  <p className='text-sm text-green-500'>Online</p>
+                </div>
               </div>
-            </div>
-            <div className='flex flex-col gap-1 flex-1'>
-              <h1 className='font-bold'>{notification.title}</h1>
-              <p className='text-gray-600 line-clamp-3'>
-                {notification.message}
-              </p>
-            </div>
-            <div className='flex items-center gap-3 h-full justify-end'>
-              {!notification.read && (
-                <span className='rounded-full h-3 w-3 bg-violet-500'></span>
-              )}
-              <div
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleDelete(notification._id);
-                }}
-                className='flex relative duration-200 h-10 group-hover:w-10 hover:opacity-80 rounded-md items-center justify-center group-hover:left-0 left-20 cursor-pointer bg-red-100 border-red-500 border'
-              >
-                <Trash size={20} strokeWidth={1.5} className='text-red-500 ' />
+              <div className='flex flex-col gap-1 flex-1'>
+                <h1 className='font-bold'>{notification.title}</h1>
+                <p className='text-gray-600 line-clamp-3'>
+                  {notification.message}
+                </p>
               </div>
-            </div>
-          </Link>
-        ))}
+              <div className='flex items-center gap-3 h-full justify-end'>
+                {!notification.read && (
+                  <span className='rounded-full h-3 w-3 bg-violet-500'></span>
+                )}
+                <div
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleDelete(notification._id);
+                  }}
+                  className='flex relative duration-200 h-10 group-hover:w-10 hover:opacity-80 rounded-md items-center justify-center group-hover:left-0 left-20 cursor-pointer bg-red-100 border-red-500 border'
+                >
+                  <Trash
+                    size={20}
+                    strokeWidth={1.5}
+                    className='text-red-500 '
+                  />
+                </div>
+              </div>
+            </Link>
+          ))}
       </section>
     </>
   );

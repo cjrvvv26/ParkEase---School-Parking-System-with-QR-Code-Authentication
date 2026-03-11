@@ -36,6 +36,8 @@ import NotificationDetails from './pages/NotificationDetails';
 import Password from './pages/Password';
 import AccountRecovery from './pages/AccountRecovery';
 import ResetPassword from './pages/ResetPassword';
+import Course from './pages/Course';
+import AddCourse from './pages/AddCourse';
 
 export default function App() {
   const { fetchData } = useFetch();
@@ -196,6 +198,14 @@ export default function App() {
             {
               path: 'notification/:id',
               element: <NotificationDetails />,
+            },
+            {
+              path: 'courses',
+              element: <Course />,
+            },
+            {
+              path: '/courses/add-course',
+              element: <AddCourse />,
             },
           ],
         },
