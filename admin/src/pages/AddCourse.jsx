@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import DefaultInput from '../components/forms/DefaultInput';
 import useFetch from '../hooks/useFetch';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { ChevronLeft } from 'lucide-react';
 
 export default function AddCourse() {
   const navigate = useNavigate();
@@ -9,9 +10,11 @@ export default function AddCourse() {
   const [description, setDescription] = useState('');
   const { fetchData, loading, setError, error } = useFetch();
 
-  const handleSubmit = async () => {
-    const res = await fetchData('/course/add-course', {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const res = await fetchData('/course/add', {
       method: 'POST',
+      data: { name: course, description },
     });
 
     if (res.message === 'Success')
@@ -25,27 +28,41 @@ export default function AddCourse() {
 
   return (
     <>
-      <header className='flex justify-between px-5 pt-5 items-center'>
+      <header className='flex flex-col justify-between px-5 pt-5'>
+        <Link
+          to={'/courses'}
+          className='flex gap-1 text-gray-400 items-center justify-center text-xs hover:text-violet-500 self-start cursor-pointer'
+        >
+          <ChevronLeft strokeWidth={1.5} size={15} />
+          <span>View courses</span>
+        </Link>
+
         <div className='flex flex-col'>
           <h1 className='font-bold text-3xl'>Add Course</h1>
           <p className='text-gray-400'>Add new course in the system.</p>
         </div>
       </header>
-      <form className='flex gap-5 flex-col self-start w-80 px-5'>
+      <form
+        onSubmit={handleSubmit}
+        className='flex gap-3 flex-col self-start w-80 px-5'
+      >
         <DefaultInput
           label={'Name'}
           placeholder={'BSIT'}
-          onChange={setCourse}
+          value={course.toUpperCase()}
+          onChange={(e) => setCourse(e.target.value)}
         />
         <DefaultInput
           label={'Description'}
-          onChange={setDescription}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
           placeholder={'Bachelor of Science in Information Technology'}
         />
+        {error && <p className='text-xs text-red-500'>{error}</p>}
         <input
-          onSubmit={handleSubmit}
+          disabled={loading}
           type='submit'
-          value='Add'
+          value={loading ? 'Processing...' : 'Add'}
           className='self-start py-2 px-8 rounded-md hover:opacity-80 text-white bg-violet-500 cursor-pointer'
         />
       </form>

@@ -3,14 +3,14 @@ const Student = require('../models/studentModel');
 
 exports.getAllCourse = async (req, res) => {
   try {
-    const course = await Course.find();
+    const courses = await Course.find();
 
-    if (course.length < 1) {
-      res.status(200).json({ message: 'No courses found' });
+    if (courses.length < 1) {
+      res.status(404).json({ message: 'No courses found' });
     }
 
-    if (course) {
-      res.status(200).json({ message: 'Success' });
+    if (courses) {
+      res.status(200).json({ message: 'Success', courses });
     }
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -20,6 +20,14 @@ exports.getAllCourse = async (req, res) => {
 exports.createCourse = async (req, res) => {
   try {
     const { name, description } = req.body;
+    const record = await Course.findOne({
+      $or: [{ name }, { description }],
+    });
+
+    if (record) {
+      return res.status(403).json({ message: 'This course already exists' });
+    }
+
     const course = await Course.create({ name, description });
 
     if (course) {
@@ -33,19 +41,19 @@ exports.createCourse = async (req, res) => {
 exports.deleteCourse = async (req, res) => {
   try {
     const { id } = req.params;
-    const students = await Student.find({ courseId: id });
 
-    if (students.length > 0) {
-      return res
-        .status(402)
-        .json({ message: 'There are students who enrolled on this program.' });
+    const course = await Course.findByIdAndDelete(id);
+
+    if (!course) {
+      return res.status(404).json({ error: 'Course not found' });
     }
 
-    const course = await Course.findByIdAndDelete(_id);
+    const courses = await Course.find().sort({ createdAt: -1 });
 
-    if (course) {
-      res.status(200).json({ message: 'Success' });
-    }
+    res.json({
+      message: 'Course deleted successfully',
+      courses,
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

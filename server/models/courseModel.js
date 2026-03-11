@@ -3,8 +3,8 @@ const { Schema } = mongoose;
 
 const courseSchema = new Schema(
   {
-    name: String,
-    name: String,
+    name: { type: String, uppercase: true },
+    description: String,
   },
   { timestamps: true },
 );
