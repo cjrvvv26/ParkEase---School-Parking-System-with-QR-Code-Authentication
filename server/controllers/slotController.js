@@ -1,15 +1,15 @@
-const mongoose = require("mongoose");
-const Slot = require("../models/slotModel");
-const User = require("../models/userModel");
-const qrService = require("../services/qrService");
-const slotService = require("../services/slotService");
+const mongoose = require('mongoose');
+const Slot = require('../models/slotModel');
+const User = require('../models/userModel');
+const qrService = require('../services/qrService');
+const slotService = require('../services/slotService');
 
 exports.getSlotDetails = async (req, res) => {
   try {
     let student = null;
 
     if (!mongoose.Types.ObjectId.isValid(req.body._id))
-      throw new Error("Invalid slot id");
+      throw new Error('Invalid slot id');
     let slot = await Slot.findOne({ slotId: req.body._id });
     if (slot.assignedStudentId) {
       student = await slotService.getAssignedStudent(slot.assignedStudentId);
@@ -22,9 +22,21 @@ exports.getSlotDetails = async (req, res) => {
 
     res
       .status(201)
-      .json({ message: "Successfully fetched slot data", slot: details });
+      .json({ message: 'Successfully fetched slot data', slot: details });
   } catch (error) {
     res.status(401).json({ error: error.message });
+  }
+};
+
+exports.getAllSlotDetails = async (req, res) => {
+  try {
+    const { mapId } = req.params;
+    if (!mapId) return res.status(404).json({ error: 'No selected map' });
+    const data = await slotService.getSlotsQRDetails(mapId);
+
+    res.status(200).json({ metadata: data.map, slots: data.slots });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -59,13 +71,13 @@ exports.assignStudentSlot = async (req, res) => {
 
     res
       .status(200)
-      .json({ message: "Successfully assigned student", slot: details });
+      .json({ message: 'Successfully assigned student', slot: details });
   } catch (error) {
     if (!committed) {
       try {
         await session.abortTransaction();
       } catch (abortErr) {
-        console.log("Transaction could not be aborted:", abortErr.message);
+        console.log('Transaction could not be aborted:', abortErr.message);
       }
     }
     session.endSession();
@@ -80,7 +92,7 @@ exports.removeAssignment = async (req, res) => {
     const { id } = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      throw new Error("Invalid Object ID");
+      throw new Error('Invalid Object ID');
     }
 
     const slot = await slotService.removeAssignment(id, session);
@@ -89,7 +101,7 @@ exports.removeAssignment = async (req, res) => {
     session.endSession();
 
     res.status(200).json({
-      message: "Successfully removed student",
+      message: 'Successfully removed student',
       slot, // ⚡ safe, plain object
     });
   } catch (error) {
@@ -121,7 +133,7 @@ exports.updateStudentLocation = async (req, res) => {
 
     session.commitTransaction();
     session.endSession();
-    res.status(200).json({ message: "Student slot has been updated" });
+    res.status(200).json({ message: 'Student slot has been updated' });
   } catch (error) {
     session.abortTransaction();
     session.endSession();

@@ -38,6 +38,7 @@ import AccountRecovery from './pages/AccountRecovery';
 import ResetPassword from './pages/ResetPassword';
 import Course from './pages/Course';
 import AddCourse from './pages/AddCourse';
+import SlotsQRCode from './components/Parking/SlotsQRCode';
 
 export default function App() {
   const { fetchData } = useFetch();
@@ -178,6 +179,10 @@ export default function App() {
             {
               path: 'parking',
               element: <Parking />,
+            },
+            {
+              path: 'parking/map/:mapId/slots',
+              element: <SlotsQRCode />,
             },
             {
               path: 'account-details',
