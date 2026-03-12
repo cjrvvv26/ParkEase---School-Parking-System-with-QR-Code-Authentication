@@ -1,5 +1,9 @@
 const slotService = require('../services/slotService');
 const reportService = require('../services/reportService');
+const semesterService = require('../services/semesterService');
+const Map = require('../models/mapModel');
+const Slot = require('../models/slotModel');
+const Shape = require('../models/shapeModel');
 
 exports.getParkingSummary = async (req, res) => {
   try {
@@ -36,7 +40,52 @@ exports.getMonthlyRevenue = async (req, res) => {
 
 exports.generateReport = async (req, res) => {
   try {
-    const reportData = await reportService.generateReportIntoPDF();
+    const summary = await reportService.calculateSystemSummary();
+    const semester = await semesterService.getSemesterStats();
+    const parking = await slotService.calculateSummaryReports();
+
+    const reportData = await reportService.generateReportIntoPDF({
+      summary,
+      semester,
+      parking,
+    });
+    console.log(reportData);
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader(
+      'Content-Disposition',
+      `inline; filename=Motorcycle-Parking-Report-${new Date().toLocaleDateString()}.pdf`,
+    );
+
+    res.send(reportData);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.generateSlotsQRCode = async (req, res) => {
+  try {
+    const { mapId } = req.params;
+
+    if (!mapId) return res.status(404).json({ error: 'Invalid Map Id' });
+
+    const map = await Map.findById(mapId);
+
+    if (!map) return res.status(404).json({ error: 'Map not found' });
+
+    const shapes = await Shape.find({ mapId }).select('_id metadata.label');
+
+    const shapeIds = shapes.map((s) => s._id);
+
+    const slots = await Slot.find({ slotId: { $in: shapeIds } }).populate(
+      'slotId',
+      'metadata.label',
+    );
+
+    const reportData = await reportService.generateSlotsQRCodeIntoPDF(
+      map,
+      slots,
+    );
     console.log(reportData);
 
     res.setHeader('Content-Type', 'application/pdf');

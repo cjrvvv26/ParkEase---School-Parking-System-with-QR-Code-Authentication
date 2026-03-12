@@ -5,6 +5,7 @@ import AvgParkingDurationChart from '../components/charts/AvgParkingDurationChar
 import MotorOccupancyChart from '../components/charts/MotorOccupancyChart';
 import useFetch from '../hooks/useFetch';
 import { Link } from 'react-router-dom';
+import { Printer } from 'lucide-react';
 
 export default function Analytics() {
   const [showYearLevelList, toggleYearLevelList] = useState(false);
@@ -54,9 +55,10 @@ export default function Analytics() {
         <div className='flex gap-5'>
           <button
             onClick={handleGeneratePDF}
-            className='p-4 rounded-full bg-green-100 text-green-500 ring ring-green-500'
+            className='flex gap-2 px-4 py-2 rounded-md bg-green-100 text-green-500 ring ring-green-500'
           >
-            Generate PDF
+            <Printer strokeWidth={1.5} size={20} />
+            <span>Generate PDF</span>
           </button>
         </div>
       </header>

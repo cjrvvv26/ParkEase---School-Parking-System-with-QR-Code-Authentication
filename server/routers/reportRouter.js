@@ -9,5 +9,9 @@ router.get('/parking-summary', reportController.getParkingSummary);
 router.get('/system-summary', reportController.getSystemSummary);
 router.get('/monthly-revenue', reportController.getMonthlyRevenue);
 router.get('/generate', reportController.generateReport);
+router.get(
+  '/generate/map/:mapId/slots/qr-code',
+  reportController.generateSlotsQRCode,
+);
 
 module.exports = router;

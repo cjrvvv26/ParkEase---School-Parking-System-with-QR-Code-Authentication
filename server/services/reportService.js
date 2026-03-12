@@ -6,6 +6,7 @@ const Activity = require('../models/activityModel');
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
+const QRCode = require('qrcode');
 const logoPath = path.join(__dirname, './images/logo.jpg');
 
 exports.calculateSystemSummary = async () => {
@@ -103,7 +104,12 @@ exports.calculateMonthlyRevenue = async () => {
 
   return monthlyRevenue;
 };
-exports.generateReportIntoPDF = async () => {
+
+//Generate info pdf system report summary
+exports.generateReportIntoPDF = ({ summary, semester, parking }) => {
+  if (!summary || !semester || !parking) return;
+  console.log(semester);
+
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument({ size: 'A4', margin: 20 });
     const chunks = [];
@@ -172,16 +178,7 @@ exports.generateReportIntoPDF = async () => {
         fontSize: 8,
         color: '#2d2d2d',
       },
-      data: [
-        [
-          'Total Active Users',
-          'Total Revenue',
-          'Total Paid Students',
-          'Avg Parking (mins)',
-        ],
-
-        ['100', '$5,000', '80', '45 mins'],
-      ],
+      data: [summary.data.map((s) => s.title), summary.data.map((s) => s.data)],
     });
 
     doc
@@ -214,10 +211,7 @@ exports.generateReportIntoPDF = async () => {
         fontSize: 8,
         color: '#2d2d2d',
       },
-      data: [
-        ['Total Slots', 'Total Exclusive', 'Total Available', 'Total Occupied'],
-        ['100', '$5,000', '80', '45 mins'],
-      ],
+      data: [parking.map((p) => p.title), parking.map((p) => p.data)],
     });
 
     doc
@@ -251,8 +245,8 @@ exports.generateReportIntoPDF = async () => {
         color: '#2d2d2d',
       },
       data: [
-        ['Total Semesters', 'Average Revenue', 'Highest Earning'],
-        ['$5,000', '80', '45 mins'],
+        semester.filter((s) => s.title !== 'Total Revenue').map((s) => s.title),
+        semester.filter((s) => s.title !== 'Total Revenue').map((s) => s.data),
       ],
     });
 
@@ -283,6 +277,59 @@ exports.generateReportIntoPDF = async () => {
     //   .text('Total Revenue: $5,000', boxX + 15);
 
     // doc.y = boxY + boxHeight + 15;
+    doc.end();
+  });
+};
+
+//Generate into pdf slots qr code
+exports.generateSlotsQRCodeIntoPDF = (map, slots) => {
+  return new Promise(async (resolve, reject) => {
+    const doc = new PDFDocument({ size: 'A4', margin: 20 });
+    const chunks = [];
+
+    doc.on('data', (chunk) => chunks.push(chunk));
+    doc.on('end', () => resolve(Buffer.concat(chunks)));
+    doc.on('error', (err) => reject(err));
+
+    const startX = 40;
+    const startY = 40;
+
+    let x = startX;
+    let y = startY;
+
+    const qrSize = 80;
+    const colGap = 130;
+
+    doc
+      .text(map.name, x - 20, y)
+      .fillColor('#2d2d2d')
+      .fontSize(16);
+
+    doc.fontSize(11);
+
+    for (let i = 0; slots.length > i; i++) {
+      const slot = slots[i];
+
+      const qrImage = await QRCode.toDataURL(slot.QRCode);
+
+      // QR
+      doc.image(qrImage, x, y + 15, {
+        width: qrSize,
+        height: qrSize,
+      });
+      // Label
+      doc.text(slot.slotId?.metadata?.label, x, y + qrSize + 20, {
+        width: qrSize,
+        align: 'center',
+      });
+
+      x += 130;
+
+      if ((i + 1) % 4 === 0) {
+        x = 40;
+        y += 130;
+      }
+    }
     doc.end();
   });
 };

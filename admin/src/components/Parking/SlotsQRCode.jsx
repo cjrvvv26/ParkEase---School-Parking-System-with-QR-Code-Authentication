@@ -27,6 +27,13 @@ export default function SlotsQRCode() {
     getMapSlots();
   }, []);
 
+  const handleGeneratePDF = async () => {
+    window.open(
+      `http://localhost:5000/report/generate/map/${mapId}/slots/qr-code`,
+      '_blank',
+    );
+  };
+
   return (
     <>
       <header className='flex justify-between px-5 pt-5 items-center'>
@@ -41,13 +48,13 @@ export default function SlotsQRCode() {
           <h1 className='font-bold text-3xl'>({mapData.name}) Slot Details</h1>
           <p className='text-gray-400'>View and print the slots qr code.</p>
         </div>
-        <Link
-          to='/courses/add-course'
-          className='py-2 bg-green-500 rounded-md cursor-pointer hover:opacity-80 text-white px-4 flex gap-3 items-center'
+        <button
+          onClick={handleGeneratePDF}
+          className='py-2 bg-green-100 text-green-500 border border-green-500 rounded-md cursor-pointer hover:opacity-80 px-4 flex gap-3 items-center'
         >
           <Printer strokeWidth={1.5} />
           <span>Print Slots QR Code</span>
-        </Link>
+        </button>
       </header>
       <section className='flex items-center flex-wrap gap-5 p-5'>
         {loading ? (
