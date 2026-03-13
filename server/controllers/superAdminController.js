@@ -72,8 +72,6 @@ exports.updateInformation = async (req, res) => {
 exports.registerUser = async (req, res) => {
   try {
     const data = req.body;
-    console.log(req.body, 'asd');
-    console.log(req.file);
 
     if (req.file) {
       const { filename, path } = req.file;
@@ -90,8 +88,6 @@ exports.registerUser = async (req, res) => {
       userVM.name?.firstName.charAt(0).toUpperCase() +
       userVM.name?.firstName.slice(1);
 
-    console.log(userVM);
-
     const emailToken = generateEmailToken(userVM._id, userVM.role);
     await sendAccountDetails({
       firstName,
@@ -105,9 +101,10 @@ exports.registerUser = async (req, res) => {
       firstName,
       token: emailToken,
     });
+
     const notifData = {
       userId: userVM._id,
-      message: `Your account has been successfully registered. Welcome to the system! You may now log in, complete your profile, and proceed with the next steps to access all available features.`,
+      message: `Your account has been successfully registered. Welcome to the system! You may now log in, complete your profile, and verify your email to access all available features.`,
       title: 'Account Registration Successful',
     };
     await notificationService.createNotification(notifData);

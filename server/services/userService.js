@@ -1,5 +1,6 @@
 const Guard = require('../models/guardModel');
 const Student = require('../models/studentModel');
+const Course = require('../models/courseModel');
 const User = require('../models/userModel');
 const Semester = require('../models/semesterModel');
 const ActivityLog = require('../models/activityModel');
@@ -27,7 +28,14 @@ exports.getUserData = async (id) => {
       userData = await Student.findOne({ userId: id }).select(
         '-_id name course phoneNo studentNo payment entryTime outTime yearLevel motorDetails ',
       );
-      viewModel = { ...viewModel, ...userData.toObject() };
+      const course = await Course.findById(userData.course).select(
+        '-_id name description',
+      );
+      viewModel = {
+        ...viewModel,
+        ...userData.toObject(),
+        course,
+      };
       break;
     case 'faculty':
       break;
@@ -104,7 +112,8 @@ exports.getUsersInformation = async (req) => {
 };
 
 exports.updateInformation = async (superAdmin, id, data, session) => {
-  const { info, role } = data;
+  const { info, role, course } = data;
+
   let nested = {};
   switch (role) {
     case 'student':
@@ -207,6 +216,15 @@ exports.updateInformation = async (superAdmin, id, data, session) => {
 
   let additionalData = null;
   if (role === 'student') {
+    if (course) {
+      const courseData = await Course.findById(course._id);
+
+      if (!courseData) {
+        throw new Error('Course not found');
+      }
+
+      roleSpecificData.course = courseData._id;
+    }
     additionalData = await Student.findOneAndUpdate(
       { userId: id },
       { $set: roleSpecificData },

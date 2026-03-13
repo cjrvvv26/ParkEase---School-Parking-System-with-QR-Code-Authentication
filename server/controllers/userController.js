@@ -36,11 +36,6 @@ exports.updateUserDataBySA = async (req, res) => {
           : req.body.user;
     }
 
-    // Get existing profile details for reference if needed
-    const existingProfileDetails = req.body.existingProfileDetails
-      ? JSON.parse(req.body.existingProfileDetails)
-      : null;
-
     // Handle profile image upload if provided
     if (req.file) {
       const result = await mediaService.replaceProfileImage(
@@ -56,10 +51,12 @@ exports.updateUserDataBySA = async (req, res) => {
       };
     }
 
+    const { course, addData } = userData;
     // Prepare data structure for updateInformation service
     const updateData = {
-      info: userData,
+      info: addData,
       role: userData.role,
+      course,
     };
 
     // Update user information with transaction

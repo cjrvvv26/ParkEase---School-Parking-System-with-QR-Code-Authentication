@@ -6,6 +6,7 @@ const Student = require('../models/studentModel');
 const SuperAdmin = require('../models/superAdminModel');
 const generatePassword = require('../utils/generatePassword');
 const flattenFilteredData = require('../utils/definedDataFilter');
+const Course = require('../models/courseModel');
 
 exports.getDataBySession = async (data) => {
   const user = await User.findById(data.id).lean();
@@ -73,11 +74,14 @@ exports.updateData = async (id, data, session) => {
 };
 
 exports.registerUserAccount = async (data) => {
+  console.log(data);
+
   const { role, username, email, profileDetails, ...info } = data;
+  console.log(info);
   let user = null;
   let specificData = null;
 
-  const verifyEmail = await User.findOne({ email: info.email });
+  const verifyEmail = await User.findOne({ email });
 
   if (verifyEmail) {
     throw new Error('Email already in use');
@@ -99,6 +103,8 @@ exports.registerUserAccount = async (data) => {
   });
 
   if (role === 'student') {
+    const courseInfo = await Course.findOne({ name: info.course });
+
     //Must be verified first before having a qr code
     specificData = await Student.create({
       userId: user._id,
@@ -109,7 +115,7 @@ exports.registerUserAccount = async (data) => {
         lastName: info.lastName,
       },
       yearLevel: info.yearLevel,
-      course: info.course,
+      course: courseInfo._id || null,
       phoneNo: info.phoneNo,
       motorDetails: {
         plateNo: info.plateNo,

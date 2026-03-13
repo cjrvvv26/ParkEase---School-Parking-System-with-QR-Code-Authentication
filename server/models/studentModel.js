@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const motorDetails = new Schema({
@@ -11,7 +11,7 @@ const motorDetails = new Schema({
 const studentSchema = new Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "user",
+    ref: 'user',
     unique: true,
     required: true,
   },
@@ -22,12 +22,16 @@ const studentSchema = new Schema({
     lastName: { type: String, trim: true, required: true },
   },
   yearLevel: { type: String, required: true },
-  course: { type: String, required: true },
+  course: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+    ref: 'course',
+  },
   phoneNo: { type: String, required: true },
   payment: {
     isPaid: { type: Boolean, default: false },
     amount: { type: Number, default: 0 },
-    semesterId: { type: Schema.Types.ObjectId, ref: "semester" },
+    semesterId: { type: Schema.Types.ObjectId, ref: 'semester' },
   },
   QRCode: String,
   entryTime: Date,
@@ -35,4 +39,4 @@ const studentSchema = new Schema({
   motorDetails,
 });
 
-module.exports = mongoose.model("student", studentSchema);
+module.exports = mongoose.model('student', studentSchema);
