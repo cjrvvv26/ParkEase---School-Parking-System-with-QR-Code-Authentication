@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import UserTable from '../components/tables/UserTable';
 import { Link } from 'react-router-dom';
 import useFetch from '../hooks/useFetch';
-import { RefreshCcw } from 'lucide-react';
+import { RefreshCcw, UserStar } from 'lucide-react';
 
 export default function Users() {
   const [users, setUsers] = useState([]);
@@ -45,26 +45,6 @@ export default function Users() {
         {/* Quick Actions */}
         <div className='flex gap-5'>
           <Link
-            to='/add-faculty'
-            className='p-4 bg-violet-500 duration-200 hover:shadow-md hover:shadow-violet-500/40 text-white flex items-center gap-2 rounded-full font-medium'
-          >
-            <svg
-              xmlns='http://www.w3.org/2000/svg'
-              fill='none'
-              viewBox='0 0 24 24'
-              strokeWidth={1.5}
-              stroke='currentColor'
-              className='size-6'
-            >
-              <path
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                d='M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z'
-              />
-            </svg>
-            <p>Add Faculty</p>
-          </Link>
-          <Link
             to='/add-student'
             className='p-4 bg-violet-500 duration-200 hover:shadow-md hover:shadow-violet-500/40 text-white flex items-center gap-2 rounded-full font-medium'
           >
@@ -85,8 +65,15 @@ export default function Users() {
             <p>Add Student</p>
           </Link>
           <Link
+            to='/add-faculty'
+            className='p-4 bg-violet-500 duration-200 hover:shadow-md hover:shadow-violet-500/40 text-white flex items-center gap-2 rounded-full font-medium'
+          >
+            <UserStar strokeWidth={1.5} />
+            <p>Add Faculty</p>
+          </Link>
+          <Link
             to='/add-guard'
-            className='p-4 border bg-transparent border-violet-500 text-violet-500 flex items-center gap-2 rounded-full font-medium'
+            className='p-4 border text-white bg-violet-500 flex items-center gap-2 rounded-full font-medium'
           >
             <svg
               xmlns='http://www.w3.org/2000/svg'

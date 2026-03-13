@@ -3,7 +3,7 @@ import DefaultInput from '../components/forms/DefaultInput';
 import DefaultOptions from '../components/forms/DefaultOptions';
 import useFetch from '../hooks/useFetch';
 import { Link, useNavigate } from 'react-router-dom';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Info } from 'lucide-react';
 
 export default function AddStudent() {
   const [courses, setCourses] = useState([]);
@@ -149,7 +149,7 @@ export default function AddStudent() {
             <ChevronLeft strokeWidth={1.5} size={18} />
             <span>Users</span>
           </Link>
-          <h1 className='text-3xl font-bold text-violet-500'>Add Student</h1>
+          <h1 className='text-3xl font-bold text-gray-700'>Add Student</h1>
           <p className='text-sm text-gray-500'>
             Register student and their motor vehicle for campus parking
           </p>
@@ -290,6 +290,13 @@ export default function AddStudent() {
                   Recommended: 300x300px, JPG/PNG
                 </p>
               </label>
+            </div>
+            <div className='flex items-center gap-2 p-3 bg-violet-50 border border-violet-200 rounded-lg text-violet-500'>
+              <Info strokeWidth={1.5} size={18} />
+              <div className='text-xs '>
+                Student will receive a welcome email with their username.
+                Generated password can be viewed in the received email.
+              </div>
             </div>
           </section>
 
