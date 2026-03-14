@@ -1,55 +1,63 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DefaultInput from '../components/forms/DefaultInput';
-import DefaultOptions from '../components/forms/DefaultOptions';
-import axios from '../utils/axiosConfig';
 import useFetch from '../hooks/useFetch';
-import { Link } from 'react-router-dom';
-import { ChevronLeft } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { ChevronLeft, Info } from 'lucide-react';
 
 export default function AddFaculty() {
-  // Renamed from AddStudent
-  const [checkMotorycleBtn, toggleCheckMotorcycleBtn] = useState(true);
+  const navigate = useNavigate();
   const [generatedMotorcycle, setGeneratedMotorcycle] = useState({});
   const [showGeneratedSection, setShowGeneratedSection] = useState(false);
-  const { error, loading, fetchData } = useFetch();
+  const [preview, setPreview] = useState(null);
+  const { error, setError, loading, fetchData } = useFetch();
   const [faculty, setFaculty] = useState({
-    profilePic: null,
+    profileDetails: null,
     firstName: '',
     middleName: '',
     lastName: '',
     facultyId: '',
     email: '',
-    phone: '',
+    phoneNo: '',
+    role: 'faculty',
   });
 
   const [motor, setMotor] = useState({
-    plate: '',
-    type: '',
+    plateNo: '',
+    model: '',
     brand: '',
     color: '',
-    engineNo: '',
   });
 
-  const handleProfilePic = (e) => {
+  useEffect(() => {
+    if (!error) return;
+
+    const timer = setTimeout(() => {
+      setError(null);
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, [error]);
+
+  const handleProfileDetails = (e) => {
     const file = e.target.files[0];
     if (file) {
+      setFaculty({ ...faculty, profileDetails: file });
       const reader = new FileReader();
       reader.onloadend = () => {
-        setFaculty({ ...faculty, profilePic: reader.result });
-        console.log(reader.result);
+        setPreview(reader.result);
       };
       reader.readAsDataURL(file);
     } else {
-      setFaculty({ ...faculty, profilePic: null });
+      setFaculty({ ...faculty, profileDetails: null });
     }
   };
 
   const fetchMotorDetails = async () => {
-    if (!motor.brand || !motor.color || !motor.type) return;
+    if (!motor.brand || !motor.color || !motor.model) return;
     setShowGeneratedSection(true);
     const inputMotorData = {
       brand: motor.brand,
-      model: motor.type,
+      model: motor.model,
       color: motor.color,
     };
     const motorData = await fetchData('/motor/image', {
@@ -57,7 +65,55 @@ export default function AddFaculty() {
       data: inputMotorData,
     });
     setGeneratedMotorcycle(motorData);
-    console.log(motorData);
+  };
+
+  const handleRegistration = async (e) => {
+    e.preventDefault();
+    const hasEmptyValue = Object.values({ ...faculty, ...motor }).every(
+      (f) => !f,
+    );
+
+    if (hasEmptyValue) {
+      return setError('All fields must be filled.');
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(faculty.email)) {
+      return setError('Invalid email format. Please try again!');
+    }
+
+    if (!/^\d{11}$/.test(faculty.phoneNo)) {
+      return setError('Phone number must be exactly 11 digits.');
+    }
+
+    const formData = new FormData();
+
+    const username =
+      faculty.firstName && faculty.lastName
+        ? faculty.firstName[0].toLowerCase() +
+          faculty.lastName.toLowerCase() +
+          Date.now()
+        : '';
+
+    formData.append('username', username);
+
+    Object.entries({ ...faculty, ...motor }).forEach(([key, value]) => {
+      if (key === 'profileDetails' && value) {
+        formData.append('profileDetails', value);
+      } else if (key !== 'profileDetails') {
+        formData.append(key, value);
+      }
+    });
+
+    const res = await fetchData('/super-admin/add-user/avatars', {
+      method: 'POST',
+      data: formData,
+    });
+
+    if (res) {
+      return navigate('/users', { replace: true });
+    }
+
+    setError(res.error);
   };
 
   return (
@@ -79,7 +135,15 @@ export default function AddFaculty() {
         <div className='text-sm text-gray-500'>Step 1 of 1</div>
       </header>
 
-      <form className='grid grid-cols-1 lg:grid-cols-3 gap-6'>
+      {error && (
+        <div className='fixed bg-rose-500 text-sm text-white flex items-center justify-center py-4 px-2 top-2 left-1/2 -translate-x-1/2 rounded-md'>
+          <span>{error}</span>
+        </div>
+      )}
+      <form
+        onSubmit={handleRegistration}
+        className='grid grid-cols-1 lg:grid-cols-3 gap-6'
+      >
         {/* Left: form inputs */}
         <div className='lg:col-span-2 pt-5 space-y-6'>
           {/* faculty Basic Information */}
@@ -93,7 +157,10 @@ export default function AddFaculty() {
                 onChange={(e) =>
                   setFaculty({ ...faculty, firstName: e.target.value })
                 }
-                value={faculty.firstName} // Changed from student.middleName
+                value={
+                  faculty.firstName.charAt(0).toUpperCase() +
+                  faculty.firstName.slice(1)
+                }
                 placeholder='Juan'
               />
               <DefaultInput
@@ -101,7 +168,10 @@ export default function AddFaculty() {
                 onChange={(e) =>
                   setFaculty({ ...faculty, middleName: e.target.value })
                 }
-                value={faculty.middleName} // Changed from student.middleName
+                value={
+                  faculty.middleName.charAt(0).toUpperCase() +
+                  faculty.middleName.slice(1)
+                }
                 placeholder='Reyes'
               />
 
@@ -110,20 +180,32 @@ export default function AddFaculty() {
                 onChange={(e) =>
                   setFaculty({ ...faculty, lastName: e.target.value })
                 }
-                value={faculty.lastName}
+                value={
+                  faculty.lastName.charAt(0).toUpperCase() +
+                  faculty.lastName.slice(1)
+                }
                 placeholder='Tamayo'
               />
 
               <DefaultInput
                 label='Phone No.'
                 onChange={(e) =>
-                  setFaculty({ ...faculty, phone: e.target.value })
+                  setFaculty({ ...faculty, phoneNo: e.target.value })
                 }
-                value={faculty.phone}
-                placeholder='+63 912 345 6789'
+                value={faculty.phoneNo}
+                placeholder='0912 345 6789'
               />
             </div>
-
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+              <DefaultInput
+                label='Email'
+                onChange={(e) =>
+                  setFaculty({ ...faculty, email: e.target.value })
+                }
+                value={faculty.email.toLowerCase()}
+                placeholder='example@gmail.com'
+              />
+            </div>
             <div className='flex items-center gap-4'>
               <label className='flex-1'>
                 <div className='text-sm text-gray-700 mb-2'>
@@ -131,16 +213,12 @@ export default function AddFaculty() {
                 </div>
                 <div className='flex items-center gap-3'>
                   <div className='h-20 w-20 bg-gray-100 rounded-md flex items-center justify-center text-gray-400 overflow-hidden'>
-                    <img
-                      src={faculty.profilePic}
-                      alt=''
-                      className='h-full w-full'
-                    />
+                    <img src={preview} alt='' className='h-full w-full' />
                   </div>
                   <input
                     type='file'
                     accept='image/*'
-                    onChange={handleProfilePic}
+                    onChange={handleProfileDetails}
                     className='text-sm'
                   />
                 </div>
@@ -148,6 +226,13 @@ export default function AddFaculty() {
                   Recommended: 300x300px, JPG/PNG
                 </p>
               </label>
+            </div>
+            <div className='flex items-center gap-2 p-3 bg-violet-50 border border-violet-200 rounded-lg text-violet-500'>
+              <Info strokeWidth={1.5} size={18} />
+              <div className='text-xs '>
+                Faculty will receive a welcome email with their username.
+                Generated password can be viewed in the received email.
+              </div>
             </div>
           </section>
 
@@ -258,36 +343,44 @@ export default function AddFaculty() {
             )}
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
               <DefaultInput
-                label='Plate number'
-                onChange={(e) => setMotor({ ...motor, plate: e.target.value })}
-                value={motor.plate}
+                label='Plate No.'
+                onChange={(e) =>
+                  setMotor({ ...motor, plateNo: e.target.value })
+                }
+                value={motor.plateNo.toUpperCase()}
                 placeholder='ABC 1234'
               />
 
               <DefaultInput
                 label='Brand'
                 onChange={(e) => setMotor({ ...motor, brand: e.target.value })}
-                value={motor.brand}
+                value={
+                  motor.brand.charAt(0).toUpperCase() + motor.brand.slice(1)
+                }
                 placeholder='Honda'
               />
               <DefaultInput
                 label='Model'
-                onChange={(e) => setMotor({ ...motor, type: e.target.value })}
-                value={motor.type}
+                onChange={(e) => setMotor({ ...motor, model: e.target.value })}
+                value={
+                  motor.model.charAt(0).toUpperCase() + motor.model.slice(1)
+                }
                 placeholder='Wave 125'
               />
               <DefaultInput
                 label='Color'
                 onChange={(e) => setMotor({ ...motor, color: e.target.value })}
-                value={motor.color}
+                value={
+                  motor.color.charAt(0).toUpperCase() + motor.color.slice(1)
+                }
                 placeholder='Black'
               />
               <button
-                disabled={!(motor.brand && motor.color && motor.type)}
+                disabled={!(motor.brand && motor.color && motor.model)}
                 onClick={fetchMotorDetails}
                 type='button'
                 className={`py-2 rounded-md ${
-                  motor.brand && motor.color && motor.type
+                  motor.brand && motor.color && motor.model
                     ? 'bg-violet-500 text-white hover:bg-violet-600'
                     : 'bg-gray-200 text-gray-400'
                 }`}
@@ -312,6 +405,14 @@ export default function AddFaculty() {
                 {faculty.firstName || '—'} {faculty.lastName || ''}
               </div>
               <div>
+                <span className='font-medium text-gray-700'>Username:</span>{' '}
+                {faculty.firstName && faculty.lastName
+                  ? faculty.firstName[0].toLowerCase() +
+                    faculty.lastName.toLowerCase() +
+                    Date.now()
+                  : ''}
+              </div>
+              <div>
                 <span className='font-medium text-gray-700'>Faculty ID:</span>{' '}
                 {faculty.facultyId || '—'}
               </div>
@@ -320,31 +421,30 @@ export default function AddFaculty() {
                 {faculty.email || '—'}
               </div>
               <div>
-                <span className='font-medium text-gray-700'>Phone:</span>{' '}
-                {faculty.phone || '—'}
+                <span className='font-medium text-gray-700'>phoneNo:</span>{' '}
+                {faculty.phoneNo || '—'}
               </div>
               <div>
-                <span className='font-medium text-gray-700'>Plate:</span>{' '}
-                {motor.plate || '—'}
+                <span className='font-medium text-gray-700'>plateNo:</span>{' '}
+                {motor.plateNo || '—'}
               </div>
             </div>
           </div>
 
-          <div className='mt-auto space-y-3'>
-            <button
-              type='button'
-              className='w-full bg-violet-700 hover:bg-violet-700 text-white py-2 rounded-lg text-sm'
-              // onClick: wire to submit handler
-            >
-              Save & Register
-            </button>
-            <button
-              type='button'
-              className='w-full border rounded-lg py-2 text-sm text-gray-700 hover:bg-gray-50'
-              // onClick: reset or cancel
+          <div className='mt-auto flex flex-col space-y-3'>
+            <input
+              type='submit'
+              disabled={loading}
+              className='w-full cursor-pointer bg-violet-500 hover:bg-violet-400 text-white py-2 rounded-lg text-sm'
+              value={loading ? 'Processing...' : 'Register'}
+            />
+            <Link
+              to={'/users'}
+              disabled={loading}
+              className='w-full text-center border-2 border-gray-200 rounded-lg py-2 text-sm text-gray-400 hover:bg-gray-50'
             >
               Back
-            </button>
+            </Link>
             <p className='text-xs text-gray-400'>
               After saving, the system will generate a QR code for the motor and
               link it to the faculty account.

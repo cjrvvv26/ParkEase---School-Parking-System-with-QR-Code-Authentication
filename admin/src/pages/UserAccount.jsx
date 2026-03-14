@@ -1,9 +1,14 @@
-import { CircleUserRound, EyeIcon, PencilIcon } from 'lucide-react';
+import {
+  ChevronLeft,
+  CircleUserRound,
+  EyeIcon,
+  PencilIcon,
+} from 'lucide-react';
 import DefaultInput from '../components/forms/DefaultInput';
 import { useEffect, useState } from 'react';
 import useFetch from '../hooks/useFetch';
 import DefaultOptions from '../components/forms/DefaultOptions';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import axios from '../utils/axiosConfig';
 import { useNavigate } from 'react-router-dom';
 
@@ -224,6 +229,13 @@ export default function UserAccount() {
       {/* Header Page */}
       <header className='flex justify-between px-5 pt-5 items-center'>
         <div className='flex flex-col'>
+          <Link
+            to={'/users'}
+            className='flex items-center text-violet-500 hover:opacity-80 cursor-pointer'
+          >
+            <ChevronLeft strokeWidth={1.5} size={18} />
+            <span>Users</span>
+          </Link>
           <h1 className='font-bold text-3xl'>User Account Details</h1>
           <p className='text-gray-400'>Manage and view user account</p>
         </div>

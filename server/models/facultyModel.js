@@ -1,0 +1,35 @@
+const mongoose = require('mongoose');
+const { Schema } = mongoose;
+
+const motorDetails = new Schema({
+  plateNo: { type: String, required: true },
+  brand: { type: String, required: true },
+  model: { type: String, required: true },
+  color: { type: String, required: true },
+});
+
+const facultySchema = new Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'user',
+    unique: true,
+    required: true,
+  },
+  name: {
+    firstName: { type: String, trim: true, required: true },
+    middleName: { type: String, trim: true, required: true },
+    lastName: { type: String, trim: true, required: true },
+  },
+  phoneNo: { type: String, required: true },
+  payment: {
+    isPaid: { type: Boolean, default: false },
+    amount: { type: Number, default: 0 },
+    semesterId: { type: Schema.Types.ObjectId, ref: 'semester' },
+  },
+  QRCode: String,
+  entryTime: Date,
+  outTime: Date,
+  motorDetails,
+});
+
+module.exports = mongoose.model('faculty', facultySchema);

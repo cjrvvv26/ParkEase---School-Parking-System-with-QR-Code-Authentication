@@ -9,7 +9,7 @@ export default function Users() {
   const [page, setPage] = useState(1);
   const [count, setCount] = useState({ current: 0, total: 0 });
   const [filter, setFilter] = useState({ role: 'all', status: 'all' });
-  const { loading, fetchData } = useFetch();
+  const { error, setError, loading, fetchData } = useFetch();
 
   const getUsers = async () => {
     const data = await fetchData(
@@ -19,12 +19,16 @@ export default function Users() {
       },
     );
 
-    if (data) {
+    if (data.message === 'Successfully fetched users data') {
       setUsers(data.users);
       console.log(data.users);
 
       setCount({ current: data.current, total: data.total });
+      return;
     }
+
+    setError(data.error);
+    setUsers(null);
   };
 
   useEffect(() => {
@@ -111,7 +115,7 @@ export default function Users() {
             </button>
             {/* Filter Float Dialog */}
             {showFilter && (
-              <div className='absolute top-12 right-0 bg-white rounded-lg border border-gray-200 p-5 flex flex-col gap-3 text-xs'>
+              <div className='absolute z-10 top-12 right-0 bg-white rounded-lg border border-gray-200 p-5 flex flex-col gap-3 text-xs'>
                 <div className='flex justify-between items-center'>
                   <h2 className='text-sm font-medium'>Filter by</h2>
                   <button
@@ -230,9 +234,7 @@ export default function Users() {
           </thead>
           <tbody className='overflow-y-auto'>
             {/* User List Card */}
-            {users ? (
-              <UserTable users={users} />
-            ) : (
+            {loading ? (
               Array.from({ length: 4 }, (_, i) => (
                 <tr
                   key={i}
@@ -254,6 +256,12 @@ export default function Users() {
                   <span className='py-4 rounded-md bg-gray-100 w-10 h-1 '></span>
                 </tr>
               ))
+            ) : users ? (
+              <UserTable users={users} />
+            ) : (
+              <p className='mt-30 text-center text-gray-400'>
+                {error || 'No users found'}
+              </p>
             )}
           </tbody>
         </table>

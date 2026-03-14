@@ -37,11 +37,13 @@ export default function AddGuard() {
   const handleProfilePic = (e) => {
     const file = e.target.files[0];
     if (file) {
+      setGuard({ ...guard, profileDetails: file });
       const reader = new FileReader();
       reader.onloadend = () => {
-        setGuard({ ...guard, profileDetails: file });
         setPreview(reader.result);
       };
+      console.log(guard);
+
       reader.readAsDataURL(file);
     } else {
       setGuard({ ...guard, profileDetails: null });
@@ -62,8 +64,8 @@ export default function AddGuard() {
       return setFormError('Invalid email address');
     }
 
-    if (!/^[0-9]+$/.test(guard.phoneNo)) {
-      return setFormError('Phone number must be numbers only');
+    if (!/^\d{11}$/.test(guard.phoneNo)) {
+      return setError('Phone number must be exactly 11 digits.');
     }
 
     const username =
@@ -90,14 +92,16 @@ export default function AddGuard() {
       formData.append(key, value);
     });
 
-    const res = await fetchData('super-admin/add-user/avatars', {
+    const res = await fetchData('/super-admin/add-user/avatars', {
       method: 'POST',
       data: formData,
     });
 
     if (res) {
-      navigate('/users');
+      return navigate('/users');
     }
+
+    setFormError(res.error);
   };
 
   return (
@@ -185,7 +189,7 @@ export default function AddGuard() {
                   })
                 }
                 value={guard.phoneNo}
-                placeholder='+63 912 345 8123'
+                placeholder='0912 345 8123'
               />
             </div>
 
@@ -311,7 +315,6 @@ export default function AddGuard() {
                       canScan: e.target.checked,
                     })
                   }
-                  defaultChecked
                   checked={permissions.canScan}
                   className='rounded'
                 />

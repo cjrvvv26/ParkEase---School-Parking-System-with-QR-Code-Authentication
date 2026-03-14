@@ -1,5 +1,6 @@
 const Guard = require('../models/guardModel');
 const Student = require('../models/studentModel');
+const Faculty = require('../models/facultyModel');
 const Course = require('../models/courseModel');
 const User = require('../models/userModel');
 const Semester = require('../models/semesterModel');
@@ -26,7 +27,7 @@ exports.getUserData = async (id) => {
   switch (user.role) {
     case 'student':
       userData = await Student.findOne({ userId: id }).select(
-        '-_id name course phoneNo studentNo payment entryTime outTime yearLevel motorDetails ',
+        '-_id name course phoneNo studentNo payment entryTime outTime yearLevel motorDetails',
       );
       const course = await Course.findById(userData.course).select(
         '-_id name description',
@@ -38,6 +39,14 @@ exports.getUserData = async (id) => {
       };
       break;
     case 'faculty':
+      userData = await Faculty.findOne({ userId: id }).select(
+        '-_id name phoneNo payment entryTime outTime motorDetails',
+      );
+
+      viewModel = {
+        ...viewModel,
+        ...userData.toObject(),
+      };
       break;
     case 'guard':
       userData = await Guard.findOne({ userId: id }).select(
@@ -88,6 +97,15 @@ exports.getUsersInformation = async (req) => {
     switch (user.role) {
       case 'student':
         userVM = await Student.findOne({ userId: user._id }).select(
+          'name phoneNo -_id',
+        );
+        if (userVM) {
+          viewModel.name = userVM.name;
+          viewModel.phoneNo = userVM.phoneNo;
+        }
+        break;
+      case 'faculty':
+        userVM = await Faculty.findOne({ userId: user._id }).select(
           'name phoneNo -_id',
         );
         if (userVM) {

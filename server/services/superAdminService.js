@@ -7,6 +7,7 @@ const SuperAdmin = require('../models/superAdminModel');
 const generatePassword = require('../utils/generatePassword');
 const flattenFilteredData = require('../utils/definedDataFilter');
 const Course = require('../models/courseModel');
+const Faculty = require('../models/facultyModel');
 
 exports.getDataBySession = async (data) => {
   const user = await User.findById(data.id).lean();
@@ -125,6 +126,25 @@ exports.registerUserAccount = async (data) => {
       },
     });
   }
+
+  if (role === 'faculty') {
+    specificData = await Faculty.create({
+      userId: user._id,
+      name: {
+        firstName: info.firstName,
+        middleName: info.middleName,
+        lastName: info.lastName,
+      },
+      phoneNo: info.phoneNo,
+      motorDetails: {
+        plateNo: info.plateNo,
+        brand: info.brand,
+        model: info.model,
+        color: info.color,
+      },
+    });
+  }
+
   if (role === 'guard') {
     specificData = await Guard.create({
       userId: user._id,
@@ -132,6 +152,7 @@ exports.registerUserAccount = async (data) => {
         firstName: info.firstName,
         lastName: info.lastName,
       },
+      phoneNo: info.phoneNo,
       workShift: info.shift,
       permissions: {
         canScan: info.canScan,
@@ -146,6 +167,8 @@ exports.registerUserAccount = async (data) => {
   const userVM = {
     ...user._doc,
     ...moreData,
+    canScan: moreData.permissions?.canScan || false,
+    canViewAnalytics: moreData.permissions?.canViewAnalytics || false,
   };
 
   return { userVM, generatedPassword };

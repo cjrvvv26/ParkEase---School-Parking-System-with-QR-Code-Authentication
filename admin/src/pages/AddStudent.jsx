@@ -12,7 +12,7 @@ export default function AddStudent() {
   const [preview, setPreview] = useState(null);
   const [formError, setFormError] = useState('');
   const navigate = useNavigate();
-  const { error, setError, loading, fetchData } = useFetch();
+  const { error, loading, fetchData } = useFetch();
   const [student, setStudent] = useState({
     profileDetails: null,
     firstName: '',
@@ -97,8 +97,8 @@ export default function AddStudent() {
       return setFormError('Invalid email address');
     }
 
-    if (!/^[0-9]+$/.test(student.phoneNo)) {
-      return setFormError('Phone number must be numbers only');
+    if (!/^\d{11}$/.test(student.phoneNo)) {
+      return setFormError('Phone number must be exactly 11 digits.');
     }
 
     const username =
@@ -407,7 +407,7 @@ export default function AddStudent() {
             )}
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
               <DefaultInput
-                label='Plate number'
+                label='Plate No.'
                 onChange={(e) =>
                   setMotor({ ...motor, plateNo: e.target.value.toUpperCase() })
                 }
@@ -523,6 +523,7 @@ export default function AddStudent() {
             <button
               onClick={() => navigate('/users')}
               type='button'
+              disabled={loading}
               className='w-full border-2 text-gray-400 border-gray-200 rounded-lg py-2 text-sm hover:bg-gray-50'
             >
               Back

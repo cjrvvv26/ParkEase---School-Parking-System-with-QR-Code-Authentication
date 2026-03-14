@@ -73,6 +73,12 @@ exports.registerUser = async (req, res) => {
   try {
     const data = req.body;
 
+    const hasEmptyVal = Object.values(data).every((d) => !d);
+
+    if (hasEmptyVal) {
+      return res.status(400).json({ error: 'All fields must be filled' });
+    }
+
     if (req.file) {
       const { filename, path } = req.file;
       data.profileDetails = {
