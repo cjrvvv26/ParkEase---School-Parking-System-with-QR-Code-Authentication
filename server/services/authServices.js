@@ -1,22 +1,22 @@
-const User = require("../models/userModel");
-const SuperAdmin = require("../models/superAdminModel");
-const Student = require("../models/studentModel");
-const Guard = require("../models/guardModel");
-const bcrypt = require("bcrypt");
-const generateDefaultName = require("../utils/generateDefaultName");
-const axios = require("axios");
+const User = require('../models/userModel');
+const SuperAdmin = require('../models/superAdminModel');
+const Student = require('../models/studentModel');
+const Guard = require('../models/guardModel');
+const bcrypt = require('bcrypt');
+const generateDefaultName = require('../utils/generateDefaultName');
+const axios = require('axios');
 
 exports.signInWithGoogle = async (accessToken) => {
   const googleResponse = await axios.get(
-    "https://www.googleapis.com/oauth2/v3/userinfo",
+    'https://www.googleapis.com/oauth2/v3/userinfo',
     {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
-    }
+    },
   );
   if (!googleResponse?.data) {
-    throw new Error("Error google authentication. Please try again");
+    throw new Error('Error google authentication. Please try again');
   }
 
   const { email } = googleResponse.data;
@@ -32,15 +32,15 @@ exports.signInWithGoogle = async (accessToken) => {
 
 exports.superAdminSignUpWithGoogle = async (accessToken) => {
   const googleResponse = await axios.get(
-    "https://www.googleapis.com/oauth2/v3/userinfo",
+    'https://www.googleapis.com/oauth2/v3/userinfo',
     {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
-    }
+    },
   );
   if (!googleResponse?.data) {
-    throw new Error("Error google authentication. Please try again");
+    throw new Error('Error google authentication. Please try again');
   }
 
   const { email, name, picture } = googleResponse.data;
@@ -48,10 +48,10 @@ exports.superAdminSignUpWithGoogle = async (accessToken) => {
   let user = await User.findOne({ email });
 
   if (user) {
-    throw new Error("Email address already exist");
+    throw new Error('Email address already exist');
   }
 
-  const generatedUsername = generateDefaultName("superadmin");
+  const generatedUsername = generateDefaultName('superadmin');
 
   const payload = {
     profileDetails: {
@@ -60,7 +60,7 @@ exports.superAdminSignUpWithGoogle = async (accessToken) => {
     },
     email,
     username: generatedUsername,
-    role: "super admin",
+    role: 'super admin',
     name,
   };
 
@@ -77,22 +77,22 @@ exports.localSignIn = async (data) => {
   }
 
   const userData =
-    user.role === "super admin"
+    user.role === 'super admin'
       ? await SuperAdmin.findOne({ userId: user._id })
-      : user.role === "student"
-      ? await Student.findOne({ userId: user._id })
-      : user.role === "guard"
-      ? await Guard.findOne({ userId: user._id })
-      : null;
+      : user.role === 'student'
+        ? await Student.findOne({ userId: user._id })
+        : user.role === 'guard'
+          ? await Guard.findOne({ userId: user._id })
+          : null;
 
   if (!userData) {
-    throw new Error("User role data not found");
+    throw new Error('User role data not found');
   }
 
   const comparePassword = await bcrypt.compare(password, user.password);
 
   if (!comparePassword) {
-    throw new Error("Wrong credentials");
+    throw new Error('Wrong credentials');
   }
 
   //Remove risky data
@@ -120,17 +120,17 @@ exports.localSignUp = async (data) => {
   let user = await User.findOne({ email });
 
   if (user) {
-    throw new Error("Email address already exist");
+    throw new Error('Email address already exist');
   }
-  const fullName = firstName + " " + lastName;
+  const fullName = firstName + ' ' + lastName;
   const generatedUsername = generateDefaultName(
-    fullName.toLowerCase().replaceAll(" ", "")
+    fullName.toLowerCase().replaceAll(' ', ''),
   );
 
   const payload = {
     email,
     username: generatedUsername,
-    role: "super admin",
+    role: 'super admin',
     username: generatedUsername,
     name: fullName,
   };
