@@ -40,9 +40,9 @@ export default function SlotsQRCode() {
         <div className='flex flex-col'>
           <Link
             to={'/parking'}
-            className='flex mb-2 text-gray-400 cursor-pointer gap-2 items-center text-xs hover:text-violet-500'
+            className='flex mb-2 cursor-pointer gap-2 items-center text-violet-500'
           >
-            <ChevronLeft size={10} />
+            <ChevronLeft size={15} />
             <span>Parking</span>
           </Link>
           <h1 className='font-bold text-3xl'>({mapData.name}) Slot Details</h1>

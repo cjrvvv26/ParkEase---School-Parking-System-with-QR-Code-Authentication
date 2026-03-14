@@ -32,6 +32,9 @@ exports.getUserData = async (id) => {
       const course = await Course.findById(userData.course).select(
         '-_id name description',
       );
+      console.log(userData);
+      console.log(course);
+
       viewModel = {
         ...viewModel,
         ...userData.toObject(),

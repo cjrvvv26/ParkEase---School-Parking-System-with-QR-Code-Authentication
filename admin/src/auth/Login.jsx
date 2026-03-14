@@ -20,7 +20,8 @@ export default function Login() {
     }
   });
 
-  const handleManualLogin = async () => {
+  const handleManualLogin = async (e) => {
+    e.preventDefault();
     try {
       const data = await fetchData('auth/sign-in', {
         method: 'POST',
@@ -65,7 +66,10 @@ export default function Login() {
         <h1 className='font-bold text-3xl'>Sign In</h1>
         <h2>to continue to your Super Admin Account.</h2>
       </div>
-      <div className='flex flex-col gap-5 w-[450px]'>
+      <form
+        onSubmit={handleManualLogin}
+        className='flex flex-col gap-5 w-[450px]'
+      >
         <div className='flex flex-col gap-1'>
           <input
             type='text'
@@ -127,7 +131,6 @@ export default function Login() {
           )}
         </div>
         <button
-          onClick={handleManualLogin}
           disabled={loading}
           className={`${
             !loading ? 'bg-violet-500' : 'bg-gray-400'
@@ -135,6 +138,11 @@ export default function Login() {
         >
           {loading ? 'Verifying' : 'Continue'}
         </button>
+        {error !== 'All fields must be filled' &&
+          error !== 'Wrong credentials! Please try again.' &&
+          typeof error === 'string' && (
+            <p className='text-xs -mt-4 text-red-500'>{error}</p>
+          )}
         <div className='border-t relative border-gray-400 w-full'>
           <p className='px-4 absolute bg-white text-gray-400 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2'>
             OR
@@ -157,11 +165,6 @@ export default function Login() {
             )}
             <p>{loading ? 'Verifying' : 'Continue with Google'}</p>
           </button>
-          {error !== 'All fields must be filled' &&
-            error !== 'Wrong credentials! Please try again.' &&
-            typeof error === 'string' && (
-              <p className='text-xs text-red-500'>{error}</p>
-            )}
         </div>
         <div className='text-center text-gray-400 mt-5 flex flex-col gap-3'>
           <p>
@@ -180,7 +183,7 @@ export default function Login() {
             </Link>
           </p>
         </div>
-      </div>
+      </form>
     </div>
   );
 }
