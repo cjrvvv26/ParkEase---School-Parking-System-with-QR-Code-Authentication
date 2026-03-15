@@ -24,6 +24,8 @@ function ScanButton({ children, onPress }) {
           justifyContent: 'center',
           alignItems: 'center',
           elevation: 5,
+          borderWidth: 1,
+          borderColor: '#c6b1ff',
         }}
       >
         <Scan name='scan' size={28} color='white' />
@@ -40,8 +42,8 @@ export default function MainLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#0e0e11',
-        tabBarInactiveTintColor: 'gray',
+        tabBarActiveTintColor: '#8e51ff',
+        tabBarInactiveTintColor: '#0e0e11',
         tabBarStyle: {
           height: 80,
           paddingBottom: 20,
@@ -81,6 +83,7 @@ export default function MainLayout() {
       <Tabs.Screen name='Account' options={{ href: null }} />
       <Tabs.Screen name='Analytics' options={{ href: null }} />
       <Tabs.Screen name='Settings' options={{ href: null }} />
+      <Tabs.Screen name='Notification' options={{ href: null }} />
     </Tabs>
   );
 }
