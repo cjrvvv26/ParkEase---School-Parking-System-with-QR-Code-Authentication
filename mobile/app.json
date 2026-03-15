@@ -4,10 +4,8 @@
     "slug": "mobile",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -16,14 +14,10 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "",
-        "backgroundImage": "",
-        "monochromeImage": ""
+        "backgroundColor": "#E6F4FE"
       }
     },
     "web": {
-      "favicon": "",
       "bundler": "metro"
     }
   }
