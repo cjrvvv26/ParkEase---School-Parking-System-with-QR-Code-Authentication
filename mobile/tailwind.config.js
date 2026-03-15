@@ -7,8 +7,16 @@ module.exports = {
     './components/**/*.{js,jsx,ts,tsx}',
   ],
   presets: [require('nativewind/preset')],
+  darkMode: 'class',
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        poppins: ['Poppins'],
+        'poppins-medium': ['Poppins500'],
+        'poppins-semibold': ['Poppins600'],
+        'poppins-bold': ['PoppinsBold'],
+      },
+    },
   },
   plugins: [],
 };

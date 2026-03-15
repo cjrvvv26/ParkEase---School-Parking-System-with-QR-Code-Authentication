@@ -25,7 +25,7 @@ export default function Login() {
     try {
       const data = await fetchData('auth/sign-in', {
         method: 'POST',
-        data: { email, password, type: 'login' },
+        data: { email, password, type: 'login', platform: 'website' },
       });
       console.log(data);
       navigate('/otp-verification');

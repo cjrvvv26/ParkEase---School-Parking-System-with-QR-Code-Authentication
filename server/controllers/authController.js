@@ -1,11 +1,11 @@
-const Otp = require("../models/otpModel");
-const User = require("../models/userModel");
-const { sendOtp, sendAccountDetails } = require("../emails/index");
-const otpService = require("../services/otpServices");
-const authService = require("../services/authServices");
-const generateToken = require("../utils/generateToken");
-const session = require("../utils/setSession");
-const otpGenerator = require("otp-generator");
+const Otp = require('../models/otpModel');
+const User = require('../models/userModel');
+const { sendOtp, sendAccountDetails } = require('../emails/index');
+const otpService = require('../services/otpServices');
+const authService = require('../services/authServices');
+const generateToken = require('../utils/generateToken');
+const session = require('../utils/setSession');
+const otpGenerator = require('otp-generator');
 
 exports.localSignIn = async (req, res) => {
   try {
@@ -22,14 +22,14 @@ exports.localSignIn = async (req, res) => {
       email: payload.email,
       payload,
       otp,
-      type: "login",
+      type: 'login',
     });
 
     await sendOtp(payload.email, otp);
 
     res
       .status(200)
-      .json({ message: "Successfully sent OTP", email: payload.email });
+      .json({ message: 'Successfully sent OTP', email: payload.email });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -50,14 +50,14 @@ exports.localSignUp = async (req, res) => {
       email: payload.email,
       payload,
       otp,
-      type: "register",
+      type: 'register',
     });
 
     await sendOtp(payload.email, otp);
 
     res
       .status(200)
-      .json({ message: "Successfully sent OTP", email: payload.email });
+      .json({ message: 'Successfully sent OTP', email: payload.email });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -68,14 +68,14 @@ exports.authWithGoogle = async (req, res) => {
   try {
     const { access_token, type } = req.body;
     const payload =
-      type === "register"
+      type === 'register'
         ? await authService.superAdminSignUpWithGoogle(access_token)
-        : type === "login"
+        : type === 'login'
           ? await authService.signInWithGoogle(access_token)
           : null;
 
     if (!payload) {
-      return res.status(401).json({ error: "Authentication type not found" });
+      return res.status(401).json({ error: 'Authentication type not found' });
     }
 
     const otp = otpGenerator.generate(6, {
@@ -95,7 +95,7 @@ exports.authWithGoogle = async (req, res) => {
 
     res
       .status(200)
-      .json({ message: "Successfully sent OTP", email: payload.email });
+      .json({ message: 'Successfully sent OTP', email: payload.email });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -108,17 +108,17 @@ exports.verifyUserOtp = async (req, res) => {
     let viewModel = null;
     let generatedPassword = null;
 
-    if (type === "login") {
+    if (type === 'login') {
       const user = await otpService.verifyOtp(email, inputOtp, type);
       viewModel = user;
-    } else if (type === "register") {
+    } else if (type === 'register') {
       const result = await otpService.verifyOtp(email, inputOtp, type);
       viewModel = result.viewModel;
       generatedPassword = result.generatedPassword;
     }
 
     if (!viewModel) {
-      return res.status(401).json({ error: "Failed to fetch user data" });
+      return res.status(401).json({ error: 'Failed to fetch user data' });
     }
 
     const token = generateToken(viewModel._id, viewModel.role);
@@ -128,13 +128,13 @@ exports.verifyUserOtp = async (req, res) => {
     res.cookie(tokenName, token, {
       httpOnly: true,
       secure: false,
-      sameSite: "strict",
+      sameSite: 'strict',
       maxAge: expiredAt,
     });
 
-    if (type === "register") {
+    if (type === 'register') {
       await sendAccountDetails({
-        firstName: viewModel.name.split(" ")[0],
+        firstName: viewModel.name.split(' ')[0],
         username: viewModel.username,
         to: viewModel.email,
         password: generatedPassword,
@@ -143,7 +143,7 @@ exports.verifyUserOtp = async (req, res) => {
 
     res
       .status(200)
-      .json({ message: "Your account is now verified", user: viewModel });
+      .json({ message: 'Your account is now verified', user: viewModel });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -155,14 +155,14 @@ exports.resendOtp = async (req, res) => {
     const oldRecord = await Otp.findOne({ email, type });
 
     if (!oldRecord) {
-      return res.status(404).json({ error: "No OTP request found" });
+      return res.status(404).json({ error: 'No OTP request found' });
     }
 
     //simple resend cooldown
     const now = Date.now();
 
     if (now - oldRecord.updatedAt.getTime() < 60 * 1000) {
-      throw new Error("Please wait before requesting another OTP");
+      throw new Error('Please wait before requesting another OTP');
     }
 
     const otp = otpGenerator.generate(6, {
@@ -175,7 +175,7 @@ exports.resendOtp = async (req, res) => {
 
     await sendOtp(oldRecord.email, otp);
 
-    res.status(200).json({ message: "OTP was successfully resend" });
+    res.status(200).json({ message: 'OTP was successfully resend' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -190,10 +190,10 @@ exports.signOutUser = async (req, res) => {
     res.clearCookie(tokenName, {
       httpOnly: true,
       secure: false,
-      sameSite: "strict",
+      sameSite: 'strict',
     });
 
-    res.status(200).json({ message: "Signed out successfully" });
+    res.status(200).json({ message: 'Signed out successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

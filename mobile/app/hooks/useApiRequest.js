@@ -9,9 +9,11 @@ export default function useApiRequest() {
     setError(null);
     try {
       const response = await apiCall(payload);
-      return response;
+      console.log(response);
+
+      if (response) return response;
     } catch (error) {
-      setError(error.response.data?.error);
+      setError(error.response?.data?.error || 'Something went wrong');
     } finally {
       setLoading(false);
     }

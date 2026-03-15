@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import { Text, View, Button } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function Home() {
   return (
-    <View>
-      <Text>Home Page</Text>
-    </View>
+    <SafeAreaView>
+      <View>
+        <Text>Home Page</Text>
+      </View>
+    </SafeAreaView>
   );
 }

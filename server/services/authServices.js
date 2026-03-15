@@ -68,11 +68,15 @@ exports.superAdminSignUpWithGoogle = async (accessToken) => {
 };
 
 exports.localSignIn = async (data) => {
-  const { email, password } = data;
+  const { email, password, platform } = data;
 
   const user = await User.findOne({ email });
 
   if (!user) {
+    throw new Error("Email doesn't exist in database");
+  }
+
+  if (platform === 'mobile' && user.role === 'super admin') {
     throw new Error("Email doesn't exist in database");
   }
 
