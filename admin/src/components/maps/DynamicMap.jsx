@@ -1,5 +1,5 @@
-import React from "react";
-import useFetch from "../../hooks/useFetch";
+import React from 'react';
+import useFetch from '../../hooks/useFetch';
 
 export default function DynamicMap({
   shapes,
@@ -12,9 +12,9 @@ export default function DynamicMap({
   const handleSlotDetails = async (shape) => {
     if (!onShapeClick) return;
 
-    if (shape.metadata?.type === "slot") {
-      const data = await fetchData("slot", {
-        method: "POST",
+    if (shape.metadata?.type === 'slot') {
+      const data = await fetchData('slot', {
+        method: 'POST',
         data: { _id: shape._id },
       });
       const { createdAt, updatedAt, __v, _id, slotId, ...slotData } = data.slot;
@@ -27,7 +27,7 @@ export default function DynamicMap({
   };
 
   const renderShape = (shape) => {
-    if (shape.geometry.shape === "rect") {
+    if (shape.geometry.shape === 'rect') {
       return (
         <rect
           key={shape._id || shape.tempId}
@@ -35,24 +35,25 @@ export default function DynamicMap({
           y={shape.geometry.y}
           width={shape.geometry.width}
           height={shape.geometry.height}
-          fill={shape.metadata.type === "slot" ? "#d1d5dc" : "#E5E7EB"}
-          strokeWidth="1"
+          transform={`rotate(${shape.geometry.rotation}, ${shape.geometry.x + shape.geometry.width / 2}, ${shape.geometry.y + shape.geometry.height / 2})`}
+          fill={shape.metadata.type === 'slot' ? '#d1d5dc' : '#E5E7EB'}
+          strokeWidth='1'
           onClick={() => handleSlotDetails(shape)}
-          className="cursor-pointer"
+          className='cursor-pointer'
         />
       );
-    } else if (shape.geometry.shape === "polygon") {
+    } else if (shape.geometry.shape === 'polygon') {
       const pointsStr = shape.geometry.points
         .map((p) => `${p.x},${p.y}`)
-        .join(" ");
+        .join(' ');
       return (
         <polygon
           key={shape._id || shape.tempId}
           points={pointsStr}
-          fill={shape.metadata.type === "slot" ? "#F3F4F6" : "#E5E7EB"}
-          strokeWidth="1"
+          fill={shape.metadata.type === 'slot' ? '#F3F4F6' : '#E5E7EB'}
+          strokeWidth='1'
           onClick={() => handleSlotDetails(shape)}
-          className="cursor-pointer"
+          className='cursor-pointer'
         />
       );
     }
@@ -64,7 +65,7 @@ export default function DynamicMap({
   return (
     <svg
       viewBox={`0 0 ${width} ${height}`}
-      style={{ width: "100%", height: "100%" }}
+      style={{ width: '100%', height: '100%' }}
     >
       {shapes.map(renderShape)}
     </svg>

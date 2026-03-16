@@ -11,6 +11,7 @@ import { QrCode } from 'lucide-react';
 export default function Parking() {
   const [reports, setReports] = useState([]);
   const [isOpen, toggleIsOpenModal] = useState(false);
+  const [mapError, setMapError] = useState(false);
   const [areaName, setAreaName] = useState('');
   const [width, setWidth] = useState('');
   const [height, setHeight] = useState('');
@@ -72,6 +73,16 @@ export default function Parking() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    if (!areaName || !height || !width)
+      return setMapError('All fields must be filled');
+
+    if (areaName.length > 30) {
+      return setMapError('Maximum name length is 30');
+    }
+    if (height > 500) return setMapError('Maximum height allowed is 500px');
+    if (width > 1200) return setMapError('Maximum width allowed is 1200px');
+
     navigate('/map-editor', {
       state: {
         areaName,
@@ -171,7 +182,7 @@ export default function Parking() {
             </button>
             {isOpen && (
               <Modal onClose={() => toggleIsOpenModal(false)}>
-                <div className='text-xs w-[300px] text-gray-700 flex flex-col gap-5'>
+                <div className='text-xs w-[450px] text-gray-700 flex flex-col gap-5'>
                   <h1 className='text-base font-semibold text-gray-700'>
                     Create New Area
                   </h1>
@@ -187,12 +198,13 @@ export default function Parking() {
                         id='name'
                         type='text'
                         value={areaName}
+                        placeholder='Admin Bldg (FRONT)'
                         onChange={(e) => setAreaName(e.target.value)}
-                        className='outline-none w-full rounded-md border border-gray-200 py-1 px-2'
+                        className='outline-none p-4 w-full rounded-md border border-gray-200'
                       />
                     </div>
                     <div className='flex gap-3 items-center'>
-                      <div className='flex flex-col gap-1'>
+                      <div className='flex  flex-1 flex-col gap-1'>
                         <label
                           htmlFor='height'
                           className='self-start text-xs text-gray-400'
@@ -203,14 +215,15 @@ export default function Parking() {
                           <input
                             id='height'
                             type='number'
+                            placeholder='Recommended: 350px'
                             value={height}
                             onChange={(e) => setHeight(e.target.value)}
-                            className='outline-none w-full rounded-md border border-gray-200 py-1 px-2'
+                            className='outline-none p-4 w-full rounded-md border border-gray-200'
                           />
                           <span className='text-gray-400'>px</span>
                         </div>
                       </div>
-                      <div className='flex flex-col gap-1'>
+                      <div className='flex  flex-1 flex-col gap-1'>
                         <label
                           htmlFor='width'
                           className='self-start text-xs text-gray-400'
@@ -222,13 +235,17 @@ export default function Parking() {
                             id='width'
                             type='number'
                             value={width}
+                            placeholder='Recommended: 1000px'
                             onChange={(e) => setWidth(e.target.value)}
-                            className='outline-none w-full rounded-md border border-gray-200 py-1 px-2'
+                            className='outline-none  p-4 w-full rounded-md border border-gray-200'
                           />
                           <span className='text-gray-400'>px</span>
                         </div>
                       </div>
                     </div>
+                    {mapError && (
+                      <p className='text-xs text-red-500'>{mapError}</p>
+                    )}
                     <div className='flex items-center gap-5 w-full'>
                       <button
                         type='button'

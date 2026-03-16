@@ -1,11 +1,6 @@
 import { useRouter } from 'expo-router';
-import {
-  ChevronLeft,
-  PencilLine,
-  UserCircle,
-  UserRound,
-} from 'lucide-react-native';
-import { useState } from 'react';
+import { ChevronLeft, PencilLine, UserRound } from 'lucide-react-native';
+import { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -19,8 +14,13 @@ import { useSelector } from 'react-redux';
 
 export default function Account() {
   const router = useRouter();
+  const [originalData, setOriginalData] = useState({});
+  const [edit, toggleEdit] = useState(false);
   const { user } = useSelector((state) => state.auth);
-  console.log(user);
+
+  useEffect(() => {
+    setOriginalData(user);
+  }, []);
 
   return (
     <SafeAreaView edges={['top', 'bottom']} className='bg-gray-100 flex-1'>
@@ -41,19 +41,19 @@ export default function Account() {
           <View className='flex -top-20 items-center'>
             {/* Profile */}
             <View className='relative '>
-              {!user.profileDetails?.url ? (
+              {user.profileDetails?.url ? (
                 <Image
                   source={{ uri: user.profileDetails.url }}
                   className='border-4 bg-white border-violet-500 rounded-full h-40 w-40'
                 />
               ) : (
-                <View className='border-4 border-violet-500 rounded-full bg-white h-40 w-40 flex items-center justify-center'>
-                  <UserRound size={80} strokeWidth={1} color={'#0e0e11'} />
+                <View className='border-4 border-violet-500 rounded-full bg-violet-100 h-40 w-40 flex items-center justify-center'>
+                  <UserRound size={100} strokeWidth={1} color={'#8b5cf6'} />
                 </View>
               )}
-              <View className='absolute rounded-full p-3 bg-violet-500 right-0 bottom-0'>
+              <Pressable className='absolute active:bg-violet-400 rounded-full p-3 bg-violet-500 right-0 bottom-0'>
                 <PencilLine size={20} color={'white'} />
-              </View>
+              </Pressable>
             </View>
             {/* Name */}
             <View className='flex flex-col mt-3 items-center'>
@@ -68,7 +68,7 @@ export default function Account() {
                   Verified
                 </Text>
                 <Text className='font-medium text-xs p-2 text-green-500 border border-green-500 rounded-full bg-green-100'>
-                  Guard
+                  {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
                 </Text>
               </View>
             </View>

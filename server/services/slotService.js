@@ -60,7 +60,7 @@ exports.verifyStudentInfo = async (data, reassign = false) => {
   const studentRecord = await Student.findOne({ userId: student._id });
 
   if (!studentRecord || !studentRecord.payment?.isPaid) {
-    throw new Error('Student must pay ₱20.00 for exclusive slot');
+    throw new Error('Student must pay for exclusive slot');
   }
 
   if (reassign) {

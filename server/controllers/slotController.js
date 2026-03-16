@@ -28,6 +28,25 @@ exports.getSlotDetails = async (req, res) => {
   }
 };
 
+exports.getAvailableSlots = async (req, res) => {
+  try {
+    const slots = await Slot.find({ status: 'available' }).populate({
+      path: 'slotId',
+      select: 'metadata.label mapId',
+      populate: {
+        path: 'mapId',
+        select: 'name',
+      },
+    });
+    if (!slots.length) {
+      return res.status(404).json({ error: 'No slots available' });
+    }
+    res.status(200).json(slots);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 exports.getAllSlotDetails = async (req, res) => {
   try {
     const { mapId } = req.params;
@@ -52,7 +71,6 @@ exports.assignStudentSlot = async (req, res) => {
     await slotService.verifyStudentInfo(student);
 
     const updatedSlot = await slotService.assignStudent(req.body, session);
-    // updatedSlot is already a plain object (merged metadata)
 
     if (updatedSlot.assignedStudentId) {
       student = await slotService.getAssignedStudent(
@@ -114,7 +132,7 @@ exports.removeAssignment = async (req, res) => {
   }
 };
 
-exports.verifyStudentSlot = async (req, res) => {
+exports.verifyUserSlot = async (req, res) => {
   try {
     const message = await qrService.verifySlotData(req.body);
     res.status(200).json({ message });

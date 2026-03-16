@@ -78,8 +78,10 @@ exports.createMap = async (req, res) => {
       const slots = [];
 
       for (const shape of slotShapes) {
-        const slotNumber = shape.metadata.label; // e.g. A-01
-        const qrText = `MAP:${map._id}-SLOT:${slotNumber}`;
+        console.log(shape);
+
+        const slotNumber = shape.metadata.label;
+        const qrText = `MAP:${map._id}-SLOT:${shape._id}`;
 
         const qrCode = await generateQRCode(qrText);
 
@@ -182,8 +184,8 @@ exports.updateMap = async (req, res) => {
       });
     }
 
-    // IMPORTANT: multipart/form-data => shapes is STRING
-    let shapes = null;
+    // Parse shapes if provided
+    let shapes = [];
     if (req.body.shapes) {
       try {
         shapes = JSON.parse(req.body.shapes);
@@ -207,20 +209,22 @@ exports.updateMap = async (req, res) => {
 
     let savedShapes = [];
 
-    // If shapes are provided, update them
-    if (shapes && Array.isArray(shapes)) {
-      // Delete existing shapes for this map
-      await Shape.deleteMany({ mapId: id });
+    if (shapes.length) {
+      // --- Step 1: Delete old shapes and their slots ---
+      const oldShapes = await Shape.find({ mapId: id });
+      const oldShapeIds = oldShapes.map((s) => s._id);
 
-      // Index uploaded Cloudinary files by tempId
+      await Shape.deleteMany({ mapId: id });
+      await Slot.deleteMany({ slotId: { $in: oldShapeIds } });
+
+      // --- Step 2: Index uploaded Cloudinary files ---
       const imageMap = {};
       req.files?.forEach((file) => {
-        // building[tempId]
         const match = file.fieldname.match(/\[(.*?)\]/);
         if (match) imageMap[match[1]] = file;
       });
 
-      // Create new shapes
+      // --- Step 3: Create new shapes ---
       for (const shape of shapes) {
         const newShape = new Shape({
           ...shape,
@@ -238,25 +242,19 @@ exports.updateMap = async (req, res) => {
         savedShapes.push(newShape);
       }
 
-      // Update slots if there are slot shapes
+      // --- Step 4: Create slots for shapes with type 'slot' ---
       const slotShapes = savedShapes.filter((s) => s.metadata?.type === 'slot');
 
       if (slotShapes.length) {
-        // Delete existing slots for this map's shapes
-        const existingSlots = await Slot.find({ mapId: id });
-        const existingSlotIds = existingSlots.map((s) => s._id);
-        await Slot.deleteMany({ _id: { $in: existingSlotIds } });
-
         const slots = [];
-
         for (const shape of slotShapes) {
-          const slotNumber = shape.metadata.label; // e.g. A-01
-          const qrText = `MAP:${id}-SLOT:${slotNumber}`;
-
+          const slotNumber = shape.metadata.label; // e.g., "A-01"
+          const qrText = `MAP:${id}-SLOT:${shape._id}`; // QR stores ObjectId
           const qrCode = await generateQRCode(qrText);
 
           slots.push({
             slotId: shape._id,
+            mapId: id, // optional but useful for queries
             slotNumber,
             QRCode: qrCode,
             assignedStudentId: null,
@@ -267,6 +265,7 @@ exports.updateMap = async (req, res) => {
         await Slot.insertMany(slots);
       }
 
+      // --- Step 5: Log activity ---
       await ActivityLogs.create({
         userId: req.user._id,
         actionType: 'parking',
@@ -280,16 +279,16 @@ exports.updateMap = async (req, res) => {
         },
       });
 
+      // --- Step 6: Send notification ---
       const mapNotif = {
         userId: req.user._id,
         title: 'Parking Map Updated',
         message: `The parking area "${updatedMap.name}" has been updated. The new layout is now available in the system.`,
       };
-      console.log(mapNotif);
-
       await notificationService.createNotification(mapNotif);
     }
 
+    // --- Step 7: Respond ---
     res.status(200).json({
       message: 'Map updated successfully',
       map: updatedMap,

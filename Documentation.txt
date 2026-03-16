@@ -86,3 +86,12 @@ Super admin: Website 85%
 
 Mobile
 - Design
+
+Errors:
+1) Map
+ - Shapes cant be Delete
+ -Map cant be Delete
+ - modify the shapes, it duplicates the shapes on that map
+
+Need to be fix
+- QR Codes need to be store in Cloudinary because its too long

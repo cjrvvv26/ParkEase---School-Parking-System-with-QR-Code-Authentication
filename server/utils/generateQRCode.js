@@ -1,10 +1,13 @@
-const QRCode = require("qrcode");
-const bcrypt = require("bcrypt");
+const QRCode = require('qrcode');
 
 const generateQR = async (data) => {
   try {
-    const qrCode = await QRCode.toDataURL(data);
-    return await bcrypt.hash(qrCode, 10);
+    const qrCode = await QRCode.toDataURL(data, {
+      width: 300,
+      margin: 2,
+      errorCorrectionLevel: 'H',
+    });
+    return qrCode;
   } catch (err) {
     console.error(err);
   }
