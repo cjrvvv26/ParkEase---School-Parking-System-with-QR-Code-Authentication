@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
-import { Text, View, Button, Image, Pressable, ScrollView } from 'react-native';
+import { useSelector } from 'react-redux';
+import { Text, View, Pressable, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Bell, ParkingSquare, Settings, User } from 'lucide-react-native';
 
@@ -16,6 +17,9 @@ const centerNavData = [
 
 export default function Home() {
   const router = useRouter();
+  const { user } = useSelector((state) => state.auth);
+  console.log(user);
+
   return (
     <SafeAreaView edges={['top']} className='bg-gray-50 flex-1'>
       <ScrollView
@@ -28,7 +32,7 @@ export default function Home() {
           <View className='flex flex-row gap-3 items-center'>
             <View>
               <Text className='text-2xl text-[#0e0e11] font-poppins-bold'>
-                Welcome back, Clarence!
+                Welcome back, {user.name?.firstName?.split(' ')[0]}!
               </Text>
               <Text className='font-poppins-medium text-lg text-[#71717a]'>
                 View and manage your account

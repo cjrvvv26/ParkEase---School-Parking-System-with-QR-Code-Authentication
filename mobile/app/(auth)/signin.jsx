@@ -1,11 +1,12 @@
 import { View, Text, Pressable, TextInput, Image } from 'react-native';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Eye, EyeClosed } from 'lucide-react-native';
 import GoogleIcon from '../assets/images/google.webp';
 import { Link, useRouter } from 'expo-router';
 import { login } from '../services/authService';
 import useApiRequest from '../hooks/useApiRequest';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function SignIn() {
   const router = useRouter();
@@ -16,6 +17,16 @@ export default function SignIn() {
     password: '',
     platform: 'mobile',
   });
+
+  useEffect(() => {
+    const checkVerification = async () => {
+      const hasVerification = await AsyncStorage.getItem('hasVerification');
+
+      if (hasVerification === 'true') return router.replace('/OTPVerification');
+    };
+
+    checkVerification();
+  }, []);
 
   const handleRegistration = async () => {
     const hasEmptyValue = Object.values(credentials).every((c) => !c);
@@ -30,8 +41,10 @@ export default function SignIn() {
 
     const data = await execute(login, credentials);
 
-    if (data?.message === 'Successfully sent OTP') {
-      return router.push('/(main)/Account');
+    if (data?.status === 200) {
+      await AsyncStorage.setItem('email', credentials.email);
+      await AsyncStorage.setItem('hasVerification', 'true');
+      return router.replace('/OTPVerification');
     }
   };
 
@@ -40,7 +53,7 @@ export default function SignIn() {
       edges={['top']}
       className='h-full bg-violet-500 flex flex-col'
     >
-      <View className='h-64 flex flex-col items-center justify-center gap-3'>
+      <View className='h-60 flex flex-col items-center justify-center gap-3'>
         <Text className='font-poppins-bold text-[#310b6a] text-4xl'>
           School Parking
         </Text>
@@ -48,7 +61,7 @@ export default function SignIn() {
           System
         </Text>
       </View>
-      <View className='flex-1 flex flex-col gap-10 rounded-ss-[30px] rounded-es-[30px] drop-shadow-2xl px-14 items-center justify-top pt-16 bg-white h-32'>
+      <View className='flex-1 flex flex-col gap-5 rounded-ss-[30px] rounded-es-[30px] drop-shadow-2xl px-14 items-center justify-top pt-16 bg-white h-32'>
         <View className='flex flex-col items-center'>
           <Text className='text-3xl font-poppins-bold text-gray-700'>
             Sign In
@@ -72,7 +85,7 @@ export default function SignIn() {
             />
           </View>
           <View className='flex flex-col gap-1 relative'>
-            {!showPassword ? (
+            {showPassword ? (
               <Eye
                 size={28}
                 strokeWidth={1.5}
@@ -107,7 +120,7 @@ export default function SignIn() {
               onChangeText={(text) =>
                 setCredentials((prev) => ({ ...prev, password: text }))
               }
-              secureTextEntry={showPassword}
+              secureTextEntry={!showPassword}
               className='border text-base font-poppins border-gray-400 rounded-lg bg-gray-50 p-4'
             />
             {error && (
@@ -117,13 +130,13 @@ export default function SignIn() {
             )}
           </View>
           <Pressable
-            onPress={() => {
-              //handleRegistration;
-              router.replace('./OTPVerification');
-            }}
-            className='w-full flex active:opacity-80 items-center mt-5 bg-violet-500 rounded-lg py-4'
+            disabled={loading}
+            onPress={handleRegistration}
+            className={`${loading && 'opacity-80'} w-full flex active:opacity-80 items-center mt-5 bg-violet-500 rounded-lg py-4`}
           >
-            <Text className='text-white font-poppins'>Continue</Text>
+            <Text className='text-white font-poppins'>
+              {loading ? 'Processing...' : 'Continue'}
+            </Text>
           </Pressable>
           <View className='border-b my-5 border-gray-400 w-full relative'>
             <Text className='px-4 font-poppins text-gray-400 bg-white left-1/2 absolute top-1/2 -translate-x-1/2 -translate-y-1/2'>
@@ -135,7 +148,7 @@ export default function SignIn() {
               <Image source={GoogleIcon} className='h-10 w-10 object-contain' />
             </Pressable>
           </View>
-          <Text className='text-center font-poppins text-gray-400 absolute left-1/2 -translate-x-1/2 -bottom-20 mt-5'>
+          <Text className='text-center font-poppins text-gray-400 mb-10'>
             Can't sign in?{' '}
             <Link href='/Account' className='active:opacity-80'>
               <Text className='text-violet-500'>Go here</Text>

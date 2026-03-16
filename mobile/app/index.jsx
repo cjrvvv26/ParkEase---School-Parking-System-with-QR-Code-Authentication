@@ -1,11 +1,17 @@
 import { useEffect } from 'react';
-import { Text, View } from 'react-native';
+import { login } from './features/authSlicer';
+import { getData } from './services/authService';
+import { useDispatch } from 'react-redux';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { View } from 'react-native';
+import useApiRequest from './hooks/useApiRequest';
 import { useRouter } from 'expo-router';
 import { useFonts } from 'expo-font';
 
 export default function Index() {
   const router = useRouter();
+  const dispatch = useDispatch();
+  const { execute } = useApiRequest();
   const [loaded] = useFonts({
     Poppins: require('./assets/fonts/Poppins-Regular.ttf'),
     Poppins500: require('./assets/fonts/Poppins-Medium.ttf'),
@@ -14,23 +20,33 @@ export default function Index() {
   });
 
   useEffect(() => {
-    const checkUser = async () => {
+    if (!loaded) return;
+
+    const checkUserSession = async () => {
       const token = await AsyncStorage.getItem('token');
 
-      if (token) {
-        return router.replace('/(main)/Home');
+      if (!token) {
+        router.replace('/(auth)/SignIn');
+        return;
       }
-      router.replace('/(auth)/SignIn');
+
+      const res = await execute(getData, token);
+
+      if (res?.status === 200) {
+        dispatch(login({ user: res.data }));
+        router.replace('/(main)/Home');
+      } else {
+        await AsyncStorage.removeItem('token');
+        router.replace('/(auth)/SignIn');
+      }
     };
 
-    if (loaded) {
-      checkUser();
-    }
+    checkUserSession();
   }, [loaded]);
 
   return (
-    <View>
-      <Text>Loading...</Text>
+    <View className='flex h-full items-center justify-center'>
+      <View className='border-2 border-t-2 border-t-violet-500 animate-spin h-14 w-14 rounded-full border-violet-200'></View>
     </View>
   );
 }

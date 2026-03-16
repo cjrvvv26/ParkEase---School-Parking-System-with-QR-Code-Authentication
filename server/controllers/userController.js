@@ -8,6 +8,7 @@ const mediaService = require('../services/mediaService');
 const cloudinary = require('../utils/cloudinary');
 const { sendAccountRecoveryRequest } = require('../emails/index');
 const { randomBytes } = require('crypto');
+const jwt = require('jsonwebtoken');
 
 //GET user by Id
 exports.getUserById = async (req, res) => {
@@ -15,6 +16,31 @@ exports.getUserById = async (req, res) => {
     const user = await userService.getUserData(req.params.id);
 
     res.status(200).json({ message: 'User found', user });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.getUserByToken = async (req, res) => {
+  try {
+    const { token } = req.params;
+
+    if (!token) {
+      return res.status(404).json({ error: 'No session found' });
+    }
+
+    const session = jwt.verify(token, process.env.SECRET, (err, decoded) => {
+      if (err) return res.status(403).json({ error: err.message });
+      return decoded;
+    });
+
+    if (!session) {
+      return res.status(404).json({ error: 'Session expired' });
+    }
+
+    const user = await userService.getUserData(session.id);
+
+    res.status(200).json(user);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

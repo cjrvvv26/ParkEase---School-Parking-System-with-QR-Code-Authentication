@@ -104,7 +104,9 @@ exports.authWithGoogle = async (req, res) => {
 //Verify super admin otp verification
 exports.verifyUserOtp = async (req, res) => {
   try {
-    const { email, inputOtp, type } = req.body;
+    const { email, inputOtp, type, platform } = req.body;
+
+    console.log(req.body);
     let viewModel = null;
     let generatedPassword = null;
 
@@ -124,13 +126,18 @@ exports.verifyUserOtp = async (req, res) => {
     const token = generateToken(viewModel._id, viewModel.role);
 
     const { tokenName, expiredAt } = session(viewModel.role);
+    if (platform === 'website') {
+      res.cookie(tokenName, token, {
+        httpOnly: true,
+        secure: false,
+        sameSite: 'strict',
+        maxAge: expiredAt,
+      });
+    }
 
-    res.cookie(tokenName, token, {
-      httpOnly: true,
-      secure: false,
-      sameSite: 'strict',
-      maxAge: expiredAt,
-    });
+    if (platform === 'mobile') {
+      viewModel.token = token;
+    }
 
     if (type === 'register') {
       await sendAccountDetails({

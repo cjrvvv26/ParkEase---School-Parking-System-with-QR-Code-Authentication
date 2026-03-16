@@ -45,7 +45,7 @@ export default function MainLayout() {
         tabBarActiveTintColor: '#8e51ff',
         tabBarInactiveTintColor: '#0e0e11',
         tabBarStyle: {
-          height: 80,
+          height: 100,
           paddingBottom: 20,
         },
         tabBarLabelStyle: {

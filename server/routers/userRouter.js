@@ -10,6 +10,7 @@ router.get(
   userController.verifyAccountRequest,
 );
 router.patch('/recovery/reset-password', userController.resetUserPassword);
+router.get('/token/:token', userController.getUserByToken);
 
 router.use(verifyUser(), requiredSuperAdmin);
 

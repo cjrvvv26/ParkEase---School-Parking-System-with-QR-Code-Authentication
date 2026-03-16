@@ -8,6 +8,8 @@ export default function useApiRequest() {
     setLoading(true);
     setError(null);
     try {
+      console.log(payload);
+
       const response = await apiCall(payload);
       console.log(response);
 

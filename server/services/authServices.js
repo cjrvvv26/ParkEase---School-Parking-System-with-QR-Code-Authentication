@@ -2,6 +2,7 @@ const User = require('../models/userModel');
 const SuperAdmin = require('../models/superAdminModel');
 const Student = require('../models/studentModel');
 const Guard = require('../models/guardModel');
+const Faculty = require('../models/facultyModel');
 const bcrypt = require('bcrypt');
 const generateDefaultName = require('../utils/generateDefaultName');
 const axios = require('axios');
@@ -87,7 +88,9 @@ exports.localSignIn = async (data) => {
         ? await Student.findOne({ userId: user._id })
         : user.role === 'guard'
           ? await Guard.findOne({ userId: user._id })
-          : null;
+          : user.role === 'guard'
+            ? await Faculty.findOne({ userId: user._id })
+            : null;
 
   if (!userData) {
     throw new Error('User role data not found');

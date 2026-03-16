@@ -1,5 +1,10 @@
 import { useRouter } from 'expo-router';
-import { ChevronLeft, PencilLine } from 'lucide-react-native';
+import {
+  ChevronLeft,
+  PencilLine,
+  UserCircle,
+  UserRound,
+} from 'lucide-react-native';
 import { useState } from 'react';
 import {
   View,
@@ -10,11 +15,15 @@ import {
   TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSelector } from 'react-redux';
 
 export default function Account() {
   const router = useRouter();
+  const { user } = useSelector((state) => state.auth);
+  console.log(user);
+
   return (
-    <SafeAreaView edges={['top']} className='bg-gray-100 flex-1'>
+    <SafeAreaView edges={['top', 'bottom']} className='bg-gray-100 flex-1'>
       <ScrollView contentContainerClassName='flex flex-col gap-5'>
         {/* Header */}
         <View className='flex flex-row relative items-top justify-between h-40 mx-5 py-5'>
@@ -27,12 +36,21 @@ export default function Account() {
         </View>
 
         {/* Info */}
-        <View className='flex items-center bg-white rounded-ss-3xl rounded-es-3xl shadow-xl shadow-violet-500'>
+        <View className='flex items-center bg-white rounded-ss-3xl rounded-es-3xl shadow-md shadow-black'>
           {/* Upper Info */}
           <View className='flex -top-20 items-center'>
             {/* Profile */}
             <View className='relative '>
-              <Image className='border-2 bg-white border-violet-500 rounded-full h-40 w-40' />
+              {!user.profileDetails?.url ? (
+                <Image
+                  source={{ uri: user.profileDetails.url }}
+                  className='border-4 bg-white border-violet-500 rounded-full h-40 w-40'
+                />
+              ) : (
+                <View className='border-4 border-violet-500 rounded-full bg-white h-40 w-40 flex items-center justify-center'>
+                  <UserRound size={80} strokeWidth={1} color={'#0e0e11'} />
+                </View>
+              )}
               <View className='absolute rounded-full p-3 bg-violet-500 right-0 bottom-0'>
                 <PencilLine size={20} color={'white'} />
               </View>
@@ -40,11 +58,11 @@ export default function Account() {
             {/* Name */}
             <View className='flex flex-col mt-3 items-center'>
               <Text className='font-poppins-bold text-xl text-[#0e0e11]'>
-                Clarence James R Valle
+                {user.name.firstName + ' ' + user.name.lastName}
               </Text>
               <View className='flex flex-row items-center gap-3'>
                 <Text className='font-medium text-lg text-[#71717a]'>
-                  cvalle123123
+                  {user.username}
                 </Text>
                 <Text className='text-[#8e51ff] p-2 text-xs border border-[#8e51ff] rounded-full bg-violet-100 font-poppins-medium'>
                   Verified
@@ -75,7 +93,7 @@ export default function Account() {
           </View>
         </View>
       </ScrollView>
-      <Pressable className='p-4 mb-5 absolute bottom-5 left-5 right-5 bg-violet-500 flex items-center justify-center rounded-full'>
+      <Pressable className='p-4 mb-5 absolute bottom-10 left-5 right-5 bg-violet-500 flex items-center justify-center rounded-full'>
         <Text className='font-poppins-medium text-lg text-white'>
           Save Changes
         </Text>

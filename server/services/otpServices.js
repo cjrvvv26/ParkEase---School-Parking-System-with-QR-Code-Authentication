@@ -1,27 +1,30 @@
-const bcrypt = require("bcrypt");
-const Otp = require("../models/otpModel");
-const User = require("../models/userModel");
-const SuperAdmin = require("../models/superAdminModel");
-const generatePassword = require("../utils/generatePassword");
+const bcrypt = require('bcrypt');
+const Otp = require('../models/otpModel');
+const User = require('../models/userModel');
+const Student = require('../models/studentModel');
+const Faculty = require('../models/facultyModel');
+const Guard = require('../models/guardModel');
+const SuperAdmin = require('../models/superAdminModel');
+const generatePassword = require('../utils/generatePassword');
 
 exports.registerOtp = async ({ email, payload, otp, type }) => {
   if (!email || !otp) {
-    throw new Error("Credentials not found");
+    throw new Error('Credentials not found');
   }
 
   const haveOtp = await Otp.findOne({ email });
   if (haveOtp) {
-    throw new Error("OTP was already sent");
+    throw new Error('OTP was already sent');
   }
 
-  if (type === "login") {
+  if (type === 'login') {
     const user = await User.findOne({ email });
-    if (!user) throw new Error("Account not found. Please try again.");
+    if (!user) throw new Error('Account not found. Please try again.');
   }
 
-  if (type === "register") {
+  if (type === 'register') {
     const user = await User.findOne({ email });
-    if (user) throw new Error("Email already in use.");
+    if (user) throw new Error('Email already in use.');
   }
 
   const hashOtp = await bcrypt.hash(otp, 10);
@@ -35,31 +38,30 @@ exports.registerOtp = async ({ email, payload, otp, type }) => {
   });
 
   if (!storeTempCredentials) {
-    throw new Error("Something went wrong while storing credentials.");
+    throw new Error('Something went wrong while storing credentials.');
   }
   return storeTempCredentials;
 };
-
 exports.verifyOtp = async (email, otp, type) => {
   const user = await Otp.findOne({ email }).sort({ createdAt: -1 });
 
   if (!user || !user.payload) {
-    throw new Error("Invalid or expired OTP");
+    throw new Error('Invalid or expired OTP');
   }
 
   const verify = await bcrypt.compare(String(otp), user.otp);
 
   if (!verify) {
-    throw new Error("Incorrect OTP");
+    throw new Error('Incorrect OTP');
   }
 
   const { profileDetails, username, name, role } = user.payload;
 
   const generatedPassword = generatePassword();
-
   const hashedPassword = await bcrypt.hash(generatedPassword, 10);
 
-  if (type === "register") {
+  // ================= REGISTER =================
+  if (type === 'register') {
     const createUser = await User.create({
       profileDetails,
       username,
@@ -70,41 +72,85 @@ exports.verifyOtp = async (email, otp, type) => {
       lastActive: Date.now(),
     });
 
-    const userData = await SuperAdmin.create({
-      userId: createUser._id,
-      name,
-    });
+    let roleData = null;
 
-    const { _id, __v, ...moreData } = userData._doc;
+    if (role === 'superadmin') {
+      roleData = await SuperAdmin.create({
+        userId: createUser._id,
+        name,
+      });
+    }
+
+    if (role === 'student') {
+      roleData = await Student.create({
+        userId: createUser._id,
+        name,
+      });
+    }
+
+    if (role === 'admin') {
+      roleData = await Admin.create({
+        userId: createUser._id,
+        name,
+      });
+    }
+
+    const moreData = roleData ? roleData._doc : {};
+    delete moreData._id;
+    delete moreData.__v;
 
     const viewModel = {
       _id: createUser._id,
       profileDetails: createUser.profileDetails,
       username: createUser.username,
       email: createUser.email,
-      password: createUser.password,
       status: createUser.status,
       role: createUser.role,
       emailVerified: createUser.emailVerified,
       lastActive: createUser.lastActive,
       ...moreData,
     };
+
     await Otp.deleteOne({ _id: user._id });
+
     return { viewModel, generatedPassword };
   }
 
-  if (type === "login") {
+  // ================= LOGIN =================
+  if (type === 'login') {
     const recordUser = await User.findOne({ email });
-    const userData = await SuperAdmin.findOne({ userId: recordUser._id });
 
-    const { _id, __v, ...moreData } = userData._doc;
+    if (!recordUser) {
+      throw new Error('User not found');
+    }
+
+    let userData = null;
+
+    if (recordUser.role === 'superadmin') {
+      userData = await SuperAdmin.findOne({ userId: recordUser._id });
+    }
+
+    if (recordUser.role === 'student') {
+      userData = await Student.findOne({ userId: recordUser._id });
+    }
+
+    if (recordUser.role === 'faculty') {
+      userData = await Faculty.findOne({ userId: recordUser._id });
+    }
+
+    if (recordUser.role === 'guard') {
+      userData = await Guard.findOne({ userId: recordUser._id });
+    }
+
+    const moreData = userData ? userData._doc : {};
+    delete moreData._id;
+    delete moreData.__v;
 
     const viewModel = {
       _id: recordUser._id,
       profileDetails: recordUser.profileDetails,
       username: recordUser.username,
       email: recordUser.email,
-      password: recordUser.password,
       status: recordUser.status,
       role: recordUser.role,
       emailVerified: recordUser.emailVerified,
@@ -113,6 +159,7 @@ exports.verifyOtp = async (email, otp, type) => {
     };
 
     await Otp.deleteOne({ _id: user._id });
+
     return viewModel;
   }
 };
