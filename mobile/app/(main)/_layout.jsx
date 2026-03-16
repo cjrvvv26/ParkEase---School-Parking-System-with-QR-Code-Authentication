@@ -75,12 +75,16 @@ export default function MainLayout() {
         name='Chat'
         options={{
           title: 'Support',
+          tabBarStyle: { display: 'none' },
           tabBarIcon: ({ color, size }) => (
             <MessageCircleQuestionMark size={size} color={color} />
           ),
         }}
       />
-      <Tabs.Screen name='Account' options={{ href: null }} />
+      <Tabs.Screen
+        name='Account'
+        options={{ href: null, tabBarStyle: { display: 'none' } }}
+      />
       <Tabs.Screen name='Analytics' options={{ href: null }} />
       <Tabs.Screen name='Settings' options={{ href: null }} />
       <Tabs.Screen name='Notification' options={{ href: null }} />

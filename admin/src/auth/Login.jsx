@@ -131,6 +131,7 @@ export default function Login() {
           )}
         </div>
         <button
+          type='submit'
           disabled={loading}
           className={`${
             !loading ? 'bg-violet-500' : 'bg-gray-400'
@@ -150,6 +151,7 @@ export default function Login() {
         </div>
         <div className='flex flex-col gap-1'>
           <button
+            type='button'
             onClick={() => login()}
             disabled={loading}
             className={`${
