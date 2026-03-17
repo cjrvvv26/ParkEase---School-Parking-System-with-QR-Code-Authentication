@@ -12,18 +12,20 @@ import {
   MapPin,
   Calendar,
   ChevronRight,
+  ShieldAlert,
+  ArrowRight,
 } from 'lucide-react-native';
 import { getSemester } from '../services/semesterService';
 import useApiRequest from '../hooks/useApiRequest';
 import { getAvailableSlots } from '../services/slotService';
+import useTheme from '../hooks/useTheme';
 
 export default function Home() {
   const router = useRouter();
   const [semester, setSemester] = useState(null);
   const [availableSlots, setAvailableSlots] = useState([]);
   const { user } = useSelector((state) => state.auth);
-  console.log(user);
-
+  const { t } = useTheme();
   const { loading, error, execute } = useApiRequest();
 
   useEffect(() => {
@@ -38,59 +40,66 @@ export default function Home() {
   }, []);
 
   const centerNavData = [
-    { icon: User, label: 'Profile', to: '/Account', bg: '#8e51ff' },
-    { icon: Settings, label: 'Settings', to: '/Settings', bg: '#8e51ff' },
-    ...(user.role === 'guard'
-      ? [
-          {
-            icon: ParkingSquare,
-            label: 'Parking',
-            to: '/Parking',
-            bg: '#8e51ff',
-          },
-        ]
-      : []),
-
+    { icon: User, label: 'Profile', to: '/Account' },
+    { icon: Settings, label: 'Settings', to: '/Settings' },
     ...(user.role !== 'guard'
-      ? [
-          {
-            icon: TrendingUp,
-            label: 'Analytics',
-            to: '/Analytics',
-            bg: '#8e51ff',
-          },
-        ]
+      ? [{ icon: ParkingSquare, label: 'Parking', to: '/Parking' }]
+      : []),
+    ...(user.role === 'guard'
+      ? [{ icon: TrendingUp, label: 'Analytics', to: '/Analytics' }]
       : []),
   ];
 
   return (
-    <SafeAreaView edges={['top']} className='bg-gray-50 flex-1'>
+    <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: t.bg }}>
       <ScrollView
         className='flex-1'
         contentContainerStyle={{ paddingBottom: 32 }}
         showsVerticalScrollIndicator={false}
       >
         {/* Header */}
-        <View className='w-full pt-6 px-5 flex flex-row items-center justify-between'>
+        <View
+          style={{
+            paddingTop: 24,
+            paddingHorizontal: 20,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
           <View>
-            <Text className='text-2xl text-[#0e0e11] font-poppins-bold'>
+            <Text
+              style={{ fontSize: 22, color: t.text, fontFamily: 'Poppins700' }}
+            >
               Welcome back,
             </Text>
-            <Text className='text-2xl text-[#8e51ff] font-poppins-bold'>
+            <Text
+              style={{
+                fontSize: 22,
+                color: t.primary,
+                fontFamily: 'Poppins700',
+              }}
+            >
               {user.name?.firstName?.split(' ')[0]}!
             </Text>
-            <Text className='font-poppins text-sm text-[#71717a] mt-1'>
+            <Text
+              style={{
+                fontFamily: 'Poppins400',
+                fontSize: 13,
+                color: t.textMuted,
+                marginTop: 2,
+              }}
+            >
               View and manage your account
             </Text>
           </View>
           <Pressable
             onPress={() => router.push('/Notification')}
-            className='active:opacity-70'
             style={{
-              backgroundColor: '#8e51ff',
+              backgroundColor: t.primary,
               padding: 12,
               borderRadius: 50,
-              shadowColor: '#8e51ff',
+              shadowColor: t.primary,
               shadowOffset: { width: 0, height: 4 },
               shadowOpacity: 0.3,
               shadowRadius: 8,
@@ -101,34 +110,115 @@ export default function Home() {
           </Pressable>
         </View>
 
+        {/* Unverified Banner */}
+        {!user.emailVerified && (
+          <View
+            style={{
+              marginHorizontal: 20,
+              marginTop: 20,
+              borderRadius: 16,
+              overflow: 'hidden',
+              borderWidth: 1,
+              borderColor: '#fde68a',
+            }}
+          >
+            <View
+              style={{
+                backgroundColor: t.amberBg,
+                padding: 16,
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 12,
+              }}
+            >
+              <View
+                style={{
+                  backgroundColor: '#fef3c7',
+                  padding: 10,
+                  borderRadius: 12,
+                }}
+              >
+                <ShieldAlert color='#d97706' size={20} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text
+                  style={{
+                    fontFamily: 'Poppins600',
+                    fontSize: 13,
+                    color: '#92400e',
+                    marginBottom: 2,
+                  }}
+                >
+                  Account Not Verified
+                </Text>
+                <Text
+                  style={{
+                    fontFamily: 'Poppins400',
+                    fontSize: 12,
+                    color: '#b45309',
+                    lineHeight: 17,
+                  }}
+                >
+                  Verify your account to unlock full access.
+                </Text>
+              </View>
+              <Pressable
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 4,
+                  backgroundColor: '#f59e0b',
+                  paddingHorizontal: 12,
+                  paddingVertical: 8,
+                  borderRadius: 10,
+                }}
+              >
+                <Text
+                  style={{
+                    fontFamily: 'Poppins600',
+                    fontSize: 12,
+                    color: '#fff',
+                  }}
+                >
+                  Verify
+                </Text>
+                <ArrowRight color='#fff' size={13} />
+              </Pressable>
+            </View>
+          </View>
+        )}
+
         {/* Semester Card */}
-        <View className='mx-5 mt-6'>
+        <View style={{ marginHorizontal: 20, marginTop: 20 }}>
           {error === 'No active semester found' ? (
             <View
               style={{
-                backgroundColor: '#fff',
+                backgroundColor: t.card,
                 borderRadius: 16,
                 padding: 20,
                 borderWidth: 1,
-                borderColor: '#e5e7eb',
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.06,
-                shadowRadius: 8,
-                elevation: 2,
+                borderColor: t.cardBorder,
               }}
             >
-              <View className='flex flex-row items-center gap-3'>
+              <View
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}
+              >
                 <View
                   style={{
-                    backgroundColor: '#fef3c7',
+                    backgroundColor: t.amberBg,
                     padding: 8,
                     borderRadius: 10,
                   }}
                 >
                   <Calendar color='#d97706' size={18} />
                 </View>
-                <Text className='font-poppins-medium text-[#71717a]'>
+                <Text
+                  style={{
+                    fontFamily: 'Poppins500',
+                    fontSize: 14,
+                    color: t.textMuted,
+                  }}
+                >
                   No Active Semester
                 </Text>
               </View>
@@ -137,17 +227,24 @@ export default function Home() {
             semester && (
               <View
                 style={{
-                  backgroundColor: '#8e51ff',
+                  backgroundColor: t.primary,
                   borderRadius: 20,
                   padding: 20,
-                  shadowColor: '#8e51ff',
+                  shadowColor: t.primary,
                   shadowOffset: { width: 0, height: 6 },
                   shadowOpacity: 0.35,
                   shadowRadius: 12,
                   elevation: 8,
                 }}
               >
-                <View className='flex flex-row items-center gap-2 mb-3'>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 6,
+                    marginBottom: 10,
+                  }}
+                >
                   <Calendar color='rgba(255,255,255,0.7)' size={14} />
                   <Text
                     style={{
@@ -232,9 +329,16 @@ export default function Home() {
           )}
         </View>
 
-        {/* Quick Nav Grid */}
-        <View className='mx-5 mt-6'>
-          <Text className='font-poppins-bold text-[#0e0e11] text-base mb-3'>
+        {/* Quick Access */}
+        <View style={{ marginHorizontal: 20, marginTop: 20 }}>
+          <Text
+            style={{
+              fontFamily: 'Poppins700',
+              fontSize: 15,
+              color: t.text,
+              marginBottom: 12,
+            }}
+          >
             Quick Access
           </Text>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
@@ -243,13 +347,17 @@ export default function Home() {
                 key={i}
                 onPress={() => router.push(nav.to)}
                 style={{
-                  width: i === 2 ? '100%' : '48%', // 3rd item full width
-                  backgroundColor: '#fff',
+                  width:
+                    i === centerNavData.length - 1 &&
+                    centerNavData.length % 2 !== 0
+                      ? '100%'
+                      : '48%',
+                  backgroundColor: t.card,
                   borderRadius: 16,
                   padding: 16,
                   borderWidth: 1,
-                  borderColor: '#f0ebff',
-                  shadowColor: '#8e51ff',
+                  borderColor: t.cardBorder,
+                  shadowColor: t.primary,
                   shadowOffset: { width: 0, height: 2 },
                   shadowOpacity: 0.08,
                   shadowRadius: 6,
@@ -257,46 +365,58 @@ export default function Home() {
                   flexDirection: 'row',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  // remove flex: 1
                 }}
               >
                 <View
-                  style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 10,
+                  }}
                 >
                   <View
                     style={{
-                      backgroundColor: '#f0ebff',
+                      backgroundColor: t.primaryLight,
                       padding: 10,
                       borderRadius: 12,
                     }}
                   >
-                    <nav.icon color='#8e51ff' size={20} />
+                    <nav.icon color={t.primary} size={20} />
                   </View>
                   <Text
                     style={{
                       fontFamily: 'Poppins600',
                       fontSize: 13,
-                      color: '#0e0e11',
+                      color: t.text,
                     }}
                   >
                     {nav.label}
                   </Text>
                 </View>
-                <ChevronRight color='#c4b5fd' size={16} />
+                <ChevronRight color={t.primaryBorder} size={16} />
               </Pressable>
             ))}
           </View>
         </View>
 
         {/* Available Slots */}
-        <View className='mx-5 mt-6'>
-          <View className='flex flex-row items-center justify-between mb-3'>
-            <Text className='font-poppins-bold text-[#0e0e11] text-base'>
+        <View style={{ marginHorizontal: 20, marginTop: 20 }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: 12,
+            }}
+          >
+            <Text
+              style={{ fontFamily: 'Poppins700', fontSize: 15, color: t.text }}
+            >
               Available Slots
             </Text>
             <View
               style={{
-                backgroundColor: '#f0ebff',
+                backgroundColor: t.primaryLight,
                 paddingHorizontal: 10,
                 paddingVertical: 4,
                 borderRadius: 20,
@@ -304,7 +424,7 @@ export default function Home() {
             >
               <Text
                 style={{
-                  color: '#8e51ff',
+                  color: t.primary,
                   fontSize: 12,
                   fontFamily: 'Poppins600',
                 }}
@@ -317,11 +437,11 @@ export default function Home() {
           {loading ? (
             <View
               style={{
-                backgroundColor: '#fff',
+                backgroundColor: t.card,
                 borderRadius: 16,
                 padding: 20,
                 borderWidth: 1,
-                borderColor: '#e5e7eb',
+                borderColor: t.cardBorder,
               }}
             >
               {[1, 2, 3].map((k) => (
@@ -329,7 +449,7 @@ export default function Home() {
                   key={k}
                   style={{
                     height: 52,
-                    backgroundColor: '#f3f4f6',
+                    backgroundColor: t.skeletonBg,
                     borderRadius: 10,
                     marginBottom: 8,
                   }}
@@ -339,18 +459,18 @@ export default function Home() {
           ) : availableSlots.length === 0 ? (
             <View
               style={{
-                backgroundColor: '#fff',
+                backgroundColor: t.card,
                 borderRadius: 16,
                 padding: 24,
                 borderWidth: 1,
-                borderColor: '#e5e7eb',
+                borderColor: t.cardBorder,
                 alignItems: 'center',
               }}
             >
-              <MapPin color='#d1d5db' size={32} />
+              <MapPin color={t.textFaint} size={32} />
               <Text
                 style={{
-                  color: '#9ca3af',
+                  color: t.textFaint,
                   fontFamily: 'Poppins500',
                   marginTop: 8,
                   fontSize: 13,
@@ -362,16 +482,11 @@ export default function Home() {
           ) : (
             <View
               style={{
-                backgroundColor: '#fff',
+                backgroundColor: t.card,
                 borderRadius: 16,
                 borderWidth: 1,
-                borderColor: '#e5e7eb',
+                borderColor: t.cardBorder,
                 overflow: 'hidden',
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.05,
-                shadowRadius: 6,
-                elevation: 2,
               }}
             >
               {availableSlots.map((slot, idx) => (
@@ -383,23 +498,23 @@ export default function Home() {
                     paddingHorizontal: 16,
                     paddingVertical: 14,
                     borderBottomWidth: idx < availableSlots.length - 1 ? 1 : 0,
-                    borderBottomColor: '#f3f4f6',
+                    borderBottomColor: t.divider,
                   }}
                 >
                   <View
                     style={{
-                      backgroundColor: '#f0ebff',
+                      backgroundColor: t.primaryLight,
                       padding: 8,
                       borderRadius: 10,
                       marginRight: 12,
                     }}
                   >
-                    <MapPin color='#8e51ff' size={16} />
+                    <MapPin color={t.primary} size={16} />
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text
                       style={{
-                        color: '#0e0e11',
+                        color: t.text,
                         fontFamily: 'Poppins600',
                         fontSize: 14,
                       }}
@@ -408,7 +523,7 @@ export default function Home() {
                     </Text>
                     <Text
                       style={{
-                        color: '#71717a',
+                        color: t.textMuted,
                         fontFamily: 'Poppins400',
                         fontSize: 12,
                         marginTop: 1,
@@ -419,7 +534,7 @@ export default function Home() {
                   </View>
                   <View
                     style={{
-                      backgroundColor: '#dcfce7',
+                      backgroundColor: t.greenBg,
                       paddingHorizontal: 8,
                       paddingVertical: 3,
                       borderRadius: 20,
@@ -427,7 +542,7 @@ export default function Home() {
                   >
                     <Text
                       style={{
-                        color: '#16a34a',
+                        color: t.green,
                         fontSize: 11,
                         fontFamily: 'Poppins600',
                       }}
