@@ -6,16 +6,16 @@ const Faculty = require('../models/facultyModel');
 const Guard = require('../models/guardModel');
 const SuperAdmin = require('../models/superAdminModel');
 const generatePassword = require('../utils/generatePassword');
+const ActivityLogs = require('../models/activityModel');
 
 exports.registerOtp = async ({ email, payload, otp, type }) => {
   if (!email || !otp) {
     throw new Error('Credentials not found');
   }
 
-  const haveOtp = await Otp.findOne({ email });
-  if (haveOtp) {
-    throw new Error('OTP was already sent');
-  }
+  // If an OTP already exists for this email+type, update it (upsert)
+  // so refreshing the login page doesn't block re-submission
+  const existing = await Otp.findOne({ email, type });
 
   if (type === 'login') {
     const user = await User.findOne({ email });
@@ -28,13 +28,22 @@ exports.registerOtp = async ({ email, payload, otp, type }) => {
   }
 
   const hashOtp = await bcrypt.hash(otp, 10);
+  const expiresAt = new Date(Date.now() + 5 * 60000);
+
+  if (existing) {
+    existing.otp = hashOtp;
+    existing.payload = payload;
+    existing.expiresAt = expiresAt;
+    await existing.save();
+    return existing;
+  }
 
   const storeTempCredentials = await Otp.create({
     email,
     payload,
     otp: hashOtp,
     type,
-    expiresAt: new Date(Date.now() + 5 * 60000),
+    expiresAt,
   });
 
   if (!storeTempCredentials) {
@@ -126,7 +135,7 @@ exports.verifyOtp = async (email, otp, type) => {
 
     let userData = null;
 
-    if (recordUser.role === 'superadmin') {
+    if (recordUser.role === 'super admin') {
       userData = await SuperAdmin.findOne({ userId: recordUser._id });
     }
 
@@ -145,25 +154,33 @@ exports.verifyOtp = async (email, otp, type) => {
     // Set emailVerified on first successful OTP login + generate QR for student/faculty
     if (!recordUser.emailVerified) {
       recordUser.emailVerified = true;
-      await recordUser.save();
 
       if (recordUser.role === 'student' || recordUser.role === 'faculty') {
         const generateQR = require('../utils/generateQRCode');
-        const cloudinary = require('../utils/cloudinary');
-        const qrDataUrl = await generateQR(`PARKEASE_USER:${recordUser._id}`);
-        const uploaded = await cloudinary.uploader.upload(qrDataUrl, {
-          folder: 'parkease/qrcodes',
-          public_id: `qr_${recordUser._id}`,
-          overwrite: true,
-        });
+        const qr = await generateQR(`PARKEASE_USER:${recordUser._id}`);
         const Model = recordUser.role === 'student' ? Student : Faculty;
         await Model.findOneAndUpdate(
           { userId: recordUser._id },
-          { QRCode: uploaded.secure_url },
+          { QRCode: qr },
         );
-        if (userData) userData.QRCode = uploaded.secure_url;
+        if (userData) userData.QRCode = qr;
       }
     }
+
+    // Always update lastActive on login
+    recordUser.lastActive = new Date();
+    await recordUser.save();
+
+    // Activity log
+    await ActivityLogs.create({
+      userId: recordUser._id,
+      actionType: 'auth',
+      action: 'LOGIN',
+      description: `${recordUser.email} signed in successfully.`,
+      entityType: 'User',
+      entityId: recordUser._id,
+      metadata: { role: recordUser.role },
+    });
 
     const moreData = userData ? userData._doc : {};
     delete moreData._id;

@@ -1,4 +1,4 @@
-import { io } from 'socket.io-client/build/cjs/index.js';
+import { io } from 'socket.io-client';
 import { BASE_URL } from './api';
 
 let socket = null;
@@ -10,5 +10,12 @@ export const getSocket = () => {
   return socket;
 };
 
-export const connectSocket = () => getSocket().connect();
+export const connectSocket = () =>
+  new Promise((resolve) => {
+    const s = getSocket();
+    if (s.connected) return resolve(s);
+    s.once('connect', () => resolve(s));
+    s.connect();
+  });
+
 export const disconnectSocket = () => socket?.disconnect();

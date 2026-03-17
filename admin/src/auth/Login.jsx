@@ -18,7 +18,7 @@ export default function Login() {
     if (otp_accesss) {
       navigate('/otp-verification');
     }
-  });
+  }, []);
 
   const handleManualLogin = async (e) => {
     e.preventDefault();

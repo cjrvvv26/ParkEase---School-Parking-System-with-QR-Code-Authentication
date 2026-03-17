@@ -86,7 +86,7 @@ export default function OTPVerification() {
 
   const handleResend = async () => {
     if (!canResend) return;
-    await execute(resendOtp, { email });
+    await execute(resendOtp, { email, type: 'login' });
     setDigits(Array(DIGITS).fill(''));
     setCountdown(COUNTDOWN);
     setCanResend(false);
@@ -322,6 +322,9 @@ export default function OTPVerification() {
             <Pressable
               disabled={loading}
               onPress={async () => {
+                try {
+                  await api.delete('super-admin/auth/cancel-verification', { data: { email } });
+                } catch (_) {}
                 await AsyncStorage.removeItem('hasVerification');
                 router.replace('/SignIn');
               }}

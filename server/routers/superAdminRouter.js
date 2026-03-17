@@ -9,6 +9,7 @@ router.post('/check-account', superAdminController.identifyAccountByEmail);
 router.get('/id', superAdminController.getSuperAdminId);
 router.get('/chat/:chatId', superAdminController.getChatMessages);
 router.get('/chat-users', superAdminController.getChatUsers);
+router.delete('/auth/cancel-verification', authController.cancelVerification);
 
 //Protected API endpoints
 router.use(verifySession(), requiredSuperAdmin);

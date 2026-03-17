@@ -41,34 +41,44 @@ export default function Chat() {
   const buildChatId = (a, b) => [a, b].sort().join('_');
 
   useEffect(() => {
+    const socket = getSocket();
+    let currentRoomId = null;
+
+    const handler = (msg) => {
+      setMessages((prev) =>
+        prev.some((m) => m._id && m._id === msg._id) ? prev : [...prev, msg]
+      );
+      setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
+    };
+
+    const rejoin = () => {
+      if (currentRoomId) socket.emit('join room', currentRoomId);
+    };
+
+    socket.on('received_message', handler);
+    socket.on('connect', rejoin);
+
     const init = async () => {
       const res = await getSuperAdminId();
-      if (res?.data?._id) {
-        const saId = res.data._id;
-        setAdminId(saId);
-        const id = buildChatId(user._id, saId);
-        setChatId(id);
+      if (!res?.data?._id) return;
 
-        // Load history
-        const history = await getChatMessages(id);
-        if (history?.data) setMessages(history.data);
+      const saId = res.data._id;
+      setAdminId(saId);
+      const id = buildChatId(user._id, saId);
+      setChatId(id);
+      currentRoomId = id;
 
-        // Connect socket and join room
-        const socket = getSocket();
-        connectSocket();
-        socket.emit('join room', id);
+      const history = await getChatMessages(id);
+      if (history?.data) setMessages(history.data);
 
-        socket.on('received_message', (msg) => {
-          setMessages((prev) => [...prev, msg]);
-          setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
-        });
-      }
+      await connectSocket();
+      socket.emit('join room', id);
     };
     init();
 
     return () => {
-      const socket = getSocket();
-      socket.off('received_message');
+      socket.off('received_message', handler);
+      socket.off('connect', rejoin);
     };
   }, []);
 

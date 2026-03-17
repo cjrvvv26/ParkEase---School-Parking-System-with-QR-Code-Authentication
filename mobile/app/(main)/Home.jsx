@@ -44,10 +44,7 @@ export default function Home() {
     { icon: User, label: 'Profile', to: '/Account' },
     { icon: Settings, label: 'Settings', to: '/Settings' },
     ...(user.role !== 'guard'
-      ? [
-          { icon: ParkingSquare, label: 'Parking', to: '/Parking' },
-          { icon: MessageCircleQuestionMark, label: 'Support', to: '/Chat' },
-        ]
+      ? [{ icon: ParkingSquare, label: 'Parking', to: '/Parking' }]
       : [{ icon: TrendingUp, label: 'Analytics', to: '/Analytics' }]),
   ];
 

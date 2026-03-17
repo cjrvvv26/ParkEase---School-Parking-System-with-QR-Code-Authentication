@@ -22,7 +22,7 @@ export default function EmailConfirmation() {
     setEmail(sessionStorage.getItem('email'));
     setOtpType(sessionStorage.getItem('otp_type'));
     if (!otp_access) {
-      navigate('/sign-up');
+      navigate('/sign-in');
     }
   }, []);
 
@@ -111,17 +111,19 @@ export default function EmailConfirmation() {
   //Handle Verification Cancellation
   const handelCancelVerification = async () => {
     try {
-      const res = await axiosConfig.delete(
+      setCancel(true);
+      await axiosConfig.delete(
         'super-admin/auth/cancel-verification',
         { data: { email } },
       );
-      console.log(res.data);
       sessionStorage.removeItem('otp_access');
       sessionStorage.removeItem('otp_type');
       sessionStorage.removeItem('email');
       navigate('/sign-in');
     } catch (error) {
-      console.log(error.response.data);
+      console.log(error.response?.data);
+    } finally {
+      setCancel(false);
     }
   };
   return (

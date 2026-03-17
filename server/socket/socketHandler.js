@@ -11,7 +11,11 @@ const socketHandler = (io) => {
     socket.on("send_message", async (data) => {
       try {
         const saveMessage = await chatService.saveMessage(data);
-        io.to(data.chatId).emit("received_message", saveMessage);
+        const plain = saveMessage.toObject();
+        plain._id = plain._id.toString();
+        plain.sender = plain.sender.toString();
+        plain.receiver = plain.receiver.toString();
+        io.to(data.chatId).emit("received_message", plain);
       } catch (error) {
         console.log(error.message);
       }

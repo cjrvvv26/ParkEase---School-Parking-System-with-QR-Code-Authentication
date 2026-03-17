@@ -188,6 +188,17 @@ exports.resendOtp = async (req, res) => {
   }
 };
 
+exports.cancelVerification = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'Email is required' });
+    await Otp.deleteOne({ email });
+    res.status(200).json({ message: 'Verification cancelled' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 exports.signOutUser = async (req, res) => {
   try {
     const { user } = req;

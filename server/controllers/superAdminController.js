@@ -187,7 +187,7 @@ exports.identifyAccountByEmail = async (req, res) => {
 
 exports.getSuperAdminId = async (req, res) => {
   try {
-    const user = await User.findOne({ role: 'super admin' }).select('_id');
+    const user = await User.findOne({ role: 'super admin' }).sort({ createdAt: 1 }).select('_id');
     if (!user) return res.status(404).json({ error: 'Super admin not found' });
     res.status(200).json({ _id: user._id });
   } catch (error) {

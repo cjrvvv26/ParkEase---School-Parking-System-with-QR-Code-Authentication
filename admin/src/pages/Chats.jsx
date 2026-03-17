@@ -10,6 +10,13 @@ const getSocket = () => {
   if (!socket) socket = io(BASE_URL, { transports: ["websocket"], autoConnect: false });
   return socket;
 };
+const connectSocket = () =>
+  new Promise((resolve) => {
+    const s = getSocket();
+    if (s.connected) return resolve(s);
+    s.once("connect", () => resolve(s));
+    s.connect();
+  });
 
 const formatName = (name) =>
   name ? `${name.firstName} ${name.lastName}` : "Unknown";
@@ -26,32 +33,52 @@ export default function Chats() {
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState(null);
-  const [messages, setMessages] = useState([]);
+  // Per-conversation message cache: { [chatId]: Message[] }
+  const [msgMap, setMsgMap] = useState({});
   const [text, setText] = useState("");
   const messagesEndRef = useRef(null);
 
-  // Load student/faculty list
+  const getChatId = (userId) =>
+    adminId && userId ? [adminId, userId].sort().join("_") : null;
+
+  const currentChatId = selected ? getChatId(selected._id) : null;
+  const messages = currentChatId ? (msgMap[currentChatId] ?? []) : [];
+
+  const appendMessage = (msg) => {
+    const cid = msg.chatId;
+    if (!cid) return;
+    setMsgMap((prev) => {
+      const existing = prev[cid] ?? [];
+      if (existing.some((m) => m._id && m._id === msg._id)) return prev;
+      return { ...prev, [cid]: [...existing, msg] };
+    });
+  };
+
+  // Load user list
   useEffect(() => {
     axiosConfig.get("/super-admin/chat-users").then((res) => setUsers(res.data));
   }, []);
 
-  // Socket setup
+  // Socket setup — connect once, listen for all incoming messages
   useEffect(() => {
     if (!adminId) return;
     const s = getSocket();
-    s.connect();
-    s.on("received_message", (msg) => {
-      setMessages((prev) => [...prev, msg]);
-    });
-    return () => s.off("received_message");
+    const handler = (msg) => appendMessage(msg);
+    s.on("received_message", handler);
+    connectSocket();
+    return () => s.off("received_message", handler);
   }, [adminId]);
 
-  // Load history + join room when user selected
+  // When a user is selected: join their room + load history if not cached
   useEffect(() => {
     if (!selected || !adminId) return;
-    const chatId = [adminId, selected._id].sort().join("_");
-    axiosConfig.get(`/super-admin/chat/${chatId}`).then((res) => setMessages(res.data));
-    getSocket().emit("join room", chatId);
+    const chatId = getChatId(selected._id);
+    connectSocket().then((s) => s.emit("join room", chatId));
+    if (!msgMap[chatId]) {
+      axiosConfig.get(`/super-admin/chat/${chatId}`).then((res) =>
+        setMsgMap((prev) => ({ ...prev, [chatId]: res.data }))
+      );
+    }
   }, [selected, adminId]);
 
   useEffect(() => {
@@ -61,7 +88,7 @@ export default function Chats() {
   const handleSend = (e) => {
     e.preventDefault();
     if (!text.trim() || !selected || !adminId) return;
-    const chatId = [adminId, selected._id].sort().join("_");
+    const chatId = getChatId(selected._id);
     getSocket().emit("send_message", {
       chatId,
       sender: adminId,
@@ -98,8 +125,8 @@ export default function Chats() {
             <p className="p-4 text-center text-sm text-gray-400">No users found</p>
           ) : (
             filtered.map((u) => {
-              const chatId = adminId ? [adminId, u._id].sort().join("_") : null;
-              const lastMsg = messages.filter((m) => m.chatId === chatId).at(-1);
+              const chatId = getChatId(u._id);
+              const lastMsg = chatId ? (msgMap[chatId] ?? []).at(-1) : null;
               return (
                 <div
                   key={u._id}
@@ -123,12 +150,14 @@ export default function Chats() {
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <p className="font-semibold text-gray-700 text-sm truncate">
-                          {formatName(u.name)}
-                        </p>
-                      </div>
-                      <p className="text-xs text-gray-400 capitalize">{u.role}</p>
+                      <p className="font-semibold text-gray-700 text-sm truncate">
+                        {formatName(u.name)}
+                      </p>
+                      {lastMsg ? (
+                        <p className="text-xs text-gray-400 truncate">{lastMsg.message}</p>
+                      ) : (
+                        <p className="text-xs text-gray-400 capitalize">{u.role}</p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -164,10 +193,7 @@ export default function Chats() {
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
               {messages.map((msg, i) => {
-                const isOwn =
-                  msg.sender === adminId ||
-                  msg.sender?._id === adminId ||
-                  msg.sender?.toString() === adminId?.toString();
+                const isOwn = msg.sender?.toString() === adminId?.toString();
                 return (
                   <div key={msg._id || i} className={`flex ${isOwn ? "justify-end" : "justify-start"}`}>
                     <div
