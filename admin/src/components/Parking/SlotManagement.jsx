@@ -1,24 +1,48 @@
 import { useState, useEffect } from "react";
 import useFetch from "../../hooks/useFetch";
-import {
-  Search,
-  Funnel,
-  ChevronLeft,
-  ChevronRight,
-  CircleAlert,
-} from "lucide-react";
-import Modal from "../Modal";
+import { Search, UserCheck, UserX, AlertTriangle, X, ParkingSquare } from "lucide-react";
 
-export default function SlotManagement({
-  selectedShape,
-  loading,
-  onUpdateSlot,
-  setIsOpen,
-}) {
-  const [openConfirmation, setOpenConfirmation] = useState(false);
+function Avatar({ src, name }) {
+  return src ? (
+    <img src={src} alt={name} className="w-10 h-10 rounded-full object-cover ring-2 ring-violet-100 flex-shrink-0" />
+  ) : (
+    <div className="w-10 h-10 rounded-full bg-violet-100 flex items-center justify-center text-violet-500 font-semibold text-sm flex-shrink-0">
+      {name?.[0]?.toUpperCase() || "?"}
+    </div>
+  );
+}
+
+function ConfirmDialog({ title, message, confirmLabel, confirmClass, onConfirm, onCancel, loading, error }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <div className="bg-white rounded-2xl shadow-2xl w-[380px] p-6 flex flex-col gap-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-full bg-rose-50">
+            <AlertTriangle size={20} className="text-rose-500" />
+          </div>
+          <h2 className="font-semibold text-gray-800">{title}</h2>
+        </div>
+        <p className="text-sm text-gray-500">{message}</p>
+        {error && <p className="text-xs text-rose-500">{error}</p>}
+        <div className="flex gap-3 mt-1">
+          <button onClick={onCancel} className="flex-1 py-2 rounded-xl border border-gray-200 text-sm text-gray-500 hover:bg-gray-50 transition">
+            Cancel
+          </button>
+          <button onClick={onConfirm} disabled={loading} className={`flex-1 py-2 rounded-xl text-sm text-white transition ${confirmClass} disabled:opacity-60`}>
+            {loading ? "Processing..." : confirmLabel}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function SlotManagement({ selectedShape, onUpdateSlot, setIsOpen }) {
   const [assignedUser, setAssignedUser] = useState(null);
   const [availableUsers, setAvailableUsers] = useState([]);
-  const { fetchData, error } = useFetch();
+  const [search, setSearch] = useState("");
+  const [confirm, setConfirm] = useState(null); // { type: 'remove' | 'assign', user? }
+  const { fetchData, loading, error } = useFetch();
 
   useEffect(() => {
     const getUsers = async () => {
@@ -26,221 +50,173 @@ export default function SlotManagement({
         method: "POST",
         data: { id: selectedShape._id },
       });
-      console.log(res);
-
-      if (res.assignedUser) {
-        setAssignedUser({ ...res?.assignedUser });
-      }
-      setAvailableUsers(res.users);
+      if (res?.assignedUser) setAssignedUser(res.assignedUser);
+      setAvailableUsers(res?.users || []);
     };
-
     getUsers();
   }, []);
 
-  const handleRemoveUser = async (shape) => {
-    console.log(shape._id);
-
+  const handleRemove = async () => {
     const res = await fetchData("slot/remove", {
       method: "POST",
-      data: { id: shape._id },
+      data: { id: selectedShape._id },
     });
-    console.log(res);
-
     if (res) {
       setIsOpen(false);
-      setOpenConfirmation(false);
       onUpdateSlot(res.slot);
     }
   };
 
-  const handleAssignUser = async (slot, user) => {
+  const handleAssign = async (user) => {
     const res = await fetchData("/slot/assign", {
       method: "POST",
-      data: { student: user, slot },
+      data: { student: user, slot: selectedShape },
     });
-    console.log(res);
-
     if (res) {
       setIsOpen(false);
-      setOpenConfirmation(false);
       onUpdateSlot(res.slot);
     }
   };
 
+  const filtered = availableUsers.filter((u) => {
+    const firstName = u.profile?.name?.firstName || u.name?.firstName || "";
+    const lastName = u.profile?.name?.lastName || u.name?.lastName || "";
+    const name = `${firstName} ${lastName}`.toLowerCase();
+    return name.includes(search.toLowerCase()) || u.email?.toLowerCase().includes(search.toLowerCase());
+  });
+
+  const slotLabel = selectedShape?.metadata?.label || "Slot";
+  const slotStatus = selectedShape?.assignedStudentId ? "Exclusive" : selectedShape?.occupiedBy ? "Occupied" : "Available";
+  const statusColor = { Exclusive: "bg-violet-100 text-violet-600", Occupied: "bg-rose-100 text-rose-600", Available: "bg-green-100 text-green-600" };
+
   return (
-    <div className="flex select-none min-w-[600px] flex-col text-sm gap-5">
-      <div className="flex justify-between items-center">
-        <h1 className="text-base font-medium">Slot Management</h1>
-        {/* Pagination */}
-        <div className="flex items-center gap-3 text-xs text-gray-400">
-          <p>15 of 500</p>
-          <ChevronLeft size={20} strokeWidth={1.5} className="cursor-pointer" />
-          <ChevronRight
-            size={20}
-            strokeWidth={1.5}
-            className="cursor-pointer"
-          />
+    <div className="flex flex-col w-[620px] gap-0 text-sm select-none">
+      {/* Header */}
+      <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-gray-100">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-xl bg-violet-50">
+            <ParkingSquare size={20} className="text-violet-500" />
+          </div>
+          <div>
+            <h1 className="font-semibold text-gray-800 text-base">Manage Slot</h1>
+            <p className="text-xs text-gray-400">Slot {slotLabel}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className={`text-xs font-medium px-3 py-1 rounded-full ${statusColor[slotStatus]}`}>{slotStatus}</span>
+          <button onClick={() => setIsOpen(false)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 transition">
+            <X size={16} />
+          </button>
         </div>
       </div>
-      <header className="flex items-center justify-between gap-5">
-        {/* Search Bar */}
-        <div className="relative min-w-[500px] bg-gray-50 overflow-hidden rounded-full">
-          <button className="rounded-full left-1 absolute -translate-y-1/2 top-1/2 h-10 w-10 bg-gradient-to-tr flex items-center justify-center from-violet-300 to-violet-500 text-white">
-            <Search size={20} strokeWidth={1.5} />
-          </button>
-          <input
-            type="text"
-            placeholder="Search name"
-            className="outline-none text-gray-600 w-full bg-gray-100 pl-14 pr-4 h-12"
-          />
-        </div>
-        {/* Filter */}
-        <Funnel
-          strokeWidth={1.5}
-          size={20}
-          className="text-gray-400 hover:cursor-pointer"
-        />
-      </header>
 
-      {/* List of users */}
-      <div className="flex flex-col max-h-[400px] overflow-y-auto w-full border-t border-gray-200">
+      {/* Assigned User */}
+      <div className="px-6 py-4 border-b border-gray-100">
+        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Assigned User</p>
         {assignedUser ? (
-          <div className="flex items-center justify-between border-b border-gray-200">
-            <div className="flex items-center gap-3 p-1  w-full">
-              <img
-                src={assignedUser.profileDetails.url}
-                alt=""
-                className="object-cover h-10 w-10 rounded-full"
-              />
-              <p className="truncate w-[200px]">
-                {assignedUser.name.firstName + " " + assignedUser.name.lastName}
-              </p>
-              <p className="text-gray-400 truncate w-[200px]">
-                {assignedUser.email}
-              </p>
+          <div className="flex items-center justify-between bg-violet-50 rounded-xl p-3 border border-violet-100">
+            <div className="flex items-center gap-3">
+              <Avatar src={assignedUser.profileDetails?.url} name={assignedUser.name?.firstName} />
+              <div>
+                <p className="font-medium text-gray-800">{assignedUser.name?.firstName} {assignedUser.name?.lastName}</p>
+                <p className="text-xs text-gray-400">{assignedUser.email}</p>
+              </div>
             </div>
-            <div className="flex gap-3">
-              <p className="h-full text-gray-400 rounded-md bg-gray-100 py-2 px-4">
-                {assignedUser.role.charAt(0).toUpperCase() +
-                  assignedUser.role.slice(1)}
-              </p>
+            <div className="flex items-center gap-2">
+              <span className="text-xs bg-white border border-violet-200 text-violet-500 px-2 py-1 rounded-lg capitalize">{assignedUser.role}</span>
               <button
-                onClick={() => {
-                  setOpenConfirmation(true);
-                }}
-                className="bg-rose-500 hover:bg-rose-400 text-white px-4 py-2 rounded-md"
+                onClick={() => setConfirm({ type: "remove" })}
+                className="flex items-center gap-1.5 text-xs bg-rose-500 hover:bg-rose-600 text-white px-3 py-1.5 rounded-lg transition"
               >
-                Remove
+                <UserX size={13} /> Remove
               </button>
-              {openConfirmation && (
-                <Modal onClose={() => setOpenConfirmation(false)}>
-                  <header className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-rose-500 font-medium">
-                      <CircleAlert size={20} />
-                      <h1 className="text-gray-700">
-                        Slot Removal Confirmation
-                      </h1>
-                    </div>
-                  </header>
-                  <p className="text-sm text-gray-400 mt-5">
-                    Are you sure you want to remove this user?
-                  </p>
-                  <div className="flex text-sm flex-col gap-3 mt-5">
-                    <button
-                      onClick={() => setOpenConfirmation(false)}
-                      className="py-2 w-full rounded-md border border-gray-200 hover:text-gray-500 text-gray-400"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      disabled={loading}
-                      onClick={() => handleRemoveUser(selectedShape)}
-                      className={`${loading ? "bg-gray-500 hover:gray-400" : "hover:bg-rose-400 bg-rose-500"} py-2  w-full rounded-md  text-white`}
-                    >
-                      {loading ? "Processing..." : "Yes, I'm sure"}
-                    </button>
-                    {error && (
-                      <p className="text-xs w-[300px] truncate text-red-500">
-                        {error}
-                      </p>
-                    )}
-                  </div>
-                </Modal>
-              )}
             </div>
           </div>
         ) : (
-          <p className="py-4 h-24 border-b border-gray-200 w-full text-center text-gray-400">
-            No Assigned User
-          </p>
-        )}
-        {availableUsers.map((user, index) => (
-          <div
-            key={index}
-            className="flex items-center justify-between border-b border-gray-200"
-          >
-            <div className="flex items-center gap-3 p-1  w-full">
-              <img
-                src={user.profileDetails.url}
-                alt={user.profileDetails.url}
-                className="object-cover h-10 w-10 rounded-full"
-              />
-              <p className="truncate w-[200px]">
-                {user.profile.name.firstName + " " + user.profile.name.lastName}
-              </p>
-              <p className="text-gray-400 truncate w-[200px]">{user.email}</p>
+          <div className="flex items-center gap-3 bg-gray-50 rounded-xl p-3 border border-dashed border-gray-200">
+            <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+              <UserX size={16} className="text-gray-300" />
             </div>
-            <div className="flex gap-3">
-              <p className="h-full text-gray-400 rounded-md bg-gray-100 py-2 px-4">
-                {user.role}
-              </p>
-              <button
-                onClick={() => {
-                  setOpenConfirmation(true);
-                }}
-                className="bg-violet-500 hover:bg-violet-400 text-white px-4 py-2 rounded-md"
-              >
-                Assign
-              </button>
-              {openConfirmation && (
-                <Modal onClose={() => setOpenConfirmation(false)}>
-                  <header className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-violet-500 font-medium">
-                      <CircleAlert size={20} />
-                      <h1 className="text-gray-700">
-                        Slot Assignment Confirmation
-                      </h1>
-                    </div>
-                  </header>
-                  <p className="text-sm text-gray-400 mt-5">
-                    Are you sure you want to assign this user?
-                  </p>
-                  <div className="flex text-sm flex-col gap-3 mt-5">
-                    <button
-                      onClick={() => setOpenConfirmation(false)}
-                      className="py-2 w-full rounded-md border border-gray-200 hover:text-gray-500 text-gray-400"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      disabled={loading}
-                      onClick={() => handleAssignUser(selectedShape, user)}
-                      className={`${loading ? "bg-gray-500 hover:gray-400" : "hover:bg-violet-400 bg-violet-500"} py-2  w-full rounded-md  text-white`}
-                    >
-                      {loading ? "Processing..." : "Yes, I'm sure"}
-                    </button>
-                    {error && (
-                      <p className="text-xs w-[50] truncate text-red-500">
-                        {error}
-                      </p>
-                    )}
-                  </div>
-                </Modal>
-              )}
-            </div>
+            <p className="text-gray-400 text-xs">No user assigned to this slot</p>
           </div>
-        ))}
+        )}
       </div>
+
+      {/* Available Users */}
+      <div className="px-6 py-4 flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Available Users</p>
+          <span className="text-xs text-gray-400">{filtered.length} users</span>
+        </div>
+        {/* Search */}
+        <div className="relative">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search by name or email..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-violet-200 focus:border-violet-300 transition"
+          />
+        </div>
+        {/* List */}
+        <div className="flex flex-col max-h-[280px] overflow-y-auto gap-1 pr-1">
+          {filtered.length === 0 ? (
+            <div className="py-8 text-center text-gray-400 text-xs">No available users found</div>
+          ) : (
+            filtered.map((user, i) => {
+              const firstName = user.profile?.name?.firstName || user.name?.firstName || "";
+              const lastName = user.profile?.name?.lastName || user.name?.lastName || "";
+              return (
+              <div key={i} className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 border border-transparent hover:border-gray-100 transition group">
+                <div className="flex items-center gap-3">
+                  <Avatar src={user.profileDetails?.url} name={firstName} />
+                  <div>
+                    <p className="font-medium text-gray-700">{firstName} {lastName}</p>
+                    <p className="text-xs text-gray-400">{user.email}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded-lg capitalize">{user.role}</span>
+                  <button
+                    onClick={() => setConfirm({ type: "assign", user, firstName, lastName })}
+                    className="flex items-center gap-1.5 text-xs bg-violet-500 hover:bg-violet-600 text-white px-3 py-1.5 rounded-lg transition opacity-0 group-hover:opacity-100"
+                  >
+                    <UserCheck size={13} /> Assign
+                  </button>
+                </div>
+              </div>
+              );
+            })
+          )}
+        </div>
+      </div>
+
+      {/* Confirm dialogs */}
+      {confirm?.type === "remove" && (
+        <ConfirmDialog
+          title="Remove Assignment"
+          message={`Remove ${assignedUser?.name?.firstName} ${assignedUser?.name?.lastName} from Slot ${slotLabel}?`}
+          confirmLabel="Yes, Remove"
+          confirmClass="bg-rose-500 hover:bg-rose-600"
+          onConfirm={handleRemove}
+          onCancel={() => setConfirm(null)}
+          loading={loading}
+          error={error}
+        />
+      )}
+      {confirm?.type === "assign" && (
+        <ConfirmDialog
+          title="Assign User"
+          message={`Assign ${confirm.firstName} ${confirm.lastName} to Slot ${slotLabel}?`}
+          confirmLabel="Yes, Assign"
+          confirmClass="bg-violet-500 hover:bg-violet-600"
+          onConfirm={() => handleAssign(confirm.user)}
+          onCancel={() => setConfirm(null)}
+          loading={loading}
+          error={error}
+        />
+      )}
     </div>
   );
 }

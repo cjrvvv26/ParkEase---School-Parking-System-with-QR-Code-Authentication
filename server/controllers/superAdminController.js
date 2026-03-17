@@ -8,7 +8,6 @@ const superAdminService = require('../services/superAdminService');
 const userService = require('../services/userService');
 const {
   sendAccountDetails,
-  sendAccountVerification,
 } = require('../emails/index');
 const generateEmailToken = require('../utils/generateEmailJWT');
 const notificationService = require('../services/notificationService');
@@ -102,12 +101,6 @@ exports.registerUser = async (req, res) => {
       password: generatedPassword,
     });
 
-    await sendAccountVerification({
-      email: userVM.email,
-      firstName,
-      token: emailToken,
-    });
-
     const notifData = {
       userId: userVM._id,
       message: `Your account has been successfully registered. Welcome to the system! You may now log in, complete your profile, and verify your email to access all available features.`,
@@ -187,6 +180,54 @@ exports.identifyAccountByEmail = async (req, res) => {
     data.account.fullName = SAData?.name || null;
 
     res.status(200).json(data);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.getSuperAdminId = async (req, res) => {
+  try {
+    const user = await User.findOne({ role: 'super admin' }).select('_id');
+    if (!user) return res.status(404).json({ error: 'Super admin not found' });
+    res.status(200).json({ _id: user._id });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.getChatMessages = async (req, res) => {
+  try {
+    const { chatId } = req.params;
+    const chatService = require('../services/chatService');
+    const messages = await chatService.getMessages(chatId);
+    res.status(200).json(messages);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.getChatUsers = async (req, res) => {
+  try {
+    const Student = require('../models/studentModel');
+    const Faculty = require('../models/facultyModel');
+
+    const [students, faculty] = await Promise.all([
+      Student.find().populate('userId', 'profileDetails role status').lean(),
+      Faculty.find().populate('userId', 'profileDetails role status').lean(),
+    ]);
+
+    const map = (list) =>
+      list
+        .filter((u) => u.userId)
+        .map((u) => ({
+          _id: u.userId._id,
+          name: u.name,
+          profileDetails: u.userId.profileDetails,
+          role: u.userId.role,
+          status: u.userId.status,
+        }));
+
+    res.status(200).json([...map(students), ...map(faculty)]);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

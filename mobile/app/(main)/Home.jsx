@@ -12,6 +12,7 @@ import {
   MapPin,
   Calendar,
   ChevronRight,
+  MessageCircleQuestionMark,
 } from 'lucide-react-native';
 import { getSemester } from '../services/semesterService';
 import { getAvailableSlots } from '../services/slotService';
@@ -43,11 +44,11 @@ export default function Home() {
     { icon: User, label: 'Profile', to: '/Account' },
     { icon: Settings, label: 'Settings', to: '/Settings' },
     ...(user.role !== 'guard'
-      ? [{ icon: ParkingSquare, label: 'Parking', to: '/Parking' }]
-      : []),
-    ...(user.role === 'guard' && user?.permissions?.canViewAnalytics
-      ? [{ icon: TrendingUp, label: 'Analytics', to: '/Analytics' }]
-      : []),
+      ? [
+          { icon: ParkingSquare, label: 'Parking', to: '/Parking' },
+          { icon: MessageCircleQuestionMark, label: 'Support', to: '/Chat' },
+        ]
+      : [{ icon: TrendingUp, label: 'Analytics', to: '/Analytics' }]),
   ];
 
   return (

@@ -6,8 +6,17 @@ const Activity = require('../models/activityModel');
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
-const QRCode = require('qrcode');
-const logoPath = path.join(__dirname, './images/logo.jpg');
+const https = require('https');
+
+const fetchImageBuffer = (url) =>
+  new Promise((resolve, reject) => {
+    https.get(url, (res) => {
+      const chunks = [];
+      res.on('data', (chunk) => chunks.push(chunk));
+      res.on('end', () => resolve(Buffer.concat(chunks)));
+      res.on('error', reject);
+    }).on('error', reject);
+  });
 
 exports.calculateSystemSummary = async () => {
   // Get active users (not deactivated)
@@ -310,10 +319,14 @@ exports.generateSlotsQRCodeIntoPDF = (map, slots) => {
     for (let i = 0; slots.length > i; i++) {
       const slot = slots[i];
 
-      const qrImage = await QRCode.toDataURL(slot.QRCode);
+      const qrImageUrl = slot.QRCode?.url;
+      if (!qrImageUrl) continue;
+
+      // Fetch the Cloudinary image as a buffer
+      const qrBuffer = await fetchImageBuffer(qrImageUrl);
 
       // QR
-      doc.image(qrImage, x, y + 15, {
+      doc.image(qrBuffer, x, y + 15, {
         width: qrSize,
         height: qrSize,
       });

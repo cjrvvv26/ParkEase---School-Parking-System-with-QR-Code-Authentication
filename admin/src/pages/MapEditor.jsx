@@ -1,10 +1,158 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import ToolBox from "../components/maps/ToolBox";
 import PropertiesPanel from "../components/maps/PropertiesPanel";
 import Header from "../components/maps/Header";
 import Modal from "../components/Modal";
 import useFetch from "../hooks/useFetch";
+import { Building2, ImagePlus, AlignLeft, Tag, X } from "lucide-react";
+
+function BuildingModal({ building, onChange, onSave, onClose }) {
+  const fileRef = useRef();
+  const [dragOver, setDragOver] = useState(false);
+
+  const info = building?.metadata?.information || {};
+  const previewUrl = info.picture?.url || null;
+
+  const handleFile = (file) => {
+    if (!file) return;
+    onChange({
+      ...building,
+      imageFile: file,
+      metadata: {
+        ...building.metadata,
+        information: {
+          ...info,
+          picture: { url: URL.createObjectURL(file), public_id: null },
+        },
+      },
+    });
+  };
+
+  const setField = (key, value) =>
+    onChange({
+      ...building,
+      metadata: {
+        ...building.metadata,
+        information: { ...info, [key]: value },
+      },
+    });
+
+  return (
+    <div className="w-[420px] flex flex-col">
+      {/* Modal header */}
+      <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-100">
+        <div className="flex items-center gap-2.5">
+          <div className="p-1.5 rounded-lg bg-emerald-50">
+            <Building2 size={16} className="text-emerald-500" strokeWidth={1.8} />
+          </div>
+          <div>
+            <h2 className="text-sm font-semibold text-gray-800">Edit Building</h2>
+            <p className="text-[11px] text-gray-400">{info.name || "Unnamed building"}</p>
+          </div>
+        </div>
+        <button
+          onClick={onClose}
+          className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition"
+        >
+          <X size={15} />
+        </button>
+      </div>
+
+      {/* Body */}
+      <div className="px-5 py-4 flex flex-col gap-4">
+        {/* Image upload zone */}
+        <div
+          onClick={() => fileRef.current?.click()}
+          onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setDragOver(false);
+            handleFile(e.dataTransfer.files[0]);
+          }}
+          className={`relative w-full h-44 rounded-2xl border-2 border-dashed cursor-pointer overflow-hidden flex items-center justify-center transition group ${
+            dragOver
+              ? "border-violet-400 bg-violet-50"
+              : "border-gray-200 bg-gray-50 hover:border-violet-300 hover:bg-violet-50/30"
+          }`}
+        >
+          {previewUrl ? (
+            <>
+              <img src={previewUrl} alt="Building" className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex flex-col items-center justify-center gap-1.5">
+                <ImagePlus size={22} className="text-white" />
+                <span className="text-white text-xs">Change photo</span>
+              </div>
+            </>
+          ) : (
+            <div className="flex flex-col items-center gap-2 text-gray-300 group-hover:text-violet-400 transition">
+              <ImagePlus size={28} strokeWidth={1.3} />
+              <div className="text-center">
+                <p className="text-xs font-medium">Click or drag to upload</p>
+                <p className="text-[11px] mt-0.5">PNG, JPG, WEBP up to 10MB</p>
+              </div>
+            </div>
+          )}
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => handleFile(e.target.files[0])}
+          />
+        </div>
+
+        {/* Name */}
+        <div className="flex flex-col gap-1.5">
+          <div className="flex items-center gap-1.5">
+            <Tag size={11} className="text-gray-400" strokeWidth={1.8} />
+            <label className="text-[11px] uppercase tracking-wide font-medium text-gray-400">Name</label>
+          </div>
+          <input
+            type="text"
+            value={info.name || ""}
+            onChange={(e) => setField("name", e.target.value)}
+            placeholder="e.g. Main Building"
+            className="w-full bg-gray-50 border border-gray-200 text-gray-700 text-xs rounded-xl px-3 py-2 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 transition"
+          />
+        </div>
+
+        {/* Description */}
+        <div className="flex flex-col gap-1.5">
+          <div className="flex items-center gap-1.5">
+            <AlignLeft size={11} className="text-gray-400" strokeWidth={1.8} />
+            <label className="text-[11px] uppercase tracking-wide font-medium text-gray-400">Description</label>
+          </div>
+          <textarea
+            value={info.description || ""}
+            onChange={(e) => setField("description", e.target.value)}
+            placeholder="Brief description of this building..."
+            rows={3}
+            className="w-full bg-gray-50 border border-gray-200 text-gray-700 text-xs rounded-xl px-3 py-2 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 transition resize-none"
+          />
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="px-5 pb-5 flex gap-3">
+        <button
+          onClick={onClose}
+          className="flex-1 py-2.5 rounded-xl border border-gray-200 text-xs text-gray-500 hover:bg-gray-50 transition"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={onSave}
+          className="flex-1 py-2.5 rounded-xl bg-violet-500 hover:bg-violet-600 text-xs text-white font-medium transition"
+        >
+          Save Changes
+        </button>
+      </div>
+    </div>
+  );
+}
+
 
 function SlotShape({
   shape,
@@ -164,6 +312,7 @@ export default function MapEditor() {
   const [isPanning, setIsPanning] = useState(false);
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
   const [isSaving, setIsSaving] = useState(false);
+  const [confirmDeleteMap, setConfirmDeleteMap] = useState(false);
   const { fetchData } = useFetch();
 
   useEffect(() => {
@@ -369,6 +518,16 @@ export default function MapEditor() {
     console.log("Preview mode");
   };
 
+  const handleDeleteMap = async () => {
+    try {
+      await fetchData(`/map/${currentMapId}`, { method: 'DELETE' });
+      navigate('/parking', { state: { message: 'Map deleted successfully!' } });
+    } catch (e) {
+      setErrorMessage('Failed to delete map.');
+      setConfirmDeleteMap(false);
+    }
+  };
+
   const handleSave = async () => {
     try {
       setIsSaving(true);
@@ -443,15 +602,7 @@ export default function MapEditor() {
     }
   };
 
-  const fileToBase64 = (file) =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = reject;
-    });
-
-  const handleNewSubmit = (e) => {
+const handleNewSubmit = (e) => {
     e.preventDefault();
     setCurrentAreaName(newAreaName);
     setCurrentSvgSize({ width: Number(newWidth), height: Number(newHeight) });
@@ -480,6 +631,8 @@ export default function MapEditor() {
         onZoomOut={handleZoomOut}
         onPreview={handlePreview}
         onSave={handleSave}
+        onDelete={() => setConfirmDeleteMap(true)}
+        isUpdateMode={isUpdateMode}
         isSaving={isSaving}
       />
 
@@ -739,128 +892,33 @@ export default function MapEditor() {
           </div>
         </Modal>
       )}
+      {confirmDeleteMap && (
+        <Modal onClose={() => setConfirmDeleteMap(false)}>
+          <div className="flex flex-col gap-4 w-[360px]">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-full bg-rose-50">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5 text-rose-500">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                </svg>
+              </div>
+              <h2 className="font-semibold text-gray-800">Delete Map</h2>
+            </div>
+            <p className="text-sm text-gray-500">Are you sure you want to delete <strong>{currentAreaName}</strong>? All shapes, slots, and user assignments will be permanently removed.</p>
+            <div className="flex gap-3">
+              <button onClick={() => setConfirmDeleteMap(false)} className="flex-1 py-2 rounded-xl border border-gray-200 text-sm text-gray-500 hover:bg-gray-50 transition">Cancel</button>
+              <button onClick={handleDeleteMap} className="flex-1 py-2 rounded-xl bg-rose-500 hover:bg-rose-600 text-sm text-white transition">Yes, Delete</button>
+            </div>
+          </div>
+        </Modal>
+      )}
       {isBuildingModalOpen && selectedBuilding && (
         <Modal onClose={() => setIsBuildingModalOpen(false)}>
-          <div className="text-xs w-[300px] text-gray-700 flex flex-col gap-5">
-            <h1 className="text-base font-semibold text-gray-700">
-              Edit Building
-            </h1>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleBuildingUpdate(selectedBuilding);
-              }}
-              className="flex flex-col gap-5"
-            >
-              <div className="flex flex-col gap-1">
-                <label
-                  htmlFor="bldg-pic"
-                  className="self-start text-xs text-gray-400"
-                >
-                  Picture
-                </label>
-                {selectedBuilding.metadata?.information?.picture?.url && (
-                  <img
-                    src={selectedBuilding.metadata.information.picture?.url}
-                    alt="Current Building"
-                    className="w-20 h-20 object-cover rounded mb-2"
-                  />
-                )}
-                <input
-                  id="bldg-pic"
-                  type="file"
-                  onChange={async (e) => {
-                    const file = e.target.files[0];
-                    if (!file) return;
-
-                    const base64 = await fileToBase64(file);
-
-                    setSelectedBuilding({
-                      ...selectedBuilding,
-                      imageFile: file, // ✅ IMPORTANT
-                      metadata: {
-                        ...selectedBuilding.metadata,
-                        information: {
-                          ...selectedBuilding.metadata.information,
-                          preview: base64, // preview only
-                        },
-                      },
-                    });
-                  }}
-                  className="outline-none w-full rounded-md border border-gray-200 py-1 px-2"
-                />
-              </div>
-              <div className="flex flex-col gap-1">
-                <label
-                  htmlFor="bldg-name"
-                  className="self-start text-xs text-gray-400"
-                >
-                  Name
-                </label>
-                <input
-                  id="bldg-name"
-                  type="text"
-                  value={selectedBuilding.metadata?.information?.name || ""}
-                  onChange={(e) =>
-                    setSelectedBuilding({
-                      ...selectedBuilding,
-                      metadata: {
-                        ...selectedBuilding.metadata,
-                        information: {
-                          ...selectedBuilding.metadata.information,
-                          name: e.target.value,
-                        },
-                      },
-                    })
-                  }
-                  className="outline-none w-full rounded-md border border-gray-200 py-1 px-2"
-                />
-              </div>
-              <div className="flex flex-col gap-1">
-                <label
-                  htmlFor="bldg-desc"
-                  className="self-start text-xs text-gray-400"
-                >
-                  Description
-                </label>
-                <textarea
-                  id="bldg-desc"
-                  value={
-                    selectedBuilding.metadata?.information?.description || ""
-                  }
-                  onChange={(e) =>
-                    setSelectedBuilding({
-                      ...selectedBuilding,
-                      metadata: {
-                        ...selectedBuilding.metadata,
-                        information: {
-                          ...selectedBuilding.metadata.information,
-                          description: e.target.value,
-                        },
-                      },
-                    })
-                  }
-                  className="outline-none w-full rounded-md border border-gray-200 py-1 px-2 resize-none h-20"
-                />
-              </div>
-
-              <div className="flex items-center gap-5 w-full">
-                <button
-                  type="button"
-                  onClick={() => setIsBuildingModalOpen(false)}
-                  className="border w-full border-gray-200 py-2 px-4 rounded"
-                >
-                  Close
-                </button>
-                <button
-                  type="submit"
-                  className="bg-violet-500 w-full text-white py-2 px-4 rounded"
-                >
-                  Save
-                </button>
-              </div>
-            </form>
-          </div>
+          <BuildingModal
+            building={selectedBuilding}
+            onChange={setSelectedBuilding}
+            onSave={() => handleBuildingUpdate(selectedBuilding)}
+            onClose={() => setIsBuildingModalOpen(false)}
+          />
         </Modal>
       )}
     </div>

@@ -6,6 +6,9 @@ const authController = require('../controllers/authController');
 const upload = require('../middlewares/uploadImage');
 
 router.post('/check-account', superAdminController.identifyAccountByEmail);
+router.get('/id', superAdminController.getSuperAdminId);
+router.get('/chat/:chatId', superAdminController.getChatMessages);
+router.get('/chat-users', superAdminController.getChatUsers);
 
 //Protected API endpoints
 router.use(verifySession(), requiredSuperAdmin);

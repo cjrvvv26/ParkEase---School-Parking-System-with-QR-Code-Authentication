@@ -17,9 +17,12 @@ import {
   Pressable,
   Image,
   TextInput,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { login } from '../features/authSlicer';
+import { updateProfile } from '../services/authService';
 import useTheme from '../hooks/useTheme';
 
 function InfoField({
@@ -77,7 +80,10 @@ function InfoField({
 
 export default function Account() {
   const router = useRouter();
+  const dispatch = useDispatch();
   const [edit, setEdit] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
   const [formData, setFormData] = useState({});
   const { user } = useSelector((state) => state.auth);
   const { t } = useTheme();
@@ -85,6 +91,23 @@ export default function Account() {
   useEffect(() => {
     if (user) setFormData(user);
   }, [user]);
+
+  const handleSave = async () => {
+    setSaving(true);
+    setSaveError('');
+    try {
+      const res = await updateProfile({
+        name: formData.name,
+        phoneNo: formData.phoneNo,
+      });
+      dispatch(login({ user: res.data.user }));
+      setEdit(false);
+    } catch (err) {
+      setSaveError(err.response?.data?.error || 'Failed to save changes');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const roleColor = {
     student: { bg: '#eff6ff', text: '#2563eb', border: '#bfdbfe' },
@@ -401,24 +424,33 @@ export default function Account() {
             borderTopColor: t.cardBorder,
           }}
         >
+          {saveError ? (
+            <Text style={{ fontFamily: 'Poppins400', fontSize: 12, color: '#ef4444', textAlign: 'center', marginBottom: 8 }}>
+              {saveError}
+            </Text>
+          ) : null}
           <Pressable
+            onPress={handleSave}
+            disabled={saving}
             style={{
-              backgroundColor: t.primary,
+              backgroundColor: saving ? t.primaryBorder : t.primary,
               borderRadius: 16,
               paddingVertical: 16,
               alignItems: 'center',
               shadowColor: t.primary,
               shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.3,
+              shadowOpacity: saving ? 0 : 0.3,
               shadowRadius: 8,
-              elevation: 6,
+              elevation: saving ? 0 : 6,
             }}
           >
-            <Text
-              style={{ fontFamily: 'Poppins600', fontSize: 15, color: '#fff' }}
-            >
-              Save Changes
-            </Text>
+            {saving ? (
+              <ActivityIndicator color='#fff' />
+            ) : (
+              <Text style={{ fontFamily: 'Poppins600', fontSize: 15, color: '#fff' }}>
+                Save Changes
+              </Text>
+            )}
           </Pressable>
         </View>
       )}

@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import useFetch from '../../hooks/useFetch';
 import { ChevronLeft, Printer } from 'lucide-react';
-import { QRCodeCanvas } from 'qrcode.react';
 
 export default function SlotsQRCode() {
   const { mapId } = useParams();
@@ -67,7 +66,11 @@ export default function SlotsQRCode() {
               key={slot.shapeId}
               className='flex gap-3 text-gray-600 font-semibold flex-col max-w-48 h-48 bg-gray-100 p-2 rounded-md'
             >
-              <QRCodeCanvas value={slot.QRCode} />
+              <img
+                src={slot.QRCode?.url}
+                alt={slot.slotId?.metadata?.label}
+                className='w-full h-auto object-contain'
+              />
               <span>{slot.slotId?.metadata?.label}</span>
             </li>
           ))

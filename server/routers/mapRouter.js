@@ -14,6 +14,7 @@ router.post('/', upload.any(), mapController.createMap);
 router.get('/', mapController.getAllMaps);
 router.get('/:id', mapController.getMapById);
 router.put('/:id', upload.any(), mapController.updateMap);
+router.delete('/shape/:shapeId', mapController.deleteShape);
 router.delete('/:id', mapController.deleteMap);
 
 module.exports = router;

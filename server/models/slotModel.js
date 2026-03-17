@@ -26,7 +26,10 @@ const slotSchema = new Schema(
       enum: ["exclusive", "available", "occupied"],
       default: "available",
     },
-    QRCode: { type: String, required: true },
+    QRCode: {
+      url: { type: String, required: true },
+      public_id: { type: String, required: true },
+    },
     entryTime: Date,
     endTime: Date,
   },

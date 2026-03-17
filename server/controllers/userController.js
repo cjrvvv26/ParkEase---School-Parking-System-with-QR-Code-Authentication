@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Student = require('../models/studentModel');
 const Guard = require('../models/guardModel');
+const Faculty = require('../models/facultyModel');
 const User = require('../models/userModel');
 const Slot = require('../models/slotModel');
 const userService = require('../services/userService');
@@ -240,10 +241,12 @@ exports.getAvailableUsers = async (req, res) => {
         userObj.profile = studentData;
       }
 
-      // if (user.role === "faculty") {
-      //   const facultyData = await Faculty.findOne({ userId: user._id });
-      //   userObj.profile = facultyData;
-      // }
+      if (user.role === 'faculty') {
+        const facultyData = await Faculty.findOne({ userId: user._id }).select(
+          'name',
+        );
+        userObj.profile = facultyData;
+      }
 
       availableUsers.push(userObj);
     }
@@ -258,6 +261,46 @@ exports.getAvailableUsers = async (req, res) => {
       users: availableUsers,
     });
   } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.updateSelf = async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    const { _id, role } = req.user;
+    const data = req.body;
+
+    let additionalData = null;
+    if (role === 'student') {
+      additionalData = await Student.findOneAndUpdate(
+        { userId: _id },
+        { $set: { name: data.name, phoneNo: data.phoneNo } },
+        { new: true, session },
+      );
+    } else if (role === 'faculty') {
+      additionalData = await Faculty.findOneAndUpdate(
+        { userId: _id },
+        { $set: { name: data.name, phoneNo: data.phoneNo } },
+        { new: true, session },
+      );
+    } else if (role === 'guard') {
+      additionalData = await Guard.findOneAndUpdate(
+        { userId: _id },
+        { $set: { name: data.name, phoneNo: data.phoneNo } },
+        { new: true, session },
+      );
+    }
+
+    await session.commitTransaction();
+    session.endSession();
+
+    const user = await userService.getUserData(_id);
+    res.status(200).json({ message: 'Profile updated successfully', user });
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
     res.status(500).json({ error: error.message });
   }
 };

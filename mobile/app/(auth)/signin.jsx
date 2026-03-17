@@ -8,15 +8,54 @@ import { login } from '../services/authService';
 import useApiRequest from '../hooks/useApiRequest';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import useTheme from '../hooks/useTheme';
+import * as WebBrowser from 'expo-web-browser';
+import * as AuthSession from 'expo-auth-session/providers/google';
+import { useDispatch } from 'react-redux';
+import { login as loginAction } from '../features/authSlicer';
+import api from '../services/api';
+
+WebBrowser.maybeCompleteAuthSession();
+
+const GOOGLE_CLIENT_ID = '376193942979-6hs98pha8pv81g19g7klssvpjf58s4js.apps.googleusercontent.com';
 
 export default function SignIn() {
   const router = useRouter();
+  const dispatch = useDispatch();
   const { message } = useLocalSearchParams();
   const { error, setError, loading, execute } = useApiRequest();
   const { t } = useTheme();
   const [showPassword, setShowPassword] = useState(false);
   const [toast, setToast] = useState('');
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [credentials, setCredentials] = useState({ email: '', password: '', platform: 'mobile' });
+
+  const [request, response, promptAsync] = AuthSession.useAuthRequest({
+    androidClientId: GOOGLE_CLIENT_ID,
+    iosClientId: GOOGLE_CLIENT_ID,
+    webClientId: GOOGLE_CLIENT_ID,
+  });
+
+  // Handle Google OAuth response
+  useEffect(() => {
+    if (response?.type !== 'success') return;
+    const { access_token } = response.params;
+    const handleGoogle = async () => {
+      setGoogleLoading(true);
+      try {
+        const res = await api.post('auth/google', { access_token, type: 'login', platform: 'mobile' });
+        if (res?.status === 200) {
+          await AsyncStorage.setItem('email', res.data.email);
+          await AsyncStorage.setItem('hasVerification', 'true');
+          router.replace('/OTPVerification');
+        }
+      } catch (e) {
+        setError(e.response?.data?.error || 'Google sign in failed');
+      } finally {
+        setGoogleLoading(false);
+      }
+    };
+    handleGoogle();
+  }, [response]);
 
   // Show logout toast for 3s
   useEffect(() => {
@@ -134,9 +173,12 @@ export default function SignIn() {
             </View>
 
             {/* Google */}
-            <Pressable style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, borderWidth: 1, borderColor: t.cardBorder, borderRadius: 14, paddingVertical: 14, marginBottom: 28, backgroundColor: t.card }}>
+            <Pressable
+              disabled={!request || googleLoading}
+              onPress={() => promptAsync()}
+              style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, borderWidth: 1, borderColor: t.cardBorder, borderRadius: 14, paddingVertical: 14, marginBottom: 28, backgroundColor: t.card, opacity: !request || googleLoading ? 0.6 : 1 }}>
               <Image source={GoogleIcon} style={{ width: 20, height: 20 }} resizeMode='contain' />
-              <Text style={{ fontFamily: 'Poppins600', fontSize: 14, color: t.text }}>Google</Text>
+              <Text style={{ fontFamily: 'Poppins600', fontSize: 14, color: t.text }}>{googleLoading ? 'Signing in...' : 'Google'}</Text>
             </Pressable>
 
             {/* Footer */}

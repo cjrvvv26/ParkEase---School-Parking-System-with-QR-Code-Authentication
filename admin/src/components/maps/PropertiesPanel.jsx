@@ -1,65 +1,112 @@
-import React from "react";
-import Button from "./Button";
-import IconButton from "./IconButton";
-import { Camera } from "lucide-react";
+import React, { useRef, useState } from "react";
+import {
+  Tag,
+  Layers,
+  Ruler,
+  RotateCw,
+  Trash2,
+  ImagePlus,
+  AlignLeft,
+  Building2,
+  SquareDashed,
+  X,
+} from "lucide-react";
+import axiosConfig from "../../utils/axiosConfig";
 
-export default function PropertiesPanel({
-  selectedShape,
-  onUpdateShape,
-  onDeleteShape,
-}) {
+function Field({ icon: Icon, label, children }) {
   return (
-    <div className="w-80 h-[calc(100vh-94.4px)] border-l p-3 border-gray-200 flex flex-col gap-5 text-xs text-gray-500">
-      {/* Information */}
-      <section className="flex flex-col gap-5 w-full">
-        <h3 className="text-sm text-gray-700 font-medium">Properties</h3>
-        {selectedShape ? (
-          <>
-            {selectedShape.metadata?.type === "slot" && (
-              <>
-                <div className="gap-5 items-center flex">
-                  <label htmlFor="label" className="text-gray-500 w-[50px]">
-                    Label
-                  </label>
-                  <input
-                    type="text"
-                    id="label"
-                    value={selectedShape.metadata?.label || ""}
-                    onChange={(e) =>
-                      onUpdateShape({
-                        ...selectedShape,
-                        metadata: {
-                          ...selectedShape.metadata,
-                          label: e.target.value,
-                        },
-                      })
-                    }
-                    className="bg-gray-100 text-gray-700 rounded-sm p-1 outline-none w-auto"
-                  />
-                </div>
-                <div className="flex gap-5">
-                  <p className="w-[50px]">Type</p>
-                  <p className="text-gray-700">
-                    {selectedShape.metadata?.type}
-                  </p>
-                </div>
-              </>
+    <div className="flex flex-col gap-1.5">
+      <div className="flex items-center gap-1.5 text-gray-400">
+        <Icon size={12} strokeWidth={1.8} />
+        <span className="text-[11px] uppercase tracking-wide font-medium">{label}</span>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function StyledInput({ value, onChange, type = "text", suffix }) {
+  return (
+    <div className="flex items-center gap-1">
+      <input
+        type={type}
+        value={value}
+        onChange={onChange}
+        className="flex-1 bg-gray-50 border border-gray-200 text-gray-700 text-xs rounded-lg px-2.5 py-1.5 outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-100 transition"
+      />
+      {suffix && <span className="text-gray-400 text-[11px]">{suffix}</span>}
+    </div>
+  );
+}
+
+export default function PropertiesPanel({ selectedShape, onUpdateShape, onDeleteShape }) {
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const fileRef = useRef();
+
+  const handleDelete = async () => {
+    if (selectedShape._id) {
+      try {
+        await axiosConfig.delete(`/map/shape/${selectedShape._id}`);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    onDeleteShape(selectedShape.tempId || selectedShape._id);
+    setConfirmDelete(false);
+  };
+
+  const isSlot = selectedShape?.metadata?.type === "slot";
+  const isBuilding = selectedShape?.metadata?.type === "building";
+  const isRect = selectedShape?.geometry?.shape === "rect";
+
+  return (
+    <aside className="w-72 h-[calc(100vh-94.4px)] border-l border-gray-100 flex flex-col bg-white overflow-y-auto">
+      {/* Header */}
+      <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+        <span className="text-xs font-semibold text-gray-700 tracking-wide uppercase">Properties</span>
+        {selectedShape && (
+          <span
+            className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
+              isSlot
+                ? "bg-violet-50 text-violet-600 border border-violet-200"
+                : "bg-emerald-50 text-emerald-600 border border-emerald-200"
+            }`}
+          >
+            {isSlot ? "Slot" : "Building"}
+          </span>
+        )}
+      </div>
+
+      {!selectedShape ? (
+        <div className="flex-1 flex flex-col items-center justify-center gap-3 text-gray-300 px-6">
+          <SquareDashed size={36} strokeWidth={1} />
+          <p className="text-xs text-center text-gray-400">Click a shape on the canvas to edit its properties</p>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-0 flex-1">
+
+          {/* ── Metadata section ── */}
+          <div className="px-4 py-4 flex flex-col gap-4 border-b border-gray-100">
+            <p className="text-[10px] uppercase tracking-widest text-gray-300 font-semibold">Metadata</p>
+
+            {isSlot && (
+              <Field icon={Tag} label="Label">
+                <StyledInput
+                  value={selectedShape.metadata?.label || ""}
+                  onChange={(e) =>
+                    onUpdateShape({
+                      ...selectedShape,
+                      metadata: { ...selectedShape.metadata, label: e.target.value },
+                    })
+                  }
+                />
+              </Field>
             )}
-            {selectedShape.metadata?.type === "building" && (
+
+            {isBuilding && (
               <>
-                <div className="flex gap-5">
-                  <p className="w-[50px]">Type</p>
-                  <p className="text-gray-700">
-                    {selectedShape.metadata?.type}
-                  </p>
-                </div>
-                <div className="gap-5 items-center flex">
-                  <label htmlFor="name" className="text-gray-500 w-[50px]">
-                    Name
-                  </label>
-                  <input
-                    type="text"
-                    id="name"
+                <Field icon={Building2} label="Name">
+                  <StyledInput
                     value={selectedShape.metadata?.information?.name || ""}
                     onChange={(e) =>
                       onUpdateShape({
@@ -73,55 +120,12 @@ export default function PropertiesPanel({
                         },
                       })
                     }
-                    className="bg-gray-100 text-gray-700 rounded-sm p-1 outline-none w-auto"
                   />
-                </div>
-                <div className="flex gap-5 w-full">
-                  <p className="w-[50px]">Picture</p>
-                  <div className="flex relative w-[80px] h-[80px] items-center justify-center bg-gray-100 rounded-md">
-                    {selectedShape.metadata?.information?.picture?.url && (
-                      <img
-                        src={selectedShape.metadata.information.picture?.url}
-                        alt="Building"
-                        className="w-full h-full object-cover rounded-md"
-                      />
-                    )}
-                    <input
-                      type="file"
-                      id="picture"
-                      onChange={(e) => {
-                        const file = e.target.files[0];
-                        if (file) {
-                          onUpdateShape({
-                            ...selectedShape,
-                            metadata: {
-                              ...selectedShape.metadata,
-                              information: {
-                                ...selectedShape.metadata.information,
-                                picture: {
-                                  url: URL.createObjectURL(file),
-                                  public_id: null,
-                                },
-                              },
-                            },
-                          });
-                        }
-                      }}
-                      className="bg-gray-100 absolute opacity-0 text-gray-700 rounded-sm p-1 outline-none w-full h-full"
-                    />
-                    {!selectedShape.metadata?.information?.picture?.url && (
-                      <Camera strokeWidth={1.5} />
-                    )}
-                  </div>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <p className="w-[50px]">Description</p>
+                </Field>
+
+                <Field icon={AlignLeft} label="Description">
                   <textarea
-                    type="text"
-                    id="description"
-                    value={
-                      selectedShape.metadata?.information?.description || ""
-                    }
+                    value={selectedShape.metadata?.information?.description || ""}
                     onChange={(e) =>
                       onUpdateShape({
                         ...selectedShape,
@@ -134,21 +138,84 @@ export default function PropertiesPanel({
                         },
                       })
                     }
-                    className="bg-gray-100 text-gray-700 rounded-sm p-1 outline-none w-full resize-none h-[100px]"
+                    rows={3}
+                    className="w-full bg-gray-50 border border-gray-200 text-gray-700 text-xs rounded-lg px-2.5 py-1.5 outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-100 transition resize-none"
                   />
-                </div>
+                </Field>
+
+                <Field icon={ImagePlus} label="Picture">
+                  <div
+                    onClick={() => fileRef.current?.click()}
+                    className="relative w-full h-28 rounded-xl border-2 border-dashed border-gray-200 hover:border-violet-300 bg-gray-50 hover:bg-violet-50/30 transition cursor-pointer overflow-hidden flex items-center justify-center group"
+                  >
+                    {selectedShape.metadata?.information?.picture?.url ? (
+                      <>
+                        <img
+                          src={selectedShape.metadata.information.picture.url}
+                          alt="Building"
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                          <ImagePlus size={20} className="text-white" />
+                        </div>
+                      </>
+                    ) : (
+                      <div className="flex flex-col items-center gap-1.5 text-gray-300 group-hover:text-violet-400 transition">
+                        <ImagePlus size={22} strokeWidth={1.5} />
+                        <span className="text-[11px]">Click to upload</span>
+                      </div>
+                    )}
+                    <input
+                      ref={fileRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files[0];
+                        if (!file) return;
+                        onUpdateShape({
+                          ...selectedShape,
+                          imageFile: file,
+                          metadata: {
+                            ...selectedShape.metadata,
+                            information: {
+                              ...selectedShape.metadata.information,
+                              picture: {
+                                url: URL.createObjectURL(file),
+                                public_id: null,
+                              },
+                            },
+                          },
+                        });
+                      }}
+                    />
+                  </div>
+                </Field>
               </>
             )}
-            {selectedShape.geometry.shape === "rect" && (
-              <>
-                <div className="gap-5 items-center flex">
-                  <label htmlFor="height" className="text-gray-500 w-[50px]">
-                    Height
-                  </label>
-                  <input
+
+            <Field icon={Layers} label="Type">
+              <div className="flex items-center gap-2 px-2.5 py-1.5 bg-gray-50 border border-gray-200 rounded-lg">
+                {isSlot ? (
+                  <SquareDashed size={12} className="text-violet-500" />
+                ) : (
+                  <Building2 size={12} className="text-emerald-500" />
+                )}
+                <span className="text-xs text-gray-600 capitalize">{selectedShape.metadata?.type}</span>
+              </div>
+            </Field>
+          </div>
+
+          {/* ── Geometry section (rect only) ── */}
+          {isRect && (
+            <div className="px-4 py-4 flex flex-col gap-4 border-b border-gray-100">
+              <p className="text-[10px] uppercase tracking-widest text-gray-300 font-semibold">Geometry</p>
+              <div className="grid grid-cols-2 gap-3">
+                <Field icon={Ruler} label="Height">
+                  <StyledInput
                     type="number"
-                    id="height"
                     value={selectedShape.geometry?.height || ""}
+                    suffix="px"
                     onChange={(e) =>
                       onUpdateShape({
                         ...selectedShape,
@@ -158,18 +225,13 @@ export default function PropertiesPanel({
                         },
                       })
                     }
-                    className="bg-gray-100 text-gray-700 rounded-sm p-1 outline-none w-[100px]"
                   />
-                  <p className="-ml-3">px</p>
-                </div>
-                <div className="gap-5 items-center flex">
-                  <label htmlFor="width" className="text-gray-500 w-[50px]">
-                    Width
-                  </label>
-                  <input
+                </Field>
+                <Field icon={Ruler} label="Width">
+                  <StyledInput
                     type="number"
-                    id="width"
                     value={selectedShape.geometry?.width || ""}
+                    suffix="px"
                     onChange={(e) =>
                       onUpdateShape({
                         ...selectedShape,
@@ -179,18 +241,16 @@ export default function PropertiesPanel({
                         },
                       })
                     }
-                    className="bg-gray-100 text-gray-700 rounded-sm p-1 outline-none w-[100px]"
                   />
-                  <p className="-ml-3">px</p>
-                </div>
-                <div className="flex items-center gap-5">
-                  <label htmlFor="rotate" className="w-[50px]">
-                    Rotate
-                  </label>
+                </Field>
+              </div>
+              <Field icon={RotateCw} label="Rotation">
+                <div className="flex items-center gap-2">
                   <input
-                    type="number"
-                    id="rotate"
-                    value={selectedShape.geometry?.rotation || ""}
+                    type="range"
+                    min={0}
+                    max={360}
+                    value={selectedShape.geometry?.rotation || 0}
                     onChange={(e) =>
                       onUpdateShape({
                         ...selectedShape,
@@ -200,24 +260,48 @@ export default function PropertiesPanel({
                         },
                       })
                     }
-                    className="bg-gray-100 text-gray-700 rounded-sm p-1 outline-none w-[100px]"
+                    className="flex-1 accent-violet-500"
                   />
-                  <p className="-ml-3">°</p>
+                  <span className="text-xs text-gray-500 w-10 text-right">
+                    {selectedShape.geometry?.rotation || 0}°
+                  </span>
                 </div>
-              </>
-            )}
-            <div className="flex gap-3 items-center text-gray-700">
-              <IconButton
-                name={"Trash2"}
-                label={"Delete"}
-                action={() => onDeleteShape(selectedShape.tempId)}
-              />
+              </Field>
             </div>
-          </>
-        ) : (
-          <p>No shape selected</p>
-        )}
-      </section>
-    </div>
+          )}
+
+          {/* ── Danger zone ── */}
+          <div className="px-4 py-4 mt-auto">
+            {!confirmDelete ? (
+              <button
+                onClick={() => setConfirmDelete(true)}
+                className="w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-rose-200 text-rose-500 text-xs hover:bg-rose-50 transition"
+              >
+                <Trash2 size={13} strokeWidth={1.8} />
+                Delete Shape
+              </button>
+            ) : (
+              <div className="flex flex-col gap-2 p-3 rounded-xl bg-rose-50 border border-rose-200">
+                <p className="text-xs text-rose-600 text-center">Delete this shape?</p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setConfirmDelete(false)}
+                    className="flex-1 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-500 bg-white hover:bg-gray-50 transition"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    className="flex-1 py-1.5 rounded-lg bg-rose-500 hover:bg-rose-600 text-xs text-white transition"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </aside>
   );
 }

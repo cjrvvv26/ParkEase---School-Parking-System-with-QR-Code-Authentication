@@ -3,6 +3,7 @@ const Map = require('../models/mapModel');
 const Shape = require('../models/shapeModel');
 const Slot = require('../models/slotModel');
 const generateQRCode = require('../utils/generateQRCode');
+const cloudinary = require('../utils/cloudinary');
 const ActivityLogs = require('../models/activityModel');
 const notificationService = require('../services/notificationService');
 
@@ -215,6 +216,12 @@ exports.updateMap = async (req, res) => {
       const oldShapeIds = oldShapes.map((s) => s._id);
 
       await Shape.deleteMany({ mapId: id });
+      const oldSlots = await Slot.find({ slotId: { $in: oldShapeIds } });
+      for (const s of oldSlots) {
+        if (s.QRCode?.public_id) {
+          await cloudinary.uploader.destroy(s.QRCode.public_id).catch(() => {});
+        }
+      }
       await Slot.deleteMany({ slotId: { $in: oldShapeIds } });
 
       // --- Step 2: Index uploaded Cloudinary files ---
@@ -304,18 +311,31 @@ exports.deleteMap = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Delete shapes
     const shapes = await Shape.find({ mapId: id });
     const shapeIds = shapes.map((s) => s._id);
 
-    await Shape.deleteMany({ mapId: id });
-
-    // Delete slots
+    // Clear assigned/occupied users before deleting slots
     if (shapeIds.length > 0) {
+      const slots = await Slot.find({ slotId: { $in: shapeIds } });
+      const Student = require('../models/studentModel');
+      const Faculty = require('../models/facultyModel');
+      for (const slot of slots) {
+        if (slot.assignedStudentId) {
+          await Student.findOneAndUpdate({ userId: slot.assignedStudentId }, { $unset: { entryTime: 1, outTime: 1 } });
+          await Faculty.findOneAndUpdate({ userId: slot.assignedStudentId }, { $unset: { entryTime: 1, outTime: 1 } });
+        }
+        if (slot.occupiedBy) {
+          await Student.findOneAndUpdate({ userId: slot.occupiedBy }, { $unset: { entryTime: 1, outTime: 1 } });
+          await Faculty.findOneAndUpdate({ userId: slot.occupiedBy }, { $unset: { entryTime: 1, outTime: 1 } });
+        }
+        if (slot.QRCode?.public_id) {
+          await cloudinary.uploader.destroy(slot.QRCode.public_id).catch(() => {});
+        }
+      }
       await Slot.deleteMany({ slotId: { $in: shapeIds } });
     }
 
-    // Delete map
+    await Shape.deleteMany({ mapId: id });
     const deletedMap = await Map.findByIdAndDelete(id);
 
     if (!deletedMap) {
@@ -323,6 +343,40 @@ exports.deleteMap = async (req, res) => {
     }
 
     res.status(200).json({ message: 'Map deleted successfully' });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+// Delete a single shape and its slot, clearing user assignments
+exports.deleteShape = async (req, res) => {
+  try {
+    const { shapeId } = req.params;
+    const shape = await Shape.findById(shapeId);
+    if (!shape) return res.status(404).json({ error: 'Shape not found' });
+
+    if (shape.metadata?.type === 'slot') {
+      const slot = await Slot.findOne({ slotId: shapeId });
+      if (slot) {
+        const Student = require('../models/studentModel');
+        const Faculty = require('../models/facultyModel');
+        if (slot.assignedStudentId) {
+          await Student.findOneAndUpdate({ userId: slot.assignedStudentId }, { $unset: { entryTime: 1, outTime: 1 } });
+          await Faculty.findOneAndUpdate({ userId: slot.assignedStudentId }, { $unset: { entryTime: 1, outTime: 1 } });
+        }
+        if (slot.occupiedBy) {
+          await Student.findOneAndUpdate({ userId: slot.occupiedBy }, { $unset: { entryTime: 1, outTime: 1 } });
+          await Faculty.findOneAndUpdate({ userId: slot.occupiedBy }, { $unset: { entryTime: 1, outTime: 1 } });
+        }
+        await Slot.deleteOne({ slotId: shapeId });
+        if (slot.QRCode?.public_id) {
+          await cloudinary.uploader.destroy(slot.QRCode.public_id).catch(() => {});
+        }
+      }
+    }
+
+    await Shape.findByIdAndDelete(shapeId);
+    res.status(200).json({ message: 'Shape deleted successfully' });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }

@@ -22,6 +22,7 @@ export default function Scan() {
   const router = useRouter();
   const [scanned, setScanned] = useState(false);
   const [displayQR, toggleDisplayQR] = useState(false);
+  const [scanResult, setScanResult] = useState('');
   const [permission, requestPermission] = useCameraPermissions();
   const { user } = useSelector((state) => state.auth);
 
@@ -104,33 +105,16 @@ export default function Scan() {
   const handleScan = async ({ data }) => {
     setScanned(true);
     if (user.role === 'guard') {
-      // Guard scans student/faculty QR: data = "PARKEASE_USER:<userId>"
       const match = data.match(/PARKEASE_USER:(.+)/);
       if (!match) return;
-
-      const res = await execute(guardScan, {
-        qrData: data,
-        guardId: user._id,
-      });
-      console.log(match);
-      if (res?.status === 200)
-        return router.replace({
-          pathname: '/Parking',
-          params: { state: res.data.message },
-        });
+      const res = await execute(guardScan, { qrData: data, guardId: user._id });
+      if (res?.status === 200) setScanResult(res.data.message);
     } else {
-      // Student/faculty scans slot QR: data = "SLOT:<slotId>"
       const match = data.match(/SLOT:(.+)/);
       if (!match) return;
-      const res = await execute(verifyScannedSlot, {
-        slotId: match[1],
-        userId: user._id,
-      });
+      const res = await execute(verifyScannedSlot, { slotId: match[1], userId: user._id });
       if (res?.status === 200)
-        return router.replace({
-          pathname: '/Parking',
-          params: { state: res.data.message },
-        });
+        return router.replace({ pathname: '/Parking', params: { state: res.data.message } });
     }
   };
 
@@ -338,6 +322,27 @@ export default function Scan() {
         </View>
       )}
 
+      {/* Guard scan result */}
+      {scanResult ? (
+        <View
+          style={{
+            marginHorizontal: 20,
+            marginTop: 12,
+            backgroundColor: '#d1fae5',
+            borderRadius: 12,
+            padding: 12,
+            borderWidth: 1,
+            borderColor: '#6ee7b7',
+          }}
+        >
+          <Text
+            style={{ fontFamily: 'Poppins600', fontSize: 13, color: '#065f46', textAlign: 'center' }}
+          >
+            {scanResult}
+          </Text>
+        </View>
+      ) : null}
+
       {/* Divider */}
       <View
         style={{
@@ -366,7 +371,7 @@ export default function Scan() {
       <View style={{ marginHorizontal: 20, gap: 12 }}>
         {scanned && (
           <Pressable
-            onPress={() => setScanned(false)}
+            onPress={() => { setScanned(false); setScanResult(''); }}
             android_ripple={{ color: '#7c3aed' }}
             style={{
               flexDirection: 'row',
