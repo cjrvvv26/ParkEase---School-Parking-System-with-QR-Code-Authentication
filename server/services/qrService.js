@@ -33,6 +33,10 @@ exports.verifySlotData = async (data) => {
 
   let entryTime;
 
+  if (user.role === 'guard') {
+    throw new Error('Not authorized for this action');
+  }
+
   if (user.role === 'student') {
     const student = await Student.findOne({ userId: user._id }).select(
       'entryTime',
@@ -47,6 +51,10 @@ exports.verifySlotData = async (data) => {
 
   if (entryTime) {
     throw new Error("You're not in school. You can't occupy a slot");
+  }
+
+  if (user.emailVerified) {
+    throw new Error('Verify your account first');
   }
 
   let message = '';
@@ -67,6 +75,7 @@ exports.verifySlotData = async (data) => {
     slot.entryTime = Date.now();
     slot.isOccupied = true;
     slot.occupiedBy = userId;
+    slot.status = 'occupied';
     await slot.save();
     message = "You're now in your exclusive slot";
   } else if (
@@ -76,6 +85,7 @@ exports.verifySlotData = async (data) => {
   ) {
     slot.entryTime = Date.now();
     slot.isOccupied = true;
+    slot.status = 'occupied';
     slot.occupiedBy = userId;
     await slot.save();
     message = "Warning: This is someone's slot";
@@ -83,6 +93,7 @@ exports.verifySlotData = async (data) => {
     slot.entryTime = Date.now();
     slot.isOccupied = true;
     slot.occupiedBy = userId;
+    slot.status = 'occupied';
     await slot.save();
     message = 'Thanks for parking!';
   }

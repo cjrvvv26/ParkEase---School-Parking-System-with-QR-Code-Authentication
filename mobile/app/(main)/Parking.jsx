@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSelector } from 'react-redux';
 import { ChevronLeft } from 'lucide-react-native';
 import { Pressable, Text, View } from 'react-native';
@@ -10,11 +10,13 @@ import MapRenderer from '../components/DynamicMap';
 
 export default function Parking() {
   const router = useRouter();
+  const { state } = useLocalSearchParams();
   const { user } = useSelector((state) => state.auth);
   const { loading, error, execute } = useApiRequest();
   const [haveSlot, setHaveSlot] = useState(false);
   const [mapData, setMapData] = useState(undefined);
   const [slotData, setSlotData] = useState(null);
+  const [message, setMessage] = useState('');
 
   useEffect(() => {
     if (!user) return;
@@ -31,6 +33,18 @@ export default function Parking() {
     getSlotLocation();
   }, []);
 
+  useEffect(() => {
+    if (state) setMessage(state);
+  }, [state]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setMessage('');
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [message]);
+
   return (
     <SafeAreaView
       edges={['top']}
@@ -46,54 +60,98 @@ export default function Parking() {
         </Text>
       </View>
       {/* Parking View */}
-      <View className='min-h-52 border border-gray-200 rounded-lg bg-white mx-5 flex flex-col'>
-        <Text className='py-3 text-sm border-b border-b-gray-200 font-poppins-medium text-[#71717a] px-5 mb-2'>
-          {mapData && mapData.map.name} Area View
-        </Text>
-        <View className='flex-1 relative w-full'>
-          {/* Indicator */}
-          <View className='flex gap-2 flex-row items-center absolute right-5'>
-            <View className='h-6 w-6 rounded-full bg-violet-100 flex items-center justify-center'>
-              <View className='h-4 w-4 rounded-full bg-violet-200 flex items-center justify-center'>
-                <View className='h-2 w-2 rounded-full bg-violet-300'></View>
+      {mapData ? (
+        <>
+          {message && (
+            <Text className='text-center font-poppins-medium text-violet-500 border border-violet-500 rounded-md self-start ml-5 bg-violet-100 p-2'>
+              {message}
+            </Text>
+          )}
+          <View className='min-h-52 border border-gray-200 rounded-lg bg-white mx-5 flex flex-col'>
+            <Text className='py-3 text-sm border-b border-b-gray-200 font-poppins-medium text-[#71717a] px-5 mb-2'>
+              {mapData?.map?.name} Area View
+            </Text>
+            <View className='flex-1 relative w-full'>
+              {/* Indicator */}
+              <View className='flex gap-2 flex-row items-center absolute right-5'>
+                <View className='h-6 w-6 rounded-full bg-violet-100 flex items-center justify-center'>
+                  <View className='h-4 w-4 rounded-full bg-violet-200 flex items-center justify-center'>
+                    <View className='h-2 w-2 rounded-full bg-violet-300'></View>
+                  </View>
+                </View>
+                <Text className='font-poppins text-xs text-violet-400'>
+                  You
+                </Text>
               </View>
+              {/* Map */}
+              {<MapRenderer data={mapData} />}
             </View>
-            <Text className='font-poppins text-xs text-violet-400'>You</Text>
           </View>
-          {/* Map */}
-          {mapData && <MapRenderer data={mapData} />}
+        </>
+      ) : (
+        <View className='min-h-52 border border-gray-200 rounded-lg bg-white mx-5 flex flex-col'>
+          <Text
+            style={{ borderBottomWidth: 1, borderBottomColor: '#e5e7eb' }}
+            className=' mx-5 my-3 w-32 bg-gray-200 rounded-full text-sm font-poppins-medium text-[#71717a] px-5 mb-2'
+          ></Text>
+          <View className='flex-1 p-5 relative w-full'>
+            <View className='bg-gray-200 flex-1 rounded-lg'></View>
+          </View>
         </View>
-      </View>
+      )}
       {/* Slot Details */}
-      <View className='flex flex-col border border-gray-200 rounded-lg bg-white mx-5'>
-        <Text className='py-3 text-sm border-b border-b-gray-200 font-poppins-medium text-[#71717a] px-5'>
-          Slot Details
-        </Text>
+      {slotData ? (
+        <View className='flex flex-col border border-gray-200 rounded-lg bg-white mx-5'>
+          <Text className='py-3 text-sm border-b border-b-gray-200 font-poppins-medium text-[#71717a] px-5'>
+            Slot Details
+          </Text>
 
-        {/* Data */}
-        <View className='p-5 flex flex-row gap-10'>
-          <View>
-            <Text className='font-poppins text-xs text-[#71717a]'>Label</Text>
-            <Text className='font-poppins-bold text-lg'>
-              {slotData?.slotId?.metadata?.label}
-            </Text>
-          </View>
+          {/* Data */}
+          <View className='p-5 flex flex-row gap-10'>
+            <View>
+              <Text className='font-poppins text-xs text-[#71717a]'>Label</Text>
+              <Text className='font-poppins-bold text-lg'>
+                {slotData?.slotId?.metadata?.label}
+              </Text>
+            </View>
 
-          <View>
-            <Text className='font-poppins text-xs text-[#71717a]'>
-              Entry Time
-            </Text>
-            <Text className='font-poppins-bold text-lg'>
-              {slotData?.entryTime &&
-                new Date(slotData.entryTime).toLocaleTimeString([], {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  hour12: true,
-                })}
-            </Text>
+            <View>
+              <Text className='font-poppins text-xs text-[#71717a]'>
+                Entry Time
+              </Text>
+              <Text className='font-poppins-bold text-lg'>
+                {slotData?.entryTime &&
+                  new Date(slotData.entryTime).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true,
+                  })}
+              </Text>
+            </View>
           </View>
         </View>
-      </View>
+      ) : (
+        <View className='flex flex-col border border-gray-200 rounded-lg bg-white mx-5'>
+          <Text className='py-3 text-sm border-b border-b-gray-200 font-poppins-medium text-[#71717a] px-5'>
+            Slot Details
+          </Text>
+
+          {/* Data */}
+          <View className='p-5 flex flex-row gap-10'>
+            <View className='flex-1'>
+              <Text className='font-poppins text-xs text-[#71717a]'>Label</Text>
+              <Text className='font-poppins-bold mt-4 w-full h-4 bg-gray-200 rounded-full text-lg'></Text>
+            </View>
+
+            <View className='flex-1'>
+              <Text className='font-poppins text-xs text-[#71717a]'>
+                Entry Time
+              </Text>
+              <Text className='font-poppins-bold mt-4 w-full h-4 bg-gray-200 rounded-full text-lg'></Text>
+            </View>
+          </View>
+        </View>
+      )}
     </SafeAreaView>
   );
 }

@@ -81,7 +81,10 @@ export default function MainLayout() {
           ),
         }}
       />
-      <Tabs.Screen name='Account' options={{ href: null }} />
+      <Tabs.Screen
+        name='Account'
+        options={{ href: null, tabBarStyle: { display: 'none' } }}
+      />
       <Tabs.Screen name='Analytics' options={{ href: null }} />
       <Tabs.Screen name='Settings' options={{ href: null }} />
       <Tabs.Screen name='Notification' options={{ href: null }} />

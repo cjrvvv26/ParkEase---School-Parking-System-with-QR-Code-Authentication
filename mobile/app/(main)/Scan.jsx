@@ -1,11 +1,5 @@
-import {
-  ChevronLeft,
-  QrCode,
-  RotateCcw,
-  Scan,
-  ScanLine,
-} from 'lucide-react-native';
-import { View, Text, Pressable, Button } from 'react-native';
+import { ChevronLeft, QrCode, RotateCcw, ScanLine } from 'lucide-react-native';
+import { View, Text, Pressable, Button, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import { CameraView, useCameraPermissions } from 'expo-camera';
@@ -14,11 +8,14 @@ import { useState } from 'react';
 import { verifyScannedSlot } from '../services/slotService';
 import useApiRequest from '../hooks/useApiRequest';
 
-export default function Scann() {
+export default function Scan() {
   const router = useRouter();
   const [scanned, setScanned] = useState(false);
+  const [displayQR, toggleDisplayQR] = useState(false);
   const [permission, requestPermission] = useCameraPermissions();
   const { user } = useSelector((state) => state.auth);
+  console.log(user);
+
   const { loading, error, execute } = useApiRequest();
 
   if (!permission) {
@@ -36,7 +33,6 @@ export default function Scann() {
 
   const handleScan = async ({ data }) => {
     setScanned(true);
-    console.log('QR DATA:', data);
     const slotId = data.match(/SLOT:(.+)/);
 
     const res = await execute(verifyScannedSlot, {
@@ -46,7 +42,12 @@ export default function Scann() {
 
     if (error) return console.log(error);
 
-    if (res?.status === 200) return console.log(res);
+    if (res?.status === 200) console.log(res);
+
+    return router.replace({
+      pathname: '/Parking',
+      params: { state: res.data.message },
+    });
   };
 
   return (
@@ -65,40 +66,53 @@ export default function Scann() {
             : 'Scan Student QR Code'}
         </Text>
       </View>
-      {/* Camera */}
-      <View className='h-96 mx-5 rounded-3xl'>
-        <View
-          style={{
-            position: 'absolute',
-            left: 0,
-            zIndex: 2,
-            right: 0,
-            top: 0,
-            bottom: 0,
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
-          <ScanLine
-            color={scanned ? '#8e15f6' : 'white'}
-            size={300}
-            strokeWidth={0.5}
+      {displayQR ? (
+        //Display QR
+        <View className=' mx-5 flex items-center justify-center min-h-96'>
+          {user?.QRCode ? (
+            <Image className='' source={{ uri: user.QRCode }} />
+          ) : (
+            <Text className='text-base font-poppins-medium text-[#71717a]'>
+              You need to verify your account
+            </Text>
+          )}
+        </View>
+      ) : (
+        //Camera
+        <View className='h-96 mx-5 rounded-3xl'>
+          <View
+            style={{
+              position: 'absolute',
+              left: 0,
+              zIndex: 2,
+              right: 0,
+              top: 0,
+              bottom: 0,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            <ScanLine
+              color={scanned ? '#8e15f6' : 'white'}
+              size={300}
+              strokeWidth={0.5}
+            />
+          </View>
+          <CameraView
+            style={{
+              flex: 1,
+              borderRadius: 24,
+              borderColor: '#8e15f6',
+              borderWidth: 2,
+              overflow: 'hidden',
+            }}
+            barcodeScannerSettings={{
+              barcodeTypes: ['qr'],
+            }}
+            onBarcodeScanned={scanned ? undefined : handleScan}
           />
         </View>
-        <CameraView
-          style={{
-            flex: 1,
-            borderRadius: 24,
-            borderColor: '#8e15f6',
-            borderWidth: 2,
-            overflow: 'hidden',
-          }}
-          barcodeScannerSettings={{
-            barcodeTypes: ['qr'],
-          }}
-          onBarcodeScanned={scanned ? undefined : handleScan}
-        />
-      </View>
+      )}
 
       {error && <Text className='font-poppins text-red-500 ml-5'>{error}</Text>}
       <View className='mx-5 mb-5 relative'>
@@ -115,10 +129,27 @@ export default function Scann() {
           <Text className='text-white font-poppins-medium'>Scan Again</Text>
         </Pressable>
       )}
-      <Pressable className='flex active:opacity-80 flex-row items-center bg-violet-500 rounded-md gap-3 py-4 justify-center mx-5'>
-        <QrCode color={'white'} />
-        <Text className='text-white font-medium text-lg'>Display QR Code</Text>
-      </Pressable>
+      {displayQR ? (
+        <Pressable
+          onPress={() => toggleDisplayQR(false)}
+          className='flex active:opacity-80 flex-row items-center bg-violet-500 rounded-md gap-3 py-4 justify-center mx-5'
+        >
+          <ScanLine color={'white'} />
+          <Text className='text-white font-medium text-lg'>
+            Scan Slot QR Code
+          </Text>
+        </Pressable>
+      ) : (
+        <Pressable
+          onPress={() => toggleDisplayQR(true)}
+          className='flex active:opacity-80 flex-row items-center bg-violet-500 rounded-md gap-3 py-4 justify-center mx-5'
+        >
+          <QrCode color={'white'} />
+          <Text className='text-white font-medium text-lg'>
+            Display QR Code
+          </Text>
+        </Pressable>
+      )}
     </SafeAreaView>
   );
 }
