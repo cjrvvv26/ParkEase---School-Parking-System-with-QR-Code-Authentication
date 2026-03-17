@@ -8,11 +8,11 @@ const storage = new CloudinaryStorage({
   params: async (req, file) => {
     const folder = allowedFolders.includes(req.params.folder)
       ? req.params.folder
-      : "misc";
+      : "avatars";
 
     return {
       folder: `ParkEase/${folder}`,
-      allowed_formats: ["jpg", "png", "jpeg"],
+      allowed_formats: ["jpg", "png", "jpeg", "avif", "webp"],
       public_id: `${Date.now()}-${file.originalname.split(".")[0]}`,
     };
   },

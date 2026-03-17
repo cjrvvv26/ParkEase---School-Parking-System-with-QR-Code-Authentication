@@ -21,3 +21,7 @@ export const verifyOtp = (data) => {
 
   return user;
 };
+
+export const resendOtp = (data) => {
+  return api.post('auth/resend-otp', { ...data });
+};

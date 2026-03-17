@@ -88,7 +88,7 @@ exports.localSignIn = async (data) => {
         ? await Student.findOne({ userId: user._id })
         : user.role === 'guard'
           ? await Guard.findOne({ userId: user._id })
-          : user.role === 'guard'
+          : user.role === 'faculty'
             ? await Faculty.findOne({ userId: user._id })
             : null;
 

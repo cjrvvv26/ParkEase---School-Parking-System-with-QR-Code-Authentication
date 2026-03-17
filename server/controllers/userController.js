@@ -77,11 +77,23 @@ exports.updateUserDataBySA = async (req, res) => {
       };
     }
 
-    const { course, addData } = userData;
-    // Prepare data structure for updateInformation service
+    const { course, role, name, phoneNo, status, motorDetails, yearLevel, payment, permissions, profileDetails } = userData;
+
+    // Flatten the relevant fields into info for the service
+    const info = {
+      ...name,
+      ...(phoneNo !== undefined && { phoneNo }),
+      ...(status !== undefined && { status }),
+      ...(motorDetails && { ...motorDetails }),
+      ...(yearLevel !== undefined && { yearLevel }),
+      ...(payment && { isPaid: payment.isPaid }),
+      ...(permissions && { ...permissions }),
+      ...(profileDetails && { url: profileDetails.url, public_id: profileDetails.public_id }),
+    };
+
     const updateData = {
-      info: addData,
-      role: userData.role,
+      info,
+      role,
       course,
     };
 
@@ -125,7 +137,13 @@ exports.updateUserDataBySA = async (req, res) => {
       }
     }
 
-    res.status(500).json({ error: error.message });
+    console.error('[updateUserDataBySA] RAW ERROR:', String(error));
+    console.error('[updateUserDataBySA] ERROR name:', error?.name);
+    console.error('[updateUserDataBySA] ERROR message:', error?.message);
+    console.error('[updateUserDataBySA] ERROR code:', error?.code);
+    console.error('[updateUserDataBySA] ERROR keys:', Object.keys(error || {}));
+    console.error('[updateUserDataBySA] STACK:', error?.stack);
+    res.status(500).json({ error: error?.message || String(error), stack: error?.stack });
   }
 };
 

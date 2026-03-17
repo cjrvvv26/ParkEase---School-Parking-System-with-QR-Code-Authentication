@@ -26,6 +26,8 @@ export default function Header() {
   const searchRef = useRef(null);
   const settingsRef = useRef(null);
   const { user } = useSelector((state) => state.auth);
+  console.log(user);
+
   const dispatch = useDispatch();
   const debounceQuery = useDebounce(query, 500);
 

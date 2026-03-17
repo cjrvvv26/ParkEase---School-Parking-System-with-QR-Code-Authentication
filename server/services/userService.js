@@ -30,7 +30,7 @@ exports.getUserData = async (id) => {
         '-_id name course phoneNo studentNo payment entryTime outTime yearLevel motorDetails',
       );
       const course = await Course.findById(userData.course).select(
-        '-_id name description',
+        'name description',
       );
       console.log(userData);
       console.log(course);
@@ -134,6 +134,7 @@ exports.getUsersInformation = async (req) => {
 
 exports.updateInformation = async (superAdmin, id, data, session) => {
   const { info, role, course } = data;
+  console.log(info);
 
   let nested = {};
   switch (role) {
@@ -153,6 +154,20 @@ exports.updateInformation = async (superAdmin, id, data, session) => {
       };
       break;
 
+    case 'faculty':
+      nested = {
+        url: 'profileDetails',
+        public_id: 'profileDetails',
+        firstName: 'name',
+        middleName: 'name',
+        lastName: 'name',
+        plateNo: 'motorDetails',
+        brand: 'motorDetails',
+        model: 'motorDetails',
+        color: 'motorDetails',
+      };
+      break;
+
     case 'guard':
       nested = {
         url: 'profileDetails',
@@ -160,7 +175,6 @@ exports.updateInformation = async (superAdmin, id, data, session) => {
         firstName: 'name',
         lastName: 'name',
         canScan: 'permissions',
-        canMarkParking: 'permissions',
         canViewAnalytics: 'permissions',
       };
       break;
@@ -216,8 +230,9 @@ exports.updateInformation = async (superAdmin, id, data, session) => {
   const userUpdateData = Object.fromEntries(
     Object.entries(flattenData).filter(
       ([key, value]) =>
-        userFields.includes(key) ||
-        (key.startsWith('profileDetails.') && value !== undefined),
+        (userFields.includes(key) ||
+          (key.startsWith('profileDetails.') && value !== undefined)) &&
+        key !== '_id',
     ),
   );
 
@@ -231,14 +246,18 @@ exports.updateInformation = async (superAdmin, id, data, session) => {
   const roleSpecificData = Object.fromEntries(
     Object.entries(flattenData).filter(
       ([key]) =>
-        !userFields.includes(key) && !key.startsWith('profileDetails.'),
+        !userFields.includes(key) &&
+        !key.startsWith('profileDetails.') &&
+        key !== '_id' &&
+        !key.endsWith('._id'),
     ),
   );
 
   let additionalData = null;
   if (role === 'student') {
     if (course) {
-      const courseData = await Course.findById(course._id);
+      const courseId = course._id || course;
+      const courseData = await Course.findById(courseId);
 
       if (!courseData) {
         throw new Error('Course not found');
@@ -247,6 +266,12 @@ exports.updateInformation = async (superAdmin, id, data, session) => {
       roleSpecificData.course = courseData._id;
     }
     additionalData = await Student.findOneAndUpdate(
+      { userId: id },
+      { $set: roleSpecificData },
+      { new: true, session },
+    );
+  } else if (role === 'faculty') {
+    additionalData = await Faculty.findOneAndUpdate(
       { userId: id },
       { $set: roleSpecificData },
       { new: true, session },
@@ -301,8 +326,8 @@ exports.updateInformation = async (superAdmin, id, data, session) => {
       const paymentNotif = {
         userId: id,
         message: newValue
-          ? `Hey ${roleSpecificData['name.firstName']}! You're now eligible to have an exclusive slot. Your recent payment has been successfully verified and processed. You may now proceed to reserve and secure your preferred slot before it becomes unavailable.`
-          : `Hey ${roleSpecificData['name.firstName']}! Your payment status has been reset. This means your previous verification is no longer valid at the moment. Please review your payment details and complete the process again to regain eligibility for an exclusive slot.`,
+          ? `Hey ${info.firstName}! You're now eligible to have an exclusive slot. Your recent payment has been successfully verified and processed. You may now proceed to reserve and secure your preferred slot before it becomes unavailable.`
+          : `Hey ${info.firstName}! Your payment status has been reset. This means your previous verification is no longer valid at the moment. Please review your payment details and complete the process again to regain eligibility for an exclusive slot.`,
         title: newValue ? 'Payment Verified' : 'Payment Reset',
       };
 
@@ -314,7 +339,7 @@ exports.updateInformation = async (superAdmin, id, data, session) => {
     userId: superAdmin,
     actionType: 'users',
     action: 'UPDATE_ACCOUNT',
-    description: `${roleSpecificData['name.firstName']} ${roleSpecificData['name.lastName']} account has been successfully updated.`,
+    description: `${info.firstName || ''} ${info.lastName || ''} account has been successfully updated.`,
     entityType: 'User',
     entityId: id,
   });
@@ -323,7 +348,7 @@ exports.updateInformation = async (superAdmin, id, data, session) => {
 
   const notifData = {
     userId: id,
-    message: `Hey ${roleSpecificData['name.firstName']}! Your account has been successfully updated by super admin.`,
+    message: `Hey ${info.firstName || 'User'}! Your account has been successfully updated by super admin.`,
     title: 'Account Update',
   };
 

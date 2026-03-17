@@ -1,113 +1,344 @@
-import { Link, useRouter } from 'expo-router';
-import { useState, useEffect } from 'react';
-import { Text, View, TextInput, Pressable } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useState, useEffect, useRef } from 'react';
+import {
+  Text,
+  View,
+  TextInput,
+  Pressable,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { verifyOtp } from '../services/authService';
+import { ShieldCheck, Mail } from 'lucide-react-native';
+import { verifyOtp, resendOtp } from '../services/authService';
 import useApiRequest from '../hooks/useApiRequest';
+
+const COUNTDOWN = 60;
+const DIGITS = 6;
 
 export default function OTPVerification() {
   const router = useRouter();
   const { error, loading, execute } = useApiRequest();
-  const [allowedResend, setAllowedResend] = useState(false);
-  const [credentials, setCredentials] = useState({
-    email: '',
-    inputOtp: null,
-    type: 'login',
-    platform: 'mobile',
-  });
 
+  const [digits, setDigits] = useState(Array(DIGITS).fill(''));
+  const [countdown, setCountdown] = useState(COUNTDOWN);
+  const [canResend, setCanResend] = useState(false);
+  const [email, setEmail] = useState('');
+  const inputRefs = useRef([]);
+
+  // Load email + guard route
   useEffect(() => {
-    const checkVerification = async () => {
+    const init = async () => {
       const hasVerification = await AsyncStorage.getItem('hasVerification');
-      const email = await AsyncStorage.getItem('email');
-      setCredentials((prev) => ({ ...prev, email }));
-
+      const storedEmail = await AsyncStorage.getItem('email');
+      setEmail(storedEmail ?? '');
       if (hasVerification === 'false' || !hasVerification)
         return router.replace('/SignIn');
     };
-
-    checkVerification();
+    init();
   }, []);
 
-  const handleVerification = async () => {
-    const res = await execute(verifyOtp, credentials);
+  // Countdown timer
+  useEffect(() => {
+    if (canResend) return;
+    if (countdown === 0) {
+      setCanResend(true);
+      return;
+    }
+    const timer = setTimeout(() => setCountdown((c) => c - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [countdown, canResend]);
 
+  const handleDigitChange = (text, index) => {
+    const cleaned = text.replace(/[^0-9]/g, '').slice(-1);
+    const next = [...digits];
+    next[index] = cleaned;
+    setDigits(next);
+    if (cleaned && index < DIGITS - 1) inputRefs.current[index + 1]?.focus();
+  };
+
+  const handleKeyPress = (e, index) => {
+    if (e.nativeEvent.key === 'Backspace' && !digits[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
+  };
+
+  const handleVerification = async () => {
+    const otp = digits.join('');
+    const res = await execute(verifyOtp, {
+      email,
+      inputOtp: otp,
+      type: 'login',
+      platform: 'mobile',
+    });
     if (res?.status === 200) {
       await AsyncStorage.removeItem('hasVerification');
       await AsyncStorage.setItem('token', res.data.user.token);
-
       router.replace('/(main)/Home');
     }
   };
 
-  return (
-    <SafeAreaView className='flex-1 flex flex-col bg-white items-center justify-center'>
-      <View style={{ marginBottom: 20 }} className='items-center'>
-        <Text className='font-poppins-bold text-2xl text-gray-700'>
-          OTP Verification
-        </Text>
-        <Text className='font-poppins text-base text-gray-400'>
-          Check your email to see the code.
-        </Text>
-      </View>
+  const handleResend = async () => {
+    if (!canResend) return;
+    await execute(resendOtp, { email });
+    setDigits(Array(DIGITS).fill(''));
+    setCountdown(COUNTDOWN);
+    setCanResend(false);
+    inputRefs.current[0]?.focus();
+  };
 
-      <View
-        className='flex-row gap-2 justify-center items-center'
-        style={{ width: 300 }}
+  const maskedEmail = email
+    ? email.replace(/(.{2}).+(@.+)/, '$1•••$2')
+    : '•••@•••';
+
+  const isFilled = digits.every((d) => d !== '');
+
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#8e51ff' }}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <TextInput
-          value={credentials.inputOtp}
-          onChangeText={(num) =>
-            setCredentials((prev) => ({ ...prev, inputOtp: num }))
-          }
-          keyboardType='number-pad'
-          className='border border-gray-400 rounded-lg p-4 w-full'
-        />
-      </View>
-      <View className='flex justify-between w-full flex-row items-center mt-[8px]'>
-        {!allowedResend ? (
-          <Text
-            style={{ marginLeft: 40 }}
-            className='font-poppins text-gray-400 mb-10'
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps='handled'
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Hero */}
+          <View
+            style={{
+              alignItems: 'center',
+              justifyContent: 'center',
+              paddingTop: 48,
+              paddingBottom: 40,
+              gap: 12,
+            }}
           >
-            Resend code in: 50s
-          </Text>
-        ) : (
-          <Pressable style={{ marginLeft: 40 }}>
-            <Text className='font-poppins text-violet-500 underline mb-10'>
-              Resend Code
+            <View
+              style={{
+                backgroundColor: 'rgba(255,255,255,0.2)',
+                padding: 18,
+                borderRadius: 24,
+                marginBottom: 4,
+              }}
+            >
+              <ShieldCheck color='#fff' size={40} strokeWidth={1.5} />
+            </View>
+            <Text
+              style={{
+                fontFamily: 'Poppins700',
+                fontSize: 26,
+                color: '#fff',
+                letterSpacing: 0.3,
+              }}
+            >
+              Verify Your Identity
             </Text>
-          </Pressable>
-        )}
-        {!error && (
-          <Text
-            style={{ marginRight: 40 }}
-            className='text-red-500 font-poppins self-start ml-[40px]'
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Mail color='rgba(255,255,255,0.7)' size={14} />
+              <Text
+                style={{
+                  fontFamily: 'Poppins400',
+                  fontSize: 13,
+                  color: 'rgba(255,255,255,0.75)',
+                }}
+              >
+                Code sent to {maskedEmail}
+              </Text>
+            </View>
+          </View>
+
+          {/* Form Card */}
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: '#fff',
+              borderTopLeftRadius: 32,
+              borderTopRightRadius: 32,
+              paddingHorizontal: 28,
+              paddingTop: 36,
+              paddingBottom: 40,
+            }}
           >
-            {error}
-          </Text>
-        )}
-      </View>
-      <Pressable
-        disabled={loading}
-        onPress={handleVerification}
-        className={`${loading ? 'opacity-80' : ''} bg-violet-500 rounded-lg py-4 active:opacity-80 flex items-center justify-center`}
-        style={{ width: 300 }}
-      >
-        <Text className='font-poppins text-white'>
-          {loading ? 'Processing...' : 'Verify'}
-        </Text>
-      </Pressable>
-      <Link
-        onPress={async () => await AsyncStorage.removeItem('hasVerification')}
-        disabled={loading}
-        href={'/SignIn'}
-        className='bg-gray-100 active:bg-gray-50 rounded-lg py-4 mt-5 active:opacity-80 flex items-center justify-center'
-        style={{ width: 300 }}
-      >
-        <Text className='font-poppins text-center text-gray-400'>Cancel</Text>
-      </Link>
+            <Text
+              style={{
+                fontFamily: 'Poppins700',
+                fontSize: 22,
+                color: '#0e0e11',
+                marginBottom: 4,
+              }}
+            >
+              Enter OTP Code
+            </Text>
+            <Text
+              style={{
+                fontFamily: 'Poppins400',
+                fontSize: 13,
+                color: '#71717a',
+                marginBottom: 32,
+              }}
+            >
+              Enter the 6-digit code from your email
+            </Text>
+
+            {/* 6-digit boxes */}
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                marginBottom: 28,
+              }}
+            >
+              {digits.map((digit, i) => (
+                <TextInput
+                  key={i}
+                  ref={(r) => (inputRefs.current[i] = r)}
+                  value={digit}
+                  onChangeText={(t) => handleDigitChange(t, i)}
+                  onKeyPress={(e) => handleKeyPress(e, i)}
+                  keyboardType='number-pad'
+                  maxLength={1}
+                  selectTextOnFocus
+                  style={{
+                    width: 46,
+                    height: 56,
+                    borderRadius: 14,
+                    borderWidth: 1.5,
+                    borderColor: digit ? '#8e51ff' : '#e5e7eb',
+                    backgroundColor: digit ? '#f0ebff' : '#f9fafb',
+                    textAlign: 'center',
+                    fontFamily: 'Poppins700',
+                    fontSize: 22,
+                    color: '#0e0e11',
+                  }}
+                />
+              ))}
+            </View>
+
+            {/* Countdown / Resend */}
+            <View style={{ alignItems: 'center', marginBottom: 28 }}>
+              {canResend ? (
+                <Pressable onPress={handleResend}>
+                  <Text
+                    style={{
+                      fontFamily: 'Poppins600',
+                      fontSize: 14,
+                      color: '#8e51ff',
+                      textDecorationLine: 'underline',
+                    }}
+                  >
+                    Resend Code
+                  </Text>
+                </Pressable>
+              ) : (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Text
+                    style={{
+                      fontFamily: 'Poppins400',
+                      fontSize: 13,
+                      color: '#71717a',
+                    }}
+                  >
+                    Resend code in
+                  </Text>
+                  <View
+                    style={{
+                      backgroundColor: '#f0ebff',
+                      paddingHorizontal: 10,
+                      paddingVertical: 3,
+                      borderRadius: 99,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        fontFamily: 'Poppins600',
+                        fontSize: 13,
+                        color: '#8e51ff',
+                      }}
+                    >
+                      {countdown}s
+                    </Text>
+                  </View>
+                </View>
+              )}
+            </View>
+
+            {/* Error */}
+            {error ? (
+              <View
+                style={{
+                  backgroundColor: '#fee2e2',
+                  borderRadius: 12,
+                  padding: 12,
+                  marginBottom: 16,
+                }}
+              >
+                <Text
+                  style={{
+                    fontFamily: 'Poppins400',
+                    fontSize: 13,
+                    color: '#dc2626',
+                    textAlign: 'center',
+                  }}
+                >
+                  {error}
+                </Text>
+              </View>
+            ) : (
+              <View style={{ height: 16 }} />
+            )}
+
+            {/* Verify Button */}
+            <Pressable
+              disabled={loading || !isFilled}
+              onPress={handleVerification}
+              style={{
+                backgroundColor: loading || !isFilled ? '#c4b5fd' : '#8e51ff',
+                borderRadius: 14,
+                paddingVertical: 16,
+                alignItems: 'center',
+                marginBottom: 14,
+                shadowColor: '#8e51ff',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: loading || !isFilled ? 0 : 0.3,
+                shadowRadius: 8,
+                elevation: loading || !isFilled ? 0 : 6,
+              }}
+            >
+              <Text
+                style={{ fontFamily: 'Poppins600', fontSize: 15, color: '#fff' }}
+              >
+                {loading ? 'Verifying...' : 'Verify'}
+              </Text>
+            </Pressable>
+
+            {/* Cancel */}
+            <Pressable
+              disabled={loading}
+              onPress={async () => {
+                await AsyncStorage.removeItem('hasVerification');
+                router.replace('/SignIn');
+              }}
+              style={({ pressed }) => ({
+                backgroundColor: pressed ? '#f3f4f6' : '#f9fafb',
+                borderRadius: 14,
+                paddingVertical: 15,
+                alignItems: 'center',
+                borderWidth: 1,
+                borderColor: '#e5e7eb',
+              })}
+            >
+              <Text
+                style={{ fontFamily: 'Poppins500', fontSize: 14, color: '#71717a' }}
+              >
+                Cancel
+              </Text>
+            </Pressable>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

@@ -15,7 +15,6 @@ export default function AddFaculty() {
     firstName: '',
     middleName: '',
     lastName: '',
-    facultyId: '',
     email: '',
     phoneNo: '',
     role: 'faculty',
@@ -69,7 +68,7 @@ export default function AddFaculty() {
 
   const handleRegistration = async (e) => {
     e.preventDefault();
-    const hasEmptyValue = Object.values({ ...faculty, ...motor }).every(
+    const hasEmptyValue = Object.values({ ...faculty, ...motor }).some(
       (f) => !f,
     );
 
@@ -213,7 +212,11 @@ export default function AddFaculty() {
                 </div>
                 <div className='flex items-center gap-3'>
                   <div className='h-20 w-20 bg-gray-100 rounded-md flex items-center justify-center text-gray-400 overflow-hidden'>
-                    <img src={preview} alt='' className='h-full w-full' />
+                    <img
+                      src={preview}
+                      alt=''
+                      className='h-full w-full  object-cover'
+                    />
                   </div>
                   <input
                     type='file'
@@ -411,10 +414,6 @@ export default function AddFaculty() {
                     faculty.lastName.toLowerCase() +
                     Date.now()
                   : ''}
-              </div>
-              <div>
-                <span className='font-medium text-gray-700'>Faculty ID:</span>{' '}
-                {faculty.facultyId || '—'}
               </div>
               <div>
                 <span className='font-medium text-gray-700'>Email:</span>{' '}

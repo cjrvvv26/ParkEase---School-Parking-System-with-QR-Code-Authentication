@@ -19,7 +19,14 @@ router.get('/search', userController.getUsersByName);
 router.get('/:id', userController.getUserById);
 router.patch(
   '/:id',
-  upload.single('profileDetails'),
+  (req, res, next) => {
+    upload.single('profileDetails')(req, res, (err) => {
+      if (err) {
+        return res.status(400).json({ error: err.message || String(err) });
+      }
+      next();
+    });
+  },
   userController.updateUserDataBySA,
 );
 router.post('/available', userController.getAvailableUsers);

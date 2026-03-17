@@ -1,39 +1,74 @@
 import { Tabs } from 'expo-router';
 import '../global.css';
 import { Home, MessageCircleQuestionMark, Scan } from 'lucide-react-native';
-import { Pressable, View } from 'react-native';
+import { Pressable, View, Text } from 'react-native';
 
-function ScanButton({ children, onPress }) {
+function ScanButton({ onPress, accessibilityState }) {
+  const focused = accessibilityState?.selected;
   return (
     <Pressable
       onPress={onPress}
       style={{
         flex: 1,
         alignItems: 'center',
+        justifyContent: 'flex-end',
+        paddingBottom: 12,
       }}
     >
-      {/* Floating Icon */}
       <View
         style={{
           position: 'absolute',
-          top: -30,
-          width: 65,
-          height: 65,
-          borderRadius: 32,
-          backgroundColor: '#8b5cf6',
+          top: -28,
+          width: 60,
+          height: 60,
+          borderRadius: 30,
+          backgroundColor: focused ? '#7c3aed' : '#8b5cf6',
           justifyContent: 'center',
           alignItems: 'center',
-          elevation: 5,
-          borderWidth: 1,
-          borderColor: '#c6b1ff',
+          shadowColor: '#8b5cf6',
+          shadowOffset: { width: 0, height: 6 },
+          shadowOpacity: 0.45,
+          shadowRadius: 10,
+          elevation: 8,
+          borderWidth: 3,
+          borderColor: '#fff',
         }}
       >
-        <Scan name='scan' size={28} color='white' />
+        <Scan size={24} color='#fff' />
       </View>
-
-      {/* Label */}
-      <View style={{ marginTop: 7 }}>{children}</View>
+      <Text
+        style={{
+          fontFamily: 'Poppins500',
+          fontSize: 11,
+          color: focused ? '#8b5cf6' : '#71717a',
+          marginTop: 33,
+          marginBottom: 25,
+          paddingBottom: 0,
+        }}
+      >
+        Scan
+      </Text>
     </Pressable>
+  );
+}
+
+function TabIcon({ icon: Icon, focused, label }) {
+  return (
+    <View
+      style={{ alignItems: 'center', justifyContent: 'center', paddingTop: 4 }}
+    >
+      <View
+        style={{
+          backgroundColor: focused ? '#f0ebff' : 'transparent',
+          borderRadius: 12,
+          paddingHorizontal: 14,
+          paddingVertical: 5,
+          marginBottom: 2,
+        }}
+      >
+        <Icon size={22} color={focused ? '#8e51ff' : '#71717a'} />
+      </View>
+    </View>
   );
 }
 
@@ -43,14 +78,27 @@ export default function MainLayout() {
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: '#8e51ff',
-        tabBarInactiveTintColor: '#0e0e11',
+        tabBarInactiveTintColor: '#71717a',
         tabBarStyle: {
-          height: 100,
-          paddingBottom: 20,
+          height: 105,
+          paddingBottom: 0,
+          paddingTop: 0,
+          backgroundColor: '#fff',
+          borderTopWidth: 1,
+          borderTopColor: '#f0ebff',
+          shadowColor: '#8e51ff',
+          shadowOffset: { width: 0, height: -4 },
+          shadowOpacity: 0.08,
+          shadowRadius: 12,
+          elevation: 12,
         },
         tabBarLabelStyle: {
           fontFamily: 'Poppins500',
-          fontSize: 12,
+          fontSize: 11,
+          marginTop: 0,
+        },
+        tabBarItemStyle: {
+          paddingVertical: 8,
         },
       }}
     >
@@ -58,7 +106,9 @@ export default function MainLayout() {
         name='Home'
         options={{
           title: 'Home',
-          tabBarIcon: ({ color, size }) => <Home size={size} color={color} />,
+          tabBarIcon: ({ focused }) => (
+            <TabIcon icon={Home} focused={focused} />
+          ),
         }}
       />
 
@@ -67,6 +117,7 @@ export default function MainLayout() {
         options={{
           title: 'Scan',
           tabBarIcon: () => null,
+          tabBarLabel: () => null,
           tabBarButton: (props) => <ScanButton {...props} />,
         }}
       />
@@ -76,11 +127,12 @@ export default function MainLayout() {
         options={{
           title: 'Support',
           tabBarStyle: { display: 'none' },
-          tabBarIcon: ({ color, size }) => (
-            <MessageCircleQuestionMark size={size} color={color} />
+          tabBarIcon: ({ focused }) => (
+            <TabIcon icon={MessageCircleQuestionMark} focused={focused} />
           ),
         }}
       />
+
       <Tabs.Screen
         name='Account'
         options={{ href: null, tabBarStyle: { display: 'none' } }}

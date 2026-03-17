@@ -2,7 +2,7 @@ import Svg, { Rect, Polygon, Line, G, Circle } from 'react-native-svg';
 import { View } from 'react-native';
 
 export default function MapRenderer({ data }) {
-  const { map, shapes } = data;
+  const { map, shapes, slotId } = data;
   const gridSize = 50; // distance between grid lines
 
   const verticalLines = [];
@@ -36,7 +36,7 @@ export default function MapRenderer({ data }) {
     );
   }
   return (
-    <View>
+    <View style={{ height: 240 }}>
       <Svg
         width='100%'
         height='100%'
@@ -60,25 +60,22 @@ export default function MapRenderer({ data }) {
                   fill='#9ca3af'
                   transform={`rotate(${g.rotation}, ${g.x + g.width / 2}, ${g.y + g.height / 2})`}
                 />
-                <Circle
-                  r={20}
-                  fill='#ede9fe'
-                  cx={g.x + g.width / 2}
-                  cy={g.y + g.height / 2}
-                />
-                <Circle
-                  r={15}
-                  fill='#ddd6fe'
-                  cx={g.x + g.width / 2}
-                  cy={g.y + g.height / 2}
-                />
-
-                <Circle
-                  r={5}
-                  fill='#a78bfa'
-                  cx={g.x + g.width / 2}
-                  cy={g.y + g.height / 2}
-                />
+                {shape._id === slotId && (
+                  <>
+                    <Circle
+                      r={20}
+                      fill='#ede9fe'
+                      cx={g.x + g.width / 2}
+                      cy={g.y + g.height / 2}
+                    />
+                    <Circle
+                      r={15}
+                      fill='#8e51ff'
+                      cx={g.x + g.width / 2}
+                      cy={g.y + g.height / 2}
+                    />
+                  </>
+                )}
               </G>
             );
           }

@@ -37,8 +37,11 @@ export default function UserAccount() {
     if (!user.name?.lastName?.trim()) {
       errors.lastName = 'Last name is required';
     }
-    if (user.role === 'student' && !user.name?.middleName?.trim()) {
-      errors.middleName = 'Middle name is required for students';
+    if (
+      (user.role === 'student' || user.role === 'faculty') &&
+      !user.name?.middleName?.trim()
+    ) {
+      errors.middleName = 'Middle name is required';
     }
 
     // Validate phone number
@@ -48,16 +51,19 @@ export default function UserAccount() {
       errors.phoneNo = 'Phone number must be at least 10 digits';
     }
 
+    if (!user.status) {
+      errors.status = 'Status is required';
+    }
+
     // Validate student-specific fields
-    if (user.role === 'student') {
-      if (!user.course) {
-        errors.course = 'Course is required';
-      }
-      if (!user.yearLevel) {
-        errors.yearLevel = 'Year level is required';
-      }
-      if (!user.status) {
-        errors.status = 'Status is required';
+    if (user.role === 'student' || user.role === 'faculty') {
+      if (user.role === 'student') {
+        if (!user.course) {
+          errors.course = 'Course is required';
+        }
+        if (!user.yearLevel) {
+          errors.yearLevel = 'Year level is required';
+        }
       }
 
       // Validate motorcycle details
@@ -75,13 +81,6 @@ export default function UserAccount() {
       }
       if (!user.motorDetails?.color?.trim()) {
         errors.color = 'Motorcycle color is required';
-      }
-    }
-
-    // Validate guard-specific fields
-    if (user.role === 'guard') {
-      if (!user.status) {
-        errors.status = 'Guard status is required';
       }
     }
 
@@ -175,15 +174,16 @@ export default function UserAccount() {
         role: user.role,
         name: user.name,
         phoneNo: user.phoneNo,
+        status: user.status,
+        ...((user.role === 'student' || user.role === 'faculty') && {
+          motorDetails: user.motorDetails,
+        }),
         ...(user.role === 'student' && {
           course: user.course,
           yearLevel: user.yearLevel,
-          motorDetails: user.motorDetails,
           payment: user.payment,
-          status: user.status,
         }),
         ...(user.role === 'guard' && {
-          status: user.status,
           permissions: user.permissions,
         }),
       };
@@ -206,6 +206,7 @@ export default function UserAccount() {
         method: 'PATCH',
         data: formData,
       });
+      console.log(res);
 
       if (res) {
         alert('User information updated successfully!');
@@ -335,7 +336,7 @@ export default function UserAccount() {
                     />
                     <ErrorMessage field='firstName' />
                   </div>
-                  {user.role === 'student' && (
+                  {(user.role === 'student' || user.role === 'faculty') && (
                     <div>
                       <DefaultInput
                         label={'Middle Name'}
@@ -405,6 +406,36 @@ export default function UserAccount() {
                     value={user.email}
                     onlyRead={true}
                   />
+                  {user.role === 'faculty' &&
+                    (onlyRead ? (
+                      <DefaultInput
+                        label={'Status'}
+                        value={
+                          user?.status.charAt(0).toUpperCase() +
+                          user?.status.slice(1)
+                        }
+                        onlyRead={true}
+                      />
+                    ) : (
+                      <div>
+                        <DefaultOptions
+                          label={'Status'}
+                          value={
+                            user?.status.charAt(0).toUpperCase() +
+                            user?.status.slice(1)
+                          }
+                          placeholder={'Update Status'}
+                          options={['Active', 'Deactivate']}
+                          onChange={(e) =>
+                            setUser({
+                              ...user,
+                              status: e.target.value.toLowerCase(),
+                            })
+                          }
+                        />
+                        <ErrorMessage field='status' />
+                      </div>
+                    ))}
                   {user.role === 'student' && (
                     <DefaultInput
                       label={'Student No'}
@@ -412,7 +443,6 @@ export default function UserAccount() {
                       onlyRead={true}
                     />
                   )}
-
                   {user.role === 'guard' &&
                     (onlyRead ? (
                       <DefaultInput
@@ -435,7 +465,7 @@ export default function UserAccount() {
                         onChange={(e) =>
                           setUser({
                             ...user,
-                            status: e.target.value,
+                            status: e.target.value.toLowerCase(),
                           })
                         }
                       />
@@ -506,25 +536,27 @@ export default function UserAccount() {
                             />
                             <ErrorMessage field='yearLevel' />
                           </div>
-                          <div>
-                            <DefaultOptions
-                              label={'Status'}
-                              value={
-                                user?.status.charAt(0).toUpperCase() +
-                                user?.status.slice(1)
-                              }
-                              placeholder={'Update Status'}
-                              options={['Active', 'Deactivate']}
-                              onChange={(e) =>
-                                setUser({
-                                  ...user,
-                                  status: e.target.value,
-                                })
-                              }
-                            />
-                            <ErrorMessage field='status' />
-                          </div>
                         </>
+                      )}
+                      {user.role === 'student' && (
+                        <div>
+                          <DefaultOptions
+                            label={'Status'}
+                            value={
+                              user?.status.charAt(0).toUpperCase() +
+                              user?.status.slice(1)
+                            }
+                            placeholder={'Update Status'}
+                            options={['Active', 'Deactivate']}
+                            onChange={(e) =>
+                              setUser({
+                                ...user,
+                                status: e.target.value.toLowerCase(),
+                              })
+                            }
+                          />
+                          <ErrorMessage field='status' />
+                        </div>
                       )}
                     </>
                   )}

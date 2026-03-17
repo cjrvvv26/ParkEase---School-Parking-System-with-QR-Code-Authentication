@@ -1,7 +1,13 @@
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSelector } from 'react-redux';
-import { ChevronLeft } from 'lucide-react-native';
-import { Pressable, Text, View } from 'react-native';
+import {
+  ChevronLeft,
+  MapPin,
+  Clock,
+  ParkingSquare,
+  Navigation,
+} from 'lucide-react-native';
+import { Pressable, Text, View, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import useApiRequest from '../hooks/useApiRequest';
 import { getOccupiedSlotLocation } from '../services/slotService';
@@ -24,12 +30,17 @@ export default function Parking() {
       setHaveSlot(false);
       const res = await execute(getOccupiedSlotLocation, user._id);
       if (res?.status === 200) {
+        console.log(res);
+
         setHaveSlot(true);
         setSlotData(res.data.slot);
-        setMapData({ map: res.data.map, shapes: res.data.shapes });
+        setMapData({
+          map: res.data.map,
+          shapes: res.data.shapes,
+          slotId: res.data.slot.slotId._id,
+        });
       }
     };
-
     getSlotLocation();
   }, []);
 
@@ -38,120 +49,358 @@ export default function Parking() {
   }, [state]);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setMessage('');
-    }, 3000);
-
+    const timer = setTimeout(() => setMessage(''), 3000);
     return () => clearTimeout(timer);
   }, [message]);
 
   return (
     <SafeAreaView
       edges={['top']}
-      className='bg-gray-50 flex flex-col gap-5 flex-1'
+      style={{ backgroundColor: '#f9fafb', flex: 1 }}
     >
-      {/* Header */}
-      <View className='flex flex-row relative items-top justify-between mx-5 py-5'>
-        <Pressable onPress={() => router.push('/Home')} className=''>
-          <ChevronLeft color={'#0e0e11'} size={25} />
-        </Pressable>
-        <Text className='left-1/2 text-[#0e0e11] font-poppins-bold text-2xl top-5 -translate-x-1/2 absolute'>
-          Parking
-        </Text>
-      </View>
-      {/* Parking View */}
-      {mapData ? (
-        <>
-          {message && (
-            <Text className='text-center font-poppins-medium text-violet-500 border border-violet-500 rounded-md self-start ml-5 bg-violet-100 p-2'>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 32 }}
+      >
+        {/* Header */}
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingHorizontal: 20,
+            paddingTop: 20,
+            paddingBottom: 16,
+          }}
+        >
+          <Pressable
+            onPress={() => router.push('/Home')}
+            className='active:opacity-70'
+            style={{
+              backgroundColor: '#fff',
+              padding: 8,
+              borderRadius: 12,
+              borderWidth: 1,
+              borderColor: '#e5e7eb',
+            }}
+          >
+            <ChevronLeft color='#0e0e11' size={22} />
+          </Pressable>
+          <Text
+            style={{
+              flex: 1,
+              textAlign: 'center',
+              fontFamily: 'Poppins700',
+              fontSize: 20,
+              color: '#0e0e11',
+            }}
+          >
+            My Parking
+          </Text>
+          <View style={{ width: 38 }} />
+        </View>
+
+        {/* Toast message */}
+        {message ? (
+          <View
+            style={{
+              marginHorizontal: 20,
+              marginBottom: 12,
+              backgroundColor: '#f0ebff',
+              borderRadius: 12,
+              padding: 12,
+              borderWidth: 1,
+              borderColor: '#c4b5fd',
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 8,
+            }}
+          >
+            <Navigation color='#8e51ff' size={16} />
+            <Text
+              style={{
+                fontFamily: 'Poppins600',
+                fontSize: 13,
+                color: '#8e51ff',
+                flex: 1,
+              }}
+            >
               {message}
             </Text>
-          )}
-          <View className='min-h-52 border border-gray-200 rounded-lg bg-white mx-5 flex flex-col'>
-            <Text className='py-3 text-sm border-b border-b-gray-200 font-poppins-medium text-[#71717a] px-5 mb-2'>
-              {mapData?.map?.name} Area View
+          </View>
+        ) : null}
+
+        {/* Map Card */}
+        <View
+          style={{
+            marginHorizontal: 20,
+            marginBottom: 16,
+            backgroundColor: '#fff',
+            borderRadius: 20,
+            borderWidth: 1,
+            borderColor: '#e5e7eb',
+            overflow: 'hidden',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.06,
+            shadowRadius: 8,
+            elevation: 3,
+          }}
+        >
+          {/* Map header */}
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 8,
+              paddingHorizontal: 16,
+              paddingVertical: 12,
+              borderBottomWidth: 1,
+              borderBottomColor: '#f3f4f6',
+            }}
+          >
+            <View
+              style={{
+                backgroundColor: '#f0ebff',
+                padding: 6,
+                borderRadius: 8,
+              }}
+            >
+              <MapPin color='#8e51ff' size={14} />
+            </View>
+            <Text
+              style={{
+                fontFamily: 'Poppins600',
+                fontSize: 13,
+                color: '#0e0e11',
+                flex: 1,
+              }}
+            >
+              {mapData?.map?.name ? `${mapData.map.name} Area` : 'Parking Area'}
             </Text>
-            <View className='flex-1 relative w-full'>
-              {/* Indicator */}
-              <View className='flex gap-2 flex-row items-center absolute right-5'>
-                <View className='h-6 w-6 rounded-full bg-violet-100 flex items-center justify-center'>
-                  <View className='h-4 w-4 rounded-full bg-violet-200 flex items-center justify-center'>
-                    <View className='h-2 w-2 rounded-full bg-violet-300'></View>
-                  </View>
-                </View>
-                <Text className='font-poppins text-xs text-violet-400'>
-                  You
+            {haveSlot && (
+              <View
+                style={{
+                  backgroundColor: '#dcfce7',
+                  paddingHorizontal: 8,
+                  paddingVertical: 3,
+                  borderRadius: 20,
+                }}
+              >
+                <Text
+                  style={{
+                    fontFamily: 'Poppins600',
+                    fontSize: 11,
+                    color: '#16a34a',
+                  }}
+                >
+                  Occupied
                 </Text>
               </View>
-              {/* Map */}
-              {<MapRenderer data={mapData} />}
-            </View>
+            )}
           </View>
-        </>
-      ) : (
-        <View className='min-h-52 border border-gray-200 rounded-lg bg-white mx-5 flex flex-col'>
-          <Text
-            style={{ borderBottomWidth: 1, borderBottomColor: '#e5e7eb' }}
-            className=' mx-5 my-3 w-32 bg-gray-200 rounded-full text-sm font-poppins-medium text-[#71717a] px-5 mb-2'
-          ></Text>
-          <View className='flex-1 p-5 relative w-full'>
-            <View className='bg-gray-200 flex-1 rounded-lg'></View>
+
+          {/* Map body */}
+          <View style={{ height: 240, position: 'relative' }}>
+            {mapData ? (
+              <>
+                {/* You indicator */}
+                <View
+                  style={{
+                    position: 'absolute',
+                    right: 12,
+                    top: 8,
+                    zIndex: 10,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 6,
+                    backgroundColor: 'rgba(255,255,255,0.9)',
+                    paddingHorizontal: 8,
+                    paddingVertical: 4,
+                    borderRadius: 20,
+                    borderWidth: 1,
+                    borderColor: '#e9e0ff',
+                  }}
+                >
+                  <View
+                    style={{
+                      width: 10,
+                      height: 10,
+                      borderRadius: 5,
+                      backgroundColor: '#8e51ff',
+                    }}
+                  />
+                  <Text
+                    style={{
+                      fontFamily: 'Poppins600',
+                      fontSize: 11,
+                      color: '#8e51ff',
+                    }}
+                  >
+                    You
+                  </Text>
+                </View>
+                <MapRenderer data={mapData} />
+              </>
+            ) : (
+              <View
+                style={{
+                  flex: 1,
+                  backgroundColor: '#f3f4f6',
+                  margin: 12,
+                  borderRadius: 12,
+                }}
+              />
+            )}
           </View>
         </View>
-      )}
-      {/* Slot Details */}
-      {slotData ? (
-        <View className='flex flex-col border border-gray-200 rounded-lg bg-white mx-5'>
-          <Text className='py-3 text-sm border-b border-b-gray-200 font-poppins-medium text-[#71717a] px-5'>
-            Slot Details
-          </Text>
+        <View
+          style={{
+            marginHorizontal: 20,
+            backgroundColor: '#fff',
+            borderRadius: 20,
+            borderWidth: 1,
+            borderColor: '#e5e7eb',
+            overflow: 'hidden',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.05,
+            shadowRadius: 6,
+            elevation: 2,
+          }}
+        >
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 8,
+              paddingHorizontal: 16,
+              paddingVertical: 12,
+              borderBottomWidth: 1,
+              borderBottomColor: '#f3f4f6',
+            }}
+          >
+            <View
+              style={{
+                backgroundColor: '#f0ebff',
+                padding: 6,
+                borderRadius: 8,
+              }}
+            >
+              <ParkingSquare color='#8e51ff' size={14} />
+            </View>
+            <Text
+              style={{
+                fontFamily: 'Poppins600',
+                fontSize: 13,
+                color: '#0e0e11',
+              }}
+            >
+              Slot Details
+            </Text>
+          </View>
 
-          {/* Data */}
-          <View className='p-5 flex flex-row gap-10'>
-            <View>
-              <Text className='font-poppins text-xs text-[#71717a]'>Label</Text>
-              <Text className='font-poppins-bold text-lg'>
-                {slotData?.slotId?.metadata?.label}
+          <View style={{ flexDirection: 'row', padding: 16, gap: 12 }}>
+            {/* Label */}
+            <View
+              style={{
+                flex: 1,
+                backgroundColor: '#f9fafb',
+                borderRadius: 14,
+                padding: 14,
+                borderWidth: 1,
+                borderColor: '#e5e7eb',
+              }}
+            >
+              <Text
+                style={{
+                  fontFamily: 'Poppins400',
+                  fontSize: 11,
+                  color: '#9ca3af',
+                  marginBottom: 4,
+                }}
+              >
+                Slot Label
               </Text>
+              {slotData ? (
+                <Text
+                  style={{
+                    fontFamily: 'Poppins700',
+                    fontSize: 20,
+                    color: '#8e51ff',
+                  }}
+                >
+                  {slotData?.slotId?.metadata?.label}
+                </Text>
+              ) : (
+                <View
+                  style={{
+                    height: 24,
+                    backgroundColor: '#e5e7eb',
+                    borderRadius: 6,
+                    marginTop: 4,
+                  }}
+                />
+              )}
             </View>
 
-            <View>
-              <Text className='font-poppins text-xs text-[#71717a]'>
-                Entry Time
-              </Text>
-              <Text className='font-poppins-bold text-lg'>
-                {slotData?.entryTime &&
-                  new Date(slotData.entryTime).toLocaleTimeString([], {
+            {/* Entry Time */}
+            <View
+              style={{
+                flex: 1,
+                backgroundColor: '#f9fafb',
+                borderRadius: 14,
+                padding: 14,
+                borderWidth: 1,
+                borderColor: '#e5e7eb',
+              }}
+            >
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 4,
+                  marginBottom: 4,
+                }}
+              >
+                <Clock color='#9ca3af' size={11} />
+                <Text
+                  style={{
+                    fontFamily: 'Poppins400',
+                    fontSize: 11,
+                    color: '#9ca3af',
+                  }}
+                >
+                  Entry Time
+                </Text>
+              </View>
+              {slotData?.entryTime ? (
+                <Text
+                  style={{
+                    fontFamily: 'Poppins700',
+                    fontSize: 16,
+                    color: '#0e0e11',
+                  }}
+                >
+                  {new Date(slotData.entryTime).toLocaleTimeString([], {
                     hour: '2-digit',
                     minute: '2-digit',
                     hour12: true,
                   })}
-              </Text>
+                </Text>
+              ) : (
+                <View
+                  style={{
+                    height: 24,
+                    backgroundColor: '#e5e7eb',
+                    borderRadius: 6,
+                    marginTop: 4,
+                  }}
+                />
+              )}
             </View>
           </View>
         </View>
-      ) : (
-        <View className='flex flex-col border border-gray-200 rounded-lg bg-white mx-5'>
-          <Text className='py-3 text-sm border-b border-b-gray-200 font-poppins-medium text-[#71717a] px-5'>
-            Slot Details
-          </Text>
-
-          {/* Data */}
-          <View className='p-5 flex flex-row gap-10'>
-            <View className='flex-1'>
-              <Text className='font-poppins text-xs text-[#71717a]'>Label</Text>
-              <Text className='font-poppins-bold mt-4 w-full h-4 bg-gray-200 rounded-full text-lg'></Text>
-            </View>
-
-            <View className='flex-1'>
-              <Text className='font-poppins text-xs text-[#71717a]'>
-                Entry Time
-              </Text>
-              <Text className='font-poppins-bold mt-4 w-full h-4 bg-gray-200 rounded-full text-lg'></Text>
-            </View>
-          </View>
-        </View>
-      )}
+      </ScrollView>
     </SafeAreaView>
   );
 }
