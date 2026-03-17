@@ -11,12 +11,14 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.parkease.mobile"
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE"
-      }
+      },
+      "package": "com.parkease.mobile"
     },
     "web": {
       "bundler": "metro"

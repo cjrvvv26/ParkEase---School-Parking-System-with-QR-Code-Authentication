@@ -9,7 +9,8 @@ import useApiRequest from '../hooks/useApiRequest';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import useTheme from '../hooks/useTheme';
 import * as WebBrowser from 'expo-web-browser';
-import * as AuthSession from 'expo-auth-session/providers/google';
+import * as AuthSession from 'expo-auth-session';
+import * as Crypto from 'expo-crypto';
 import { useDispatch } from 'react-redux';
 import { login as loginAction } from '../features/authSlicer';
 import api from '../services/api';
@@ -17,6 +18,7 @@ import api from '../services/api';
 WebBrowser.maybeCompleteAuthSession();
 
 const GOOGLE_CLIENT_ID = '376193942979-6hs98pha8pv81g19g7klssvpjf58s4js.apps.googleusercontent.com';
+const REDIRECT_URI = AuthSession.makeRedirectUri({ scheme: 'parkease', path: 'auth' });
 
 export default function SignIn() {
   const router = useRouter();
@@ -29,33 +31,56 @@ export default function SignIn() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [credentials, setCredentials] = useState({ email: '', password: '', platform: 'mobile' });
 
-  const [request, response, promptAsync] = AuthSession.useAuthRequest({
-    androidClientId: GOOGLE_CLIENT_ID,
-    iosClientId: GOOGLE_CLIENT_ID,
-    webClientId: GOOGLE_CLIENT_ID,
-  });
+  const handleGoogleSignIn = async () => {
+    setGoogleLoading(true);
+    try {
+      // Generate PKCE code verifier + challenge
+      const codeVerifier = AuthSession.generateRandomBytes(32)
+        .map(b => b.toString(16).padStart(2, '0')).join('');
+      const digest = await Crypto.digestStringAsync(
+        Crypto.CryptoDigestAlgorithm.SHA256,
+        codeVerifier,
+        { encoding: Crypto.CryptoEncoding.BASE64 }
+      );
+      const codeChallenge = digest
+        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
 
-  // Handle Google OAuth response
-  useEffect(() => {
-    if (response?.type !== 'success') return;
-    const { access_token } = response.params;
-    const handleGoogle = async () => {
-      setGoogleLoading(true);
-      try {
-        const res = await api.post('auth/google', { access_token, type: 'login', platform: 'mobile' });
-        if (res?.status === 200) {
-          await AsyncStorage.setItem('email', res.data.email);
-          await AsyncStorage.setItem('hasVerification', 'true');
-          router.replace('/OTPVerification');
-        }
-      } catch (e) {
-        setError(e.response?.data?.error || 'Google sign in failed');
-      } finally {
-        setGoogleLoading(false);
+      const authUrl =
+        `https://accounts.google.com/o/oauth2/v2/auth?` +
+        `client_id=${GOOGLE_CLIENT_ID}` +
+        `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}` +
+        `&response_type=code` +
+        `&scope=${encodeURIComponent('openid profile email')}` +
+        `&code_challenge=${codeChallenge}` +
+        `&code_challenge_method=S256`;
+
+      console.log('[GOOGLE] redirect_uri:', REDIRECT_URI);
+
+      const result = await WebBrowser.openAuthSessionAsync(authUrl, REDIRECT_URI);
+      if (result.type !== 'success') return;
+
+      const match = result.url.match(/code=([^&]+)/);
+      if (!match) return setError('Google sign in failed');
+
+      const code = decodeURIComponent(match[1]);
+      const res = await api.post('auth/google', {
+        code,
+        code_verifier: codeVerifier,
+        redirect_uri: REDIRECT_URI,
+        type: 'login',
+        platform: 'mobile',
+      });
+      if (res?.status === 200) {
+        await AsyncStorage.setItem('email', res.data.email);
+        await AsyncStorage.setItem('hasVerification', 'true');
+        router.replace('/OTPVerification');
       }
-    };
-    handleGoogle();
-  }, [response]);
+    } catch (e) {
+      setError(e.response?.data?.error || 'Google sign in failed');
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
 
   // Show logout toast for 3s
   useEffect(() => {
@@ -174,9 +199,9 @@ export default function SignIn() {
 
             {/* Google */}
             <Pressable
-              disabled={!request || googleLoading}
-              onPress={() => promptAsync()}
-              style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, borderWidth: 1, borderColor: t.cardBorder, borderRadius: 14, paddingVertical: 14, marginBottom: 28, backgroundColor: t.card, opacity: !request || googleLoading ? 0.6 : 1 }}>
+              disabled={googleLoading}
+              onPress={handleGoogleSignIn}
+              style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, borderWidth: 1, borderColor: t.cardBorder, borderRadius: 14, paddingVertical: 14, marginBottom: 28, backgroundColor: t.card, opacity: googleLoading ? 0.6 : 1 }}>
               <Image source={GoogleIcon} style={{ width: 20, height: 20 }} resizeMode='contain' />
               <Text style={{ fontFamily: 'Poppins600', fontSize: 14, color: t.text }}>{googleLoading ? 'Signing in...' : 'Google'}</Text>
             </Pressable>

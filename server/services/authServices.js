@@ -10,24 +10,37 @@ const axios = require('axios');
 exports.signInWithGoogle = async (accessToken) => {
   const googleResponse = await axios.get(
     'https://www.googleapis.com/oauth2/v3/userinfo',
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    },
+    { headers: { Authorization: `Bearer ${accessToken}` } }
   );
-  if (!googleResponse?.data) {
-    throw new Error('Error google authentication. Please try again');
-  }
-
+  if (!googleResponse?.data) throw new Error('Error google authentication. Please try again');
   const { email } = googleResponse.data;
-
   const user = await User.findOne({ email });
+  if (!user) throw new Error("Email address doesn't exist");
+  return user;
+};
 
-  if (!user) {
-    throw new Error("Email address doesn't exist");
-  }
-
+exports.signInWithGoogleCode = async ({ code, code_verifier, redirect_uri }) => {
+  const tokenRes = await axios.post(
+    'https://oauth2.googleapis.com/token',
+    new URLSearchParams({
+      code,
+      client_id: process.env.GOOGLE_CLIENT_ID,
+      client_secret: process.env.GOOGLE_CLIENT_SECRET,
+      redirect_uri,
+      grant_type: 'authorization_code',
+      code_verifier,
+    }).toString(),
+    { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+  );
+  const { access_token } = tokenRes.data;
+  const googleResponse = await axios.get(
+    'https://www.googleapis.com/oauth2/v3/userinfo',
+    { headers: { Authorization: `Bearer ${access_token}` } }
+  );
+  if (!googleResponse?.data) throw new Error('Error google authentication. Please try again');
+  const { email } = googleResponse.data;
+  const user = await User.findOne({ email });
+  if (!user) throw new Error("Email address doesn't exist");
   return user;
 };
 

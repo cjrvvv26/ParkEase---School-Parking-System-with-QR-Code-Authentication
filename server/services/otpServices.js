@@ -174,8 +174,8 @@ exports.verifyOtp = async (email, otp, type) => {
     // Activity log
     await ActivityLogs.create({
       userId: recordUser._id,
-      actionType: 'auth',
-      action: 'LOGIN',
+      actionType: 'system',
+      action: 'SIGN_IN',
       description: `${recordUser.email} signed in successfully.`,
       entityType: 'User',
       entityId: recordUser._id,
