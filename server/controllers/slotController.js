@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const Slot = require('../models/slotModel');
+const Shape = require('../models/shapeModel');
 const User = require('../models/userModel');
+const Map = require('../models/mapModel');
 const qrService = require('../services/qrService');
 const slotService = require('../services/slotService');
 
@@ -25,6 +27,27 @@ exports.getSlotDetails = async (req, res) => {
       .json({ message: 'Successfully fetched slot data', slot: details });
   } catch (error) {
     res.status(401).json({ error: error.message });
+  }
+};
+
+exports.getYourSlotLocation = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const slot = await Slot.findOne({ occupiedBy: userId }).populate({
+      path: 'slotId',
+      select: 'metadata.label mapId',
+    });
+    const map = await Map.findById(slot.slotId.mapId);
+
+    if (!map) {
+      return res.status(404).json({ error: 'Map not found' });
+    }
+
+    const shapes = await Shape.find({ mapId: map._id });
+
+    res.status(200).json({ slot, map, shapes });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 };
 
