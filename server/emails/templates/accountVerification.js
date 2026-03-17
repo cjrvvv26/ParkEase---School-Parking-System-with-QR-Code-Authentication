@@ -1,10 +1,13 @@
-module.exports = (email, name, token) => ({
-  subject: "Email Verification",
+module.exports = ({ email, name, token }) => {
+  const base = process.env.SERVER_URL || 'http://localhost:5000';
+  const verifyUrl = `${base}/user/verify-email/${token}`;
+  return {
+  subject: 'Email Verification',
+
   html: `<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <title>Email Verification</title>
-
     <link
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
       rel="stylesheet"
@@ -46,12 +49,7 @@ module.exports = (email, name, token) => ({
             font-family: 'Poppins', 'Segoe UI', Arial, Helvetica, sans-serif;
           "
         >
-          <svg
-            viewBox="0 0 612 792"
-            width="32"
-            height="32"
-            xmlns="http://www.w3.org/2000/svg"
-          >
+          <svg viewBox="0 0 612 792" width="32" height="32" xmlns="http://www.w3.org/2000/svg">
             <path
               fill="#8E51FF"
               d="M9.9,106.6c0,28.4,23,51.4,51.4,51.4h314.3c4.3,0,8.6,0.5,12.7,1.6
@@ -71,22 +69,16 @@ module.exports = (email, name, token) => ({
           Hello <strong>${name}</strong>,
         </p>
 
-        <p
-          style="
-            font-size: 14px;
-            line-height: 1.6;
-            margin: 0 0 20px 0;
-          "
-        >
+        <p style="font-size: 14px; line-height: 1.6; margin: 0 0 20px 0;">
           Thank you for registering with <strong>ParkEase</strong>. To complete
           your account setup, please verify your email address by clicking the
           button below.
         </p>
 
-        <!-- CTA -->
-        <div style="text-align: center; margin-bottom: 24px;">
+        <!-- CTA Button -->
+        <div style="text-align: center; margin-bottom: 16px;">
           <a
-            href="http://localhost:5173/verify-email?token=${token}"
+            href="${verifyUrl}"
             style="
               display: inline-block;
               background-color: #8b5cf6;
@@ -103,42 +95,32 @@ module.exports = (email, name, token) => ({
           </a>
         </div>
 
-        <!-- Security -->
-        <p
-          style="
-            font-size: 12px;
-            color: #6b7280;
-            line-height: 1.6;
-            margin-bottom: 20px;
-          "
-        >
+        <!-- Copy Link Fallback -->
+        <p style="font-size: 12px; color: #6b7280; line-height: 1.6; margin-bottom: 20px; text-align: center;">
+          If the button does not work, copy and paste this link into your browser:
+          <br />
+          <a href="${verifyUrl}" style="color: #8b5cf6; word-break: break-all;">
+            ${verifyUrl}
+          </a>
+        </p>
+
+        <!-- Security Note -->
+        <p style="font-size: 12px; color: #6b7280; line-height: 1.6; margin-bottom: 20px;">
           This verification link is valid for
           <strong style="color: #e11d48;">15 minutes</strong> and can only be used
           once. If you did not create this account, you may safely ignore this
           email.
         </p>
 
-        <hr
-          style="
-            border: none;
-            border-top: 1px solid #e5e7eb;
-            margin: 20px 0;
-          "
-        />
+        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;" />
 
         <!-- Footer -->
-        <p
-          style="
-            font-size: 12px;
-            color: #9ca3af;
-            text-align: center;
-            margin: 0;
-          "
-        >
+        <p style="font-size: 12px; color: #9ca3af; text-align: center; margin: 0;">
           © 2025 ParkEase – URSC Motor Parking Management System
         </p>
       </div>
     </div>
   </body>
 </html>`,
-});
+  };
+};

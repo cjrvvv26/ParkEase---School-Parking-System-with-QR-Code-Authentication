@@ -15,7 +15,7 @@ export default function UserTable({ users = [] }) {
   return users.map((user) => (
     <tr
       key={user._id}
-      className='grid grid-cols-[250px_repeat(3,minmax(0,1fr))_150px_100px] gap-5 px-5 py-4 items-center text-gray-400'
+      className='grid grid-cols-[250px_repeat(2,minmax(0,1fr))_150px_100px] gap-5 px-5 py-4 items-center text-gray-400'
     >
       {/* Profile & Name */}
       <td className='flex items-center gap-3'>
@@ -44,7 +44,6 @@ export default function UserTable({ users = [] }) {
       </td>
       {/* Last Login & Created At */}
       <td>{user?.lastActive || 'No record'}</td>
-      <td>{new Date(user.createdAt).toISOString().split('T')[0]}</td>
       {/* Status */}
       <td className='flex items-start'>
         <div

@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { verifyScannedSlot } from '../services/slotService';
+import { guardScan, verifyScannedSlot } from '../services/slotService';
 import useApiRequest from '../hooks/useApiRequest';
 
 const PALETTE = {
@@ -103,24 +103,42 @@ export default function Scan() {
 
   const handleScan = async ({ data }) => {
     setScanned(true);
-    const slotId = data.match(/SLOT:(.+)/);
-    const res = await execute(verifyScannedSlot, {
-      slotId: slotId[1],
-      userId: user._id,
-    });
-    if (error) return console.log(error);
-    if (res?.status === 200) console.log(res);
-    return router.replace({
-      pathname: '/Parking',
-      params: { state: res.data.message },
-    });
+    if (user.role === 'guard') {
+      // Guard scans student/faculty QR: data = "PARKEASE_USER:<userId>"
+      const match = data.match(/PARKEASE_USER:(.+)/);
+      if (!match) return;
+
+      const res = await execute(guardScan, {
+        qrData: data,
+        guardId: user._id,
+      });
+      console.log(match);
+      if (res?.status === 200)
+        return router.replace({
+          pathname: '/Parking',
+          params: { state: res.data.message },
+        });
+    } else {
+      // Student/faculty scans slot QR: data = "SLOT:<slotId>"
+      const match = data.match(/SLOT:(.+)/);
+      if (!match) return;
+      const res = await execute(verifyScannedSlot, {
+        slotId: match[1],
+        userId: user._id,
+      });
+      if (res?.status === 200)
+        return router.replace({
+          pathname: '/Parking',
+          params: { state: res.data.message },
+        });
+    }
   };
 
-  const isStudent = user.role === 'student' || user.role === 'faculty';
-  const title = isStudent ? 'Scan Slot QR' : 'Scan Student QR';
-  const subtitle = isStudent
-    ? 'Point camera at a parking slot QR code'
-    : 'Point camera at a student QR code';
+  const isGuard = user.role === 'guard';
+  const title = isGuard ? 'Scan User QR' : 'Scan Slot QR';
+  const subtitle = isGuard
+    ? 'Point camera at a student or faculty QR code'
+    : 'Point camera at a parking slot QR code';
 
   return (
     <SafeAreaView
@@ -366,43 +384,59 @@ export default function Scan() {
             }}
           >
             <RotateCcw color='#fff' size={18} />
-            <Text style={{ fontFamily: 'Poppins600', fontSize: 14, color: '#fff' }}>
+            <Text
+              style={{ fontFamily: 'Poppins600', fontSize: 14, color: '#fff' }}
+            >
               Scan Again
             </Text>
           </Pressable>
         )}
 
-        <Pressable
-          onPress={() => toggleDisplayQR((v) => !v)}
-          android_ripple={{ color: PALETTE.primaryBorder }}
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 10,
-            backgroundColor: PALETTE.primaryLight,
-            paddingVertical: 15,
-            borderRadius: 14,
-            borderWidth: 1.5,
-            borderColor: PALETTE.primaryBorder,
-          }}
-        >
-          {displayQR ? (
-            <>
-              <ScanLine color={PALETTE.primary} size={18} />
-              <Text style={{ fontFamily: 'Poppins600', fontSize: 14, color: PALETTE.primary }}>
-                Scan QR Code
-              </Text>
-            </>
-          ) : (
-            <>
-              <QrCode color={PALETTE.primary} size={18} />
-              <Text style={{ fontFamily: 'Poppins600', fontSize: 14, color: PALETTE.primary }}>
-                Display My QR
-              </Text>
-            </>
-          )}
-        </Pressable>
+        {!isGuard && (
+          <Pressable
+            onPress={() => toggleDisplayQR((v) => !v)}
+            android_ripple={{ color: PALETTE.primaryBorder }}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 10,
+              backgroundColor: PALETTE.primaryLight,
+              paddingVertical: 15,
+              borderRadius: 14,
+              borderWidth: 1.5,
+              borderColor: PALETTE.primaryBorder,
+            }}
+          >
+            {displayQR ? (
+              <>
+                <ScanLine color={PALETTE.primary} size={18} />
+                <Text
+                  style={{
+                    fontFamily: 'Poppins600',
+                    fontSize: 14,
+                    color: PALETTE.primary,
+                  }}
+                >
+                  Scan QR Code
+                </Text>
+              </>
+            ) : (
+              <>
+                <QrCode color={PALETTE.primary} size={18} />
+                <Text
+                  style={{
+                    fontFamily: 'Poppins600',
+                    fontSize: 14,
+                    color: PALETTE.primary,
+                  }}
+                >
+                  Display My QR
+                </Text>
+              </>
+            )}
+          </Pressable>
+        )}
       </View>
     </SafeAreaView>
   );

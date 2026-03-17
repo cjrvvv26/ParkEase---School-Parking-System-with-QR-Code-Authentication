@@ -1,9 +1,9 @@
 import { View, Text, Pressable, TextInput, Image, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { useState, useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Eye, EyeOff, Mail, Lock, ParkingSquare } from 'lucide-react-native';
+import { Eye, EyeOff, Mail, Lock, ParkingSquare, CheckCircle } from 'lucide-react-native';
 import GoogleIcon from '../assets/images/google.webp';
-import { Link, useRouter } from 'expo-router';
+import { Link, useRouter, useLocalSearchParams } from 'expo-router';
 import { login } from '../services/authService';
 import useApiRequest from '../hooks/useApiRequest';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -11,10 +11,20 @@ import useTheme from '../hooks/useTheme';
 
 export default function SignIn() {
   const router = useRouter();
+  const { message } = useLocalSearchParams();
   const { error, setError, loading, execute } = useApiRequest();
   const { t } = useTheme();
   const [showPassword, setShowPassword] = useState(false);
+  const [toast, setToast] = useState('');
   const [credentials, setCredentials] = useState({ email: '', password: '', platform: 'mobile' });
+
+  // Show logout toast for 3s
+  useEffect(() => {
+    if (!message) return;
+    setToast(message);
+    const timer = setTimeout(() => setToast(''), 3000);
+    return () => clearTimeout(timer);
+  }, [message]);
 
   useEffect(() => {
     const checkVerification = async () => {
@@ -52,6 +62,15 @@ export default function SignIn() {
 
           {/* Form Card */}
           <View style={{ flex: 1, backgroundColor: t.card, borderTopLeftRadius: 32, borderTopRightRadius: 32, paddingHorizontal: 28, paddingTop: 36, paddingBottom: 40 }}>
+
+            {/* Logout toast */}
+            {toast ? (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#dcfce7', borderRadius: 12, padding: 12, marginBottom: 20, borderWidth: 1, borderColor: '#bbf7d0' }}>
+                <CheckCircle color='#16a34a' size={16} />
+                <Text style={{ fontFamily: 'Poppins500', fontSize: 13, color: '#15803d', flex: 1 }}>{toast}</Text>
+              </View>
+            ) : null}
+
             <Text style={{ fontFamily: 'Poppins700', fontSize: 24, color: t.text, marginBottom: 4 }}>Welcome back</Text>
             <Text style={{ fontFamily: 'Poppins400', fontSize: 14, color: t.textMuted, marginBottom: 28 }}>Sign in to access your account</Text>
 

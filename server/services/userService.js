@@ -9,6 +9,7 @@ const notificationService = require('../services/notificationService');
 const definedFilterData = require('../utils/definedDataFilter');
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
+const generateToken = require('../utils/generateToken');
 
 exports.getUserData = async (id) => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -27,7 +28,7 @@ exports.getUserData = async (id) => {
   switch (user.role) {
     case 'student':
       userData = await Student.findOne({ userId: id }).select(
-        '-_id name course phoneNo studentNo payment entryTime outTime yearLevel motorDetails',
+        '-_id name course phoneNo studentNo payment entryTime outTime yearLevel motorDetails QRCode',
       );
       const course = await Course.findById(userData.course).select(
         'name description',
@@ -43,7 +44,7 @@ exports.getUserData = async (id) => {
       break;
     case 'faculty':
       userData = await Faculty.findOne({ userId: id }).select(
-        '-_id name phoneNo payment entryTime outTime motorDetails',
+        '-_id name phoneNo payment entryTime outTime motorDetails QRCode',
       );
 
       viewModel = {
@@ -471,3 +472,4 @@ exports.getSearchUserData = async ({ username }) => {
   }
   return userData;
 };
+

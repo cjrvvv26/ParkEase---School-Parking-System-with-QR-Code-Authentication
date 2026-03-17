@@ -2,23 +2,86 @@ const Slot = require('../models/slotModel');
 const Student = require('../models/studentModel');
 const Faculty = require('../models/facultyModel');
 const User = require('../models/userModel');
+const ActivityLog = require('../models/activityModel');
+const notificationService = require('../services/notificationService');
 
-exports.verifyRecord = async (data, session) => {
-  const student = await Student.findOne({ QRCode: data }).session(session);
+exports.guardScan = async (qrData, guardId) => {
+  // Extract userId from "PARKEASE_USER:<userId>"
+  const match = qrData.match(/PARKEASE_USER:(.+)/);
+  if (!match) throw new Error('QR code not recognized');
+  const userId = match[1].trim();
+
+  const user = await User.findById(userId);
+  if (!user) throw new Error('User not found');
+  if (user.role !== 'student' && user.role !== 'faculty')
+    throw new Error('QR code not recognized');
+
+  const Model = user.role === 'student' ? Student : Faculty;
+  const roleRecord = await Model.findOne({ userId: user._id });
+  if (!roleRecord) throw new Error('User record not found');
+
+  const firstName = roleRecord.name?.firstName || 'User';
+  const fullName = `${firstName} ${roleRecord.name?.lastName || ''}`.trim();
+
   let message = '';
+  let action = '';
+  let description = '';
+  let notifTitle = '';
+  let notifMessage = '';
 
-  if (!student) throw new Error('User not found');
+  if (!roleRecord.entryTime) {
+    // ── ENTRY ──
+    roleRecord.entryTime = new Date();
+    await roleRecord.save();
 
-  if (!student.entryTime) {
-    student.entryTime = Date.now();
-    student.save();
-    message = "You're in, thanks for coming!";
+    message = `Entry recorded. Welcome, ${firstName}!`;
+    action = 'ENTRY_TIME';
+    description = `${fullName} entered the campus.`;
+    notifTitle = 'Entry Recorded';
+    notifMessage = `Hey ${firstName}! Your entry has been recorded. Have a great day!`;
   } else {
-    student.entryTime = null;
-    student.entryTime = Date.now();
-    student.save();
-    message = 'See you tommorow!';
+    // ── EXIT / TIMEOUT ──
+    roleRecord.entryTime = null;
+    roleRecord.outTime = new Date();
+    await roleRecord.save();
+
+    // Release any slot they currently occupy
+    const occupiedSlot = await Slot.findOne({ occupiedBy: user._id });
+    if (occupiedSlot) {
+      const wasExclusive = occupiedSlot.assignedStudentId?.equals(user._id);
+      occupiedSlot.isOccupied = false;
+      occupiedSlot.occupiedBy = null;
+      occupiedSlot.entryTime = null;
+      occupiedSlot.endTime = new Date();
+      occupiedSlot.status = wasExclusive ? 'exclusive' : 'available';
+      await occupiedSlot.save();
+    }
+
+    message = `Exit recorded. See you next time, ${firstName}!`;
+    action = 'OUT_TIME';
+    description = `${fullName} exited the campus.${occupiedSlot ? ' Slot released.' : ''}`;
+    notifTitle = 'Exit Recorded';
+    notifMessage = `Hey ${firstName}! Your exit has been recorded. See you next time!`;
   }
+
+  // Activity log
+  await ActivityLog.create({
+    userId: guardId,
+    actionType: 'gate',
+    action,
+    description,
+    entityType: 'Attendance',
+    entityId: user._id,
+    metadata: { scannedUserId: user._id, role: user.role },
+  });
+
+  // Notification for the scanned user
+  await notificationService.createNotification({
+    userId: user._id,
+    title: notifTitle,
+    message: notifMessage,
+  });
+
   return message;
 };
 
@@ -49,7 +112,7 @@ exports.verifySlotData = async (data) => {
     entryTime = faculty?.entryTime;
   }
 
-  if (entryTime) {
+  if (!entryTime) {
     throw new Error("You're not in school. You can't occupy a slot");
   }
 

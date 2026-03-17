@@ -142,6 +142,29 @@ exports.verifyOtp = async (email, otp, type) => {
       userData = await Guard.findOne({ userId: recordUser._id });
     }
 
+    // Set emailVerified on first successful OTP login + generate QR for student/faculty
+    if (!recordUser.emailVerified) {
+      recordUser.emailVerified = true;
+      await recordUser.save();
+
+      if (recordUser.role === 'student' || recordUser.role === 'faculty') {
+        const generateQR = require('../utils/generateQRCode');
+        const cloudinary = require('../utils/cloudinary');
+        const qrDataUrl = await generateQR(`PARKEASE_USER:${recordUser._id}`);
+        const uploaded = await cloudinary.uploader.upload(qrDataUrl, {
+          folder: 'parkease/qrcodes',
+          public_id: `qr_${recordUser._id}`,
+          overwrite: true,
+        });
+        const Model = recordUser.role === 'student' ? Student : Faculty;
+        await Model.findOneAndUpdate(
+          { userId: recordUser._id },
+          { QRCode: uploaded.secure_url },
+        );
+        if (userData) userData.QRCode = uploaded.secure_url;
+      }
+    }
+
     const moreData = userData ? userData._doc : {};
     delete moreData._id;
     delete moreData.__v;

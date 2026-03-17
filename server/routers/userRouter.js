@@ -4,13 +4,15 @@ const verifyUser = require('../middlewares/verifyUser');
 const requiredSuperAdmin = require('../middlewares/requiredSuperAdmin');
 const upload = require('../middlewares/uploadImage');
 
-router.post('/recovery/send-request', userController.sendRecoveryRequest);
 router.get(
   '/recovery/verify-request/:token',
   userController.verifyAccountRequest,
 );
-router.patch('/recovery/reset-password', userController.resetUserPassword);
 router.get('/token/:token', userController.getUserByToken);
+
+router.post('/recovery/send-request', userController.sendRecoveryRequest);
+
+router.patch('/recovery/reset-password', userController.resetUserPassword);
 
 router.use(verifyUser(), requiredSuperAdmin);
 

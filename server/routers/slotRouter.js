@@ -5,6 +5,7 @@ const requiredSuperAdmin = require('../middlewares/requiredSuperAdmin');
 
 router.get('/available', slotController.getAvailableSlots);
 router.post('/verify-scan', slotController.verifyUserSlot);
+router.post('/guard-scan', slotController.guardScan);
 router.get('/your-slot/:userId', slotController.getYourSlotLocation);
 
 router.use(verifyUser(), requiredSuperAdmin);

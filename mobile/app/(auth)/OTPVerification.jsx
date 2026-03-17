@@ -12,7 +12,9 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ShieldCheck, Mail } from 'lucide-react-native';
+import { useDispatch } from 'react-redux';
 import { verifyOtp, resendOtp } from '../services/authService';
+import { login } from '../features/authSlicer';
 import useApiRequest from '../hooks/useApiRequest';
 
 const COUNTDOWN = 60;
@@ -20,6 +22,7 @@ const DIGITS = 6;
 
 export default function OTPVerification() {
   const router = useRouter();
+  const dispatch = useDispatch();
   const { error, loading, execute } = useApiRequest();
 
   const [digits, setDigits] = useState(Array(DIGITS).fill(''));
@@ -76,6 +79,7 @@ export default function OTPVerification() {
     if (res?.status === 200) {
       await AsyncStorage.removeItem('hasVerification');
       await AsyncStorage.setItem('token', res.data.user.token);
+      dispatch(login({ user: res.data.user }));
       router.replace('/(main)/Home');
     }
   };

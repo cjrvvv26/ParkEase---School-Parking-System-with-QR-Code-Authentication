@@ -223,11 +223,10 @@ export default function Users() {
                 </div>
               </div>
             </tr>
-            <tr className='grid grid-cols-[250px_repeat(3,minmax(0,1fr))_150px_100px] gap-5 *:font-medium'>
+            <tr className='grid grid-cols-[250px_repeat(2,minmax(0,1fr))_150px_100px] gap-5 *:font-medium'>
               <td>Name</td>
               <td>Contact</td>
               <td>Last Login</td>
-              <td>Created At</td>
               <td>Status</td>
               <td>Action</td>
             </tr>

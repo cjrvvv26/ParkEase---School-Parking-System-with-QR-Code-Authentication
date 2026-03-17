@@ -164,6 +164,17 @@ exports.verifyUserSlot = async (req, res) => {
   }
 };
 
+exports.guardScan = async (req, res) => {
+  try {
+    const { qrData, guardId } = req.body;
+    if (!qrData || !guardId) throw new Error('Missing qrData or guardId');
+    const message = await qrService.guardScan(qrData, guardId);
+    res.status(200).json({ message });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
 exports.updateStudentLocation = async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();

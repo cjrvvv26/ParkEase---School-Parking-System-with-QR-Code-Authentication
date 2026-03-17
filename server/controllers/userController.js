@@ -77,7 +77,18 @@ exports.updateUserDataBySA = async (req, res) => {
       };
     }
 
-    const { course, role, name, phoneNo, status, motorDetails, yearLevel, payment, permissions, profileDetails } = userData;
+    const {
+      course,
+      role,
+      name,
+      phoneNo,
+      status,
+      motorDetails,
+      yearLevel,
+      payment,
+      permissions,
+      profileDetails,
+    } = userData;
 
     // Flatten the relevant fields into info for the service
     const info = {
@@ -88,7 +99,10 @@ exports.updateUserDataBySA = async (req, res) => {
       ...(yearLevel !== undefined && { yearLevel }),
       ...(payment && { isPaid: payment.isPaid }),
       ...(permissions && { ...permissions }),
-      ...(profileDetails && { url: profileDetails.url, public_id: profileDetails.public_id }),
+      ...(profileDetails && {
+        url: profileDetails.url,
+        public_id: profileDetails.public_id,
+      }),
     };
 
     const updateData = {
@@ -143,7 +157,9 @@ exports.updateUserDataBySA = async (req, res) => {
     console.error('[updateUserDataBySA] ERROR code:', error?.code);
     console.error('[updateUserDataBySA] ERROR keys:', Object.keys(error || {}));
     console.error('[updateUserDataBySA] STACK:', error?.stack);
-    res.status(500).json({ error: error?.message || String(error), stack: error?.stack });
+    res
+      .status(500)
+      .json({ error: error?.message || String(error), stack: error?.stack });
   }
 };
 

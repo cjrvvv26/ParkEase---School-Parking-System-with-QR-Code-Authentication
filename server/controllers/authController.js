@@ -101,7 +101,7 @@ exports.authWithGoogle = async (req, res) => {
   }
 };
 
-//Verify super admin otp verification
+//Verify otp verification
 exports.verifyUserOtp = async (req, res) => {
   try {
     const { email, inputOtp, type, platform } = req.body;

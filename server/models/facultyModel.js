@@ -21,11 +21,6 @@ const facultySchema = new Schema({
     lastName: { type: String, trim: true, required: true },
   },
   phoneNo: { type: String, required: true },
-  payment: {
-    isPaid: { type: Boolean, default: false },
-    amount: { type: Number, default: 0 },
-    semesterId: { type: Schema.Types.ObjectId, ref: 'semester' },
-  },
   QRCode: String,
   entryTime: Date,
   outTime: Date,

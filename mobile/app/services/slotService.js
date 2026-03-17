@@ -14,8 +14,9 @@ export const getAvailableSlots = () => {
 };
 
 export const verifyScannedSlot = (data) => {
-  const slot = api.post('/slot/verify-scan', data);
-  console.log(slot);
+  return api.post('slot/verify-scan', data);
+};
 
-  return slot;
+export const guardScan = (data) => {
+  return api.post('slot/guard-scan', data);
 };

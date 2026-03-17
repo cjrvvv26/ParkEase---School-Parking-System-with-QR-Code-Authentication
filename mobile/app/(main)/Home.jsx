@@ -12,12 +12,10 @@ import {
   MapPin,
   Calendar,
   ChevronRight,
-  ShieldAlert,
-  ArrowRight,
 } from 'lucide-react-native';
 import { getSemester } from '../services/semesterService';
-import useApiRequest from '../hooks/useApiRequest';
 import { getAvailableSlots } from '../services/slotService';
+import useApiRequest from '../hooks/useApiRequest';
 import useTheme from '../hooks/useTheme';
 
 export default function Home() {
@@ -27,6 +25,8 @@ export default function Home() {
   const { user } = useSelector((state) => state.auth);
   const { t } = useTheme();
   const { loading, error, execute } = useApiRequest();
+
+  if (!user) return null;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -45,7 +45,7 @@ export default function Home() {
     ...(user.role !== 'guard'
       ? [{ icon: ParkingSquare, label: 'Parking', to: '/Parking' }]
       : []),
-    ...(user.role === 'guard'
+    ...(user.role === 'guard' && user?.permissions?.canViewAnalytics
       ? [{ icon: TrendingUp, label: 'Analytics', to: '/Analytics' }]
       : []),
   ];
@@ -109,84 +109,6 @@ export default function Home() {
             <Bell color='#fff' size={22} />
           </Pressable>
         </View>
-
-        {/* Unverified Banner */}
-        {!user.emailVerified && (
-          <View
-            style={{
-              marginHorizontal: 20,
-              marginTop: 20,
-              borderRadius: 16,
-              overflow: 'hidden',
-              borderWidth: 1,
-              borderColor: '#fde68a',
-            }}
-          >
-            <View
-              style={{
-                backgroundColor: t.amberBg,
-                padding: 16,
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 12,
-              }}
-            >
-              <View
-                style={{
-                  backgroundColor: '#fef3c7',
-                  padding: 10,
-                  borderRadius: 12,
-                }}
-              >
-                <ShieldAlert color='#d97706' size={20} />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text
-                  style={{
-                    fontFamily: 'Poppins600',
-                    fontSize: 13,
-                    color: '#92400e',
-                    marginBottom: 2,
-                  }}
-                >
-                  Account Not Verified
-                </Text>
-                <Text
-                  style={{
-                    fontFamily: 'Poppins400',
-                    fontSize: 12,
-                    color: '#b45309',
-                    lineHeight: 17,
-                  }}
-                >
-                  Verify your account to unlock full access.
-                </Text>
-              </View>
-              <Pressable
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 4,
-                  backgroundColor: '#f59e0b',
-                  paddingHorizontal: 12,
-                  paddingVertical: 8,
-                  borderRadius: 10,
-                }}
-              >
-                <Text
-                  style={{
-                    fontFamily: 'Poppins600',
-                    fontSize: 12,
-                    color: '#fff',
-                  }}
-                >
-                  Verify
-                </Text>
-                <ArrowRight color='#fff' size={13} />
-              </Pressable>
-            </View>
-          </View>
-        )}
 
         {/* Semester Card */}
         <View style={{ marginHorizontal: 20, marginTop: 20 }}>

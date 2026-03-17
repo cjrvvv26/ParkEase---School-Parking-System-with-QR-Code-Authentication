@@ -247,7 +247,7 @@ export default function AddGuard() {
                 onChange={(e) => setGuard({ ...guard, status: e.target.value })}
                 placeholder={'Select status'}
                 value={guard.status}
-                options={['active', 'deactivate', 'offline']}
+                options={['active', 'deactivate']}
               />
             </div>
           </section>
