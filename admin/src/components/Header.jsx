@@ -169,14 +169,17 @@ export default function Header() {
     };
   }, []);
 
+  const { theme } = useSelector((state) => state.auth);
+  const dark = theme === 'dark';
+
   return (
-    <div className='h-[80px] relative bg-white rounded-xl text-gray-700 flex items-center justify-between px-4'>
+    <div className={`h-[80px] relative rounded-xl flex items-center justify-between px-4 ${dark ? 'bg-[#242424] text-gray-200' : 'bg-white text-gray-700'}`}>
       {/* Search */}
       <div
         ref={searchRef}
-        className='flex relative gap-2 rounded-full bg-gray-100 h-[50px] w-[400px] items-center justify-center'
+        className={`flex relative gap-2 rounded-full h-[50px] w-[400px] items-center justify-center ${dark ? 'bg-[#2f2f2f]' : 'bg-gray-100'}`}
       >
-        <div className='flex ml-2 items-center justify-center rounded-full bg-white h-9 w-9'>
+        <div className={`flex ml-2 items-center justify-center rounded-full h-9 w-9 ${dark ? 'bg-[#3a3a3a]' : 'bg-white'}`}>
           <svg
             xmlns='http://www.w3.org/2000/svg'
             fill='none'
@@ -199,15 +202,15 @@ export default function Header() {
           onChange={(e) => setQuery(e.target.value)}
           className='flex-1 h-full outline-none'
         />
-        <div className='flex text-xs text-gray-400 mr-2 items-center justify-center gap-1 px-2 bg-white rounded-xl h-9'>
-          <span className='py-1 px-2 text-[10px] bg-gray-100 rounded-lg'>
+        <div className={`flex text-xs text-gray-400 mr-2 items-center justify-center gap-1 px-2 rounded-xl h-9 ${dark ? 'bg-[#3a3a3a]' : 'bg-white'}`}>
+          <span className={`py-1 px-2 text-[10px] rounded-lg ${dark ? 'bg-[#2f2f2f]' : 'bg-gray-100'}`}>
             ctrl
           </span>{' '}
           +<p>F</p>
         </div>
         {/* Show search result */}
         {debounceQuery || onFocus ? (
-          <div className='absolute z-20 flex flex-col top-13 gap-1 text-gray-400 border-gray-200 border rounded-xl p-3 bg-white w-full self-start'>
+          <div className={`absolute z-20 flex flex-col top-13 gap-1 text-gray-400 border rounded-xl p-3 w-full self-start ${dark ? 'bg-[#2f2f2f] border-[#3a3a3a]' : 'bg-white border-gray-200'}`}>
             {filterSearchPages.length > 0 && (
               <p className='text-[10px] text-gray-400'>Pages</p>
             )}
@@ -219,7 +222,7 @@ export default function Header() {
                   setOnFocus(false);
                   setQuery('');
                 }}
-                className='flex items-center gap-3 text-gray-500 hover:text-gray-700 p-2 rounded-lg hover:bg-gray-50 cursor-pointer'
+                className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer ${dark ? 'text-gray-300 hover:bg-[#3a3a3a]' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'}`}
               >
                 {p.icon}
                 <span>{p.name}</span>
@@ -237,7 +240,7 @@ export default function Header() {
                       setQuery('');
                     }}
                     key={user._id}
-                    className='flex items-center group gap-3 text-gray-500 hover:text-gray-700 p-2 rounded-lg hover:bg-gray-50 cursor-pointer'
+                    className={`flex items-center group gap-3 p-2 rounded-lg cursor-pointer ${dark ? 'text-gray-300 hover:bg-[#3a3a3a]' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'}`}
                   >
                     {user?.profileDetails?.url ? (
                       <img
@@ -272,13 +275,13 @@ export default function Header() {
       {/* Right Header Section */}
       <div className='flex items-center gap-3'>
         {/* Header Icons */}
-        <div className='flex gap-3 duration-75'>
+        <div className='flex gap-3 duration-75 items-center'>
           <div className='relative'>
             {/* Notification bar */}
             <Link
               to={'/notifications'}
               onClick={() => setShowNotification(!showNotification)}
-              className='relative flex items-center justify-center hover:bg-gray-100 rounded-xl box-border p-2 h-12 w-12 cursor-pointer'
+              className={`relative flex items-center justify-center rounded-xl box-border p-2 h-12 w-12 cursor-pointer ${dark ? 'hover:bg-[#2f2f2f]' : 'hover:bg-gray-100'}`}
             >
               <svg
                 xmlns='http://www.w3.org/2000/svg'
@@ -302,7 +305,7 @@ export default function Header() {
         <div
           ref={settingsRef}
           onClick={handleShowSettings}
-          className='flex gap-2 relative select-none items-center hover:bg-gray-100 duration-75 cursor-pointer p-2 rounded-xl'
+          className={`flex gap-2 relative select-none items-center duration-75 cursor-pointer p-2 rounded-xl ${dark ? 'hover:bg-[#2f2f2f]' : 'hover:bg-gray-100'}`}
         >
           {/* Basic Info */}
           {user.profileDetails?.url ? (
@@ -348,7 +351,7 @@ export default function Header() {
 
           {/* Additional Navigation */}
           {showSettings && (
-            <div className='border absolute top-15 w-[300px] right-0 overflow-hidden border-gray-200 rounded-lg bg-white flex flex-col z-10'>
+            <div className={`border absolute top-15 w-[300px] right-0 overflow-hidden rounded-lg flex flex-col z-10 ${dark ? 'bg-[#2f2f2f] border-[#3a3a3a]' : 'bg-white border-gray-200'}`}>
               <div className='flex gap-3 px-2 py-4 items-center'>
                 {/* <img
                   src={Me}
@@ -386,7 +389,7 @@ export default function Header() {
                 </div>
               </div>
 
-              <div className='border-t border-gray-200'>
+              <div className={`border-t ${dark ? 'border-[#3a3a3a]' : 'border-gray-200'}`}>
                 {floatFeatures.map((feature, index) => (
                   <Link
                     to={feature.path}
@@ -394,7 +397,7 @@ export default function Header() {
                       if (feature.action) await feature.action();
                     }}
                     key={index}
-                    className='flex items-center gap-3 py-4 px-4 hover:bg-violet-500 hover:text-white'
+                    className={`flex items-center gap-3 py-4 px-4 hover:bg-violet-500 hover:text-white ${dark ? 'text-gray-300' : ''}`}
                   >
                     {feature.icon}
                     <p>{feature.label}</p>
