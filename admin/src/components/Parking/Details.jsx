@@ -3,10 +3,12 @@ import { Link } from "react-router-dom";
 import { Settings, Building2, Info } from "lucide-react";
 import Modal from "../Modal";
 import SlotManagement from "./SlotManagement";
+import useDark from "../../hooks/useDark";
 
 export default function Details({ selectedShape, loading }) {
   const [isOpen, setIsOpen] = useState(false);
   const [updatedSlot, setUpdatedSlot] = useState(selectedShape);
+  const { dark, border } = useDark();
 
   useEffect(() => {
     setUpdatedSlot(selectedShape);
@@ -27,39 +29,34 @@ export default function Details({ selectedShape, loading }) {
   };
 
   return (
-    <section className={`w-[380px] border-l border-gray-200 flex flex-col ${!updatedSlot ? "items-center justify-center" : ""} p-5 gap-4`}>
+    <section className={`w-[380px] border-l flex flex-col ${border} ${!updatedSlot ? "items-center justify-center" : ""} p-5 gap-4`}>
       {updatedSlot ? (
         <div className="flex flex-col h-full justify-between gap-4 w-full">
           <div className="flex flex-col gap-4 w-full">
 
-            {/* Building shape */}
             {updatedSlot.metadata?.type === "building" && (
               <div className="flex flex-col gap-3">
                 {updatedSlot.metadata?.information?.picture?.url ? (
-                  <img
-                    src={updatedSlot.metadata.information.picture.url}
-                    alt="Building"
-                    className="w-full h-40 object-cover rounded-xl border border-gray-100"
-                  />
+                  <img src={updatedSlot.metadata.information.picture.url} alt="Building" className={`w-full h-40 object-cover rounded-xl border ${border}`} />
                 ) : (
-                  <div className="w-full h-40 rounded-xl bg-gray-100 flex flex-col items-center justify-center gap-2 text-gray-300">
+                  <div className={`w-full h-40 rounded-xl flex flex-col items-center justify-center gap-2 text-gray-300 ${dark ? 'bg-[#3a3a3a]' : 'bg-gray-100'}`}>
                     <Building2 size={32} strokeWidth={1} />
                     <p className="text-xs">No image uploaded</p>
                   </div>
                 )}
                 {updatedSlot.metadata?.information?.name && (
-                  <p className="font-semibold text-gray-700">{updatedSlot.metadata.information.name}</p>
+                  <p className={`font-semibold ${dark ? 'text-gray-200' : 'text-gray-700'}`}>{updatedSlot.metadata.information.name}</p>
                 )}
                 {updatedSlot.metadata?.information?.description && (
                   <p className="text-xs text-gray-400 leading-relaxed">{updatedSlot.metadata.information.description}</p>
                 )}
-                <div className="flex justify-between text-xs text-gray-500 border-t border-gray-100 pt-3">
+                <div className={`flex justify-between text-xs text-gray-500 border-t pt-3 ${border}`}>
                   <span className="text-gray-400">Label</span>
-                  <span className="font-medium">{updatedSlot.metadata?.label}</span>
+                  <span className={`font-medium ${dark ? 'text-gray-300' : ''}`}>{updatedSlot.metadata?.label}</span>
                 </div>
                 <div className="flex justify-between text-xs text-gray-500">
                   <span className="text-gray-400">Type</span>
-                  <span className="font-medium capitalize">{updatedSlot.metadata?.type}</span>
+                  <span className={`font-medium capitalize ${dark ? 'text-gray-300' : ''}`}>{updatedSlot.metadata?.type}</span>
                 </div>
               </div>
             )}
@@ -110,7 +107,7 @@ export default function Details({ selectedShape, loading }) {
                     </Link>
                   </div>
                 ) : (
-                  <div className="h-28 rounded-xl bg-gray-50 border border-dashed border-gray-200 flex flex-col items-center justify-center gap-1 text-gray-300">
+                  <div className={`h-28 rounded-xl border border-dashed flex flex-col items-center justify-center gap-1 text-gray-300 ${dark ? 'bg-[#3a3a3a] border-[#4a4a4a]' : 'bg-gray-50 border-gray-200'}`}>
                     <Info size={20} strokeWidth={1} />
                     <p className="text-xs">Slot is available</p>
                   </div>
@@ -159,10 +156,10 @@ export default function Details({ selectedShape, loading }) {
         </div>
       ) : (
         <div className="flex flex-col gap-2 items-center text-center">
-          <div className="p-3 rounded-full bg-gray-100">
+          <div className={`p-3 rounded-full ${dark ? 'bg-[#3a3a3a]' : 'bg-gray-100'}`}>
             <Info size={20} className="text-gray-400" />
           </div>
-          <p className="font-medium text-gray-600 text-sm">No shape selected</p>
+          <p className={`font-medium text-sm ${dark ? 'text-gray-300' : 'text-gray-600'}`}>No shape selected</p>
           <p className="text-xs text-gray-400">Click a parking slot or building on the map to view details.</p>
         </div>
       )}

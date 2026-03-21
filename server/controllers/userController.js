@@ -182,11 +182,9 @@ exports.getAllUsers = async (req, res) => {
 
 exports.getUsersByName = async (req, res) => {
   try {
-    const { username } = req.query;
-    console.log(username);
-
-    if (!username) return;
-    const users = await userService.getSearchUserData({ username });
+    const { q } = req.query;
+    if (!q?.trim()) return res.status(200).json([]);
+    const users = await userService.getSearchUserData({ q });
     res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ error: error.message });

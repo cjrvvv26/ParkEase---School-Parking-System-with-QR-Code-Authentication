@@ -100,14 +100,14 @@ export default function Users() {
               <RefreshCcw onClick={getUsers} className='text-gray-400 cursor-pointer hover:text-gray-500 size-5' strokeWidth={1.5} />
               <div className='flex gap-5'>
                 <p>{count.current} of {count.total}</p>
-                <div className='flex gap-3 *:size-4 *:hover:text-gray-700 *:text-gray-400 *:cursor-pointer'>
-                  <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor'>
-                    <path strokeLinecap='round' strokeLinejoin='round' d='M15.75 19.5 8.25 12l7.5-7.5' />
-                  </svg>
-                  <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor'>
-                    <path strokeLinecap='round' strokeLinejoin='round' d='m8.25 4.5 7.5 7.5-7.5 7.5' />
-                  </svg>
-                </div>
+                <div className='flex gap-3'>
+                <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='size-4 hover:text-gray-700 text-gray-400 cursor-pointer' onClick={() => { if (page > 1) setPage((p) => p - 1); }}>
+                  <path strokeLinecap='round' strokeLinejoin='round' d='M15.75 19.5 8.25 12l7.5-7.5' />
+                </svg>
+                <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='size-4 hover:text-gray-700 text-gray-400 cursor-pointer' onClick={() => { if (count.current < count.total) setPage((p) => p + 1); }}>
+                  <path strokeLinecap='round' strokeLinejoin='round' d='m8.25 4.5 7.5 7.5-7.5 7.5' />
+                </svg>
+              </div>
               </div>
             </tr>
             <tr className='grid grid-cols-[250px_repeat(2,minmax(0,1fr))_150px_100px] gap-5 *:font-medium'>

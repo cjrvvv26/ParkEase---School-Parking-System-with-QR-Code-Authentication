@@ -12,7 +12,8 @@ import {
   MapPin,
   Calendar,
   ChevronRight,
-  MessageCircleQuestionMark,
+  LogIn,
+  LogOut,
 } from 'lucide-react-native';
 import { getSemester } from '../services/semesterService';
 import { getAvailableSlots } from '../services/slotService';
@@ -107,6 +108,54 @@ export default function Home() {
             <Bell color='#fff' size={22} />
           </Pressable>
         </View>
+
+        {/* In-School Status Banner — student & faculty only */}
+        {(user.role === 'student' || user.role === 'faculty') && (
+          <View style={{ marginHorizontal: 20, marginTop: 16 }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 12,
+                borderRadius: 16,
+                padding: 16,
+                borderWidth: 1,
+                backgroundColor: user.entryTime ? '#f0fdf4' : '#fef9ec',
+                borderColor: user.entryTime ? '#bbf7d0' : '#fde68a',
+              }}
+            >
+              <View
+                style={{
+                  padding: 10,
+                  borderRadius: 12,
+                  backgroundColor: user.entryTime ? '#dcfce7' : '#fef3c7',
+                }}
+              >
+                {user.entryTime
+                  ? <LogIn color='#16a34a' size={20} strokeWidth={1.5} />
+                  : <LogOut color='#d97706' size={20} strokeWidth={1.5} />}
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontFamily: 'Poppins600', fontSize: 14, color: user.entryTime ? '#15803d' : '#92400e' }}>
+                  {user.entryTime ? 'You are in school' : 'You are not in school'}
+                </Text>
+                <Text style={{ fontFamily: 'Poppins400', fontSize: 12, color: user.entryTime ? '#16a34a' : '#d97706', marginTop: 2 }}>
+                  {user.entryTime
+                    ? `Entry recorded at ${new Date(user.entryTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`
+                    : 'Scan your QR code at the gate to enter'}
+                </Text>
+              </View>
+              <View
+                style={{
+                  width: 10,
+                  height: 10,
+                  borderRadius: 5,
+                  backgroundColor: user.entryTime ? '#22c55e' : '#f59e0b',
+                }}
+              />
+            </View>
+          </View>
+        )}
 
         {/* Semester Card */}
         <View style={{ marginHorizontal: 20, marginTop: 20 }}>

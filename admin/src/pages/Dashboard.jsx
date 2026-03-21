@@ -18,6 +18,10 @@ export default function Dashboard() {
   const [loadingMonthly, setLoadingMonthly] = useState(true);
   const [guards, setGuards] = useState([]);
   const [loadingGuards, setLoadingGuards] = useState(true);
+  const [occupancyData, setOccupancyData] = useState(null);
+  const [loadingOccupancy, setLoadingOccupancy] = useState(true);
+  const [avgParkingData, setAvgParkingData] = useState(null);
+  const [loadingAvgParking, setLoadingAvgParking] = useState(true);
   const { fetchData } = useFetch();
   const navigate = useNavigate();
   const { theme } = useSelector((s) => s.auth);
@@ -81,10 +85,30 @@ export default function Dashboard() {
       }
     };
 
+    const fetchOccupancy = async () => {
+      try {
+        setLoadingOccupancy(true);
+        const res = await fetchData('/report/occupancy-by-hour');
+        if (res?.data) setOccupancyData(res.data);
+      } catch (err) {}
+      finally { setLoadingOccupancy(false); }
+    };
+
+    const fetchAvgParking = async () => {
+      try {
+        setLoadingAvgParking(true);
+        const res = await fetchData('/report/avg-parking-by-hour');
+        if (res?.data) setAvgParkingData(res.data);
+      } catch (err) {}
+      finally { setLoadingAvgParking(false); }
+    };
+
     fetchSystemSummary();
     fetchSemesterRevenue();
     fetchMonthlyRevenue();
     fetchGuards();
+    fetchOccupancy();
+    fetchAvgParking();
   }, []);
 
   const pctChange = semesterRevenue?.percentageChange;
@@ -143,13 +167,13 @@ export default function Dashboard() {
         <div className={`rounded-xl flex-3 h-auto ${card}`}>
           <div className='flex flex-col gap-5 h-full p-5'>
             <h1 className='text-base font-medium'>Revenue Per Month</h1>
-            <div className='w-full h-[220px]'>
+            <div className='w-full flex-1'>
               <RevenueChart
                 monthlyData={monthlyRevenue}
                 loading={loadingMonthly}
               />
             </div>
-            <div className='flex gap-5 h-full rounded-xl'>
+            <div className='flex gap-5 rounded-xl'>
               <div
                 className={`flex flex-col justify-center gap-1 h-full ${cardInner} rounded-xl p-5 flex-1 relative`}
               >
@@ -214,7 +238,7 @@ export default function Dashboard() {
             <div className='p-5 h-full flex flex-col'>
               <h1 className='text-base font-medium'>Today's Motor Occupancy</h1>
               <div className='h-full w-full'>
-                <MotorOccupancyChart />
+                <MotorOccupancyChart chartData={occupancyData} loading={loadingOccupancy} />
               </div>
             </div>
           </div>
@@ -228,7 +252,7 @@ export default function Dashboard() {
           <div className='flex flex-col gap-2 p-5 h-full'>
             <h1 className='text-base font-medium'>Average Parking Duration</h1>
             <div className='h-[280px] w-full'>
-              <AvgParkingDurationChart />
+              <AvgParkingDurationChart chartData={avgParkingData} loading={loadingAvgParking} />
             </div>
           </div>
         </div>

@@ -36,6 +36,7 @@ import NotificationDetails from './pages/NotificationDetails';
 import Password from './pages/Password';
 import AccountRecovery from './pages/AccountRecovery';
 import ResetPassword from './pages/ResetPassword';
+import ForgotPasswordOTP from './pages/ForgotPasswordOTP';
 import Course from './pages/Course';
 import AddCourse from './pages/AddCourse';
 import SlotsQRCode from './components/Parking/SlotsQRCode';
@@ -114,7 +115,11 @@ export default function App() {
           element: <AccountRecovery />,
         },
         {
-          path: 'recovery/reset-password/:token',
+          path: 'forgot-password/verify-otp',
+          element: <ForgotPasswordOTP />,
+        },
+        {
+          path: 'forgot-password/reset',
           element: <ResetPassword />,
         },
       ],

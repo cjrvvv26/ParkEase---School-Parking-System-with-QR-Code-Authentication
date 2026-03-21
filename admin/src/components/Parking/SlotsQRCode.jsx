@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import useFetch from '../../hooks/useFetch';
+import useDark from '../../hooks/useDark';
 import { ChevronLeft, Printer } from 'lucide-react';
 
 export default function SlotsQRCode() {
   const { mapId } = useParams();
   const navigate = useNavigate();
   const { loading, setError, error, fetchData } = useFetch();
+  const { dark, card } = useDark();
   const [mapSlots, setMapSlots] = useState([]);
   const [mapData, setMapData] = useState([]);
 
@@ -64,7 +66,7 @@ export default function SlotsQRCode() {
           mapSlots.map((slot, _) => (
             <li
               key={slot.shapeId}
-              className='flex gap-3 text-gray-600 font-semibold flex-col max-w-48 h-48 bg-gray-100 p-2 rounded-md'
+              className={`flex gap-3 font-semibold flex-col max-w-48 h-48 p-2 rounded-md ${dark ? 'bg-[#2f2f2f] text-gray-300' : 'bg-gray-100 text-gray-600'}`}
             >
               <img
                 src={slot.QRCode?.url}

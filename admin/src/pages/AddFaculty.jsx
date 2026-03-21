@@ -3,6 +3,7 @@ import DefaultInput from '../components/forms/DefaultInput';
 import useFetch from '../hooks/useFetch';
 import { Link, useNavigate } from 'react-router-dom';
 import { ChevronLeft, Info } from 'lucide-react';
+import useDark from '../hooks/useDark';
 
 export default function AddFaculty() {
   const navigate = useNavigate();
@@ -10,6 +11,7 @@ export default function AddFaculty() {
   const [showGeneratedSection, setShowGeneratedSection] = useState(false);
   const [preview, setPreview] = useState(null);
   const { error, setError, loading, fetchData } = useFetch();
+  const { dark, border } = useDark();
   const [faculty, setFaculty] = useState({
     profileDetails: null,
     firstName: '',
@@ -119,17 +121,12 @@ export default function AddFaculty() {
     <div className='p-5'>
       <header className='flex items-center justify-between'>
         <div>
-          <Link
-            to={'/users'}
-            className='flex items-center text-violet-500 hover:opacity-80 cursor-pointer'
-          >
+          <Link to={'/users'} className='flex items-center text-violet-500 hover:opacity-80 cursor-pointer'>
             <ChevronLeft strokeWidth={1.5} size={18} />
             <span>Users</span>
           </Link>
-          <h1 className='text-3xl font-bold text-gray-700'>Add Faculty</h1>
-          <p className='text-sm text-gray-500'>
-            Register Faculty Staff and their motor vehicle for campus parking
-          </p>
+          <h1 className={`text-3xl font-bold ${dark ? 'text-gray-100' : 'text-gray-700'}`}>Add Faculty</h1>
+          <p className={`text-sm ${dark ? 'text-gray-400' : 'text-gray-500'}`}>Register Faculty Staff and their motor vehicle for campus parking</p>
         </div>
         <div className='text-sm text-gray-500'>Step 1 of 1</div>
       </header>
@@ -239,11 +236,8 @@ export default function AddFaculty() {
             </div>
           </section>
 
-          {/* Motor Information */}
-          <section className='space-y-4 pt-4 border-t border-gray-200'>
-            <h2 className='text-lg font-medium text-gray-800'>
-              Motor / Vehicle Details
-            </h2>
+          <section className={`space-y-4 pt-4 border-t ${border}`}>
+            <h2 className={`text-lg font-medium ${dark ? 'text-gray-200' : 'text-gray-800'}`}>Motor / Vehicle Details</h2>
             {/* AI Motor Image Generates Section */}
             {showGeneratedSection && (
               <>
@@ -394,39 +388,16 @@ export default function AddFaculty() {
           </section>
         </div>
 
-        {/* Right: summary card & actions */}
-        <aside className='bg-white rounded-xl shadow-sm border border-gray-200 p-6 flex flex-col gap-4 self-start'>
+        <aside className={`rounded-xl shadow-sm border p-6 flex flex-col gap-4 self-start ${dark ? 'bg-[#2f2f2f] border-[#3a3a3a]' : 'bg-white border-gray-200'}`}>
           <div className='space-y-2'>
-            <h3 className='text-sm font-medium text-gray-800'>Summary</h3>
-            <div className='text-xs text-gray-500'>
-              Review details before saving
-            </div>
-
-            <div className='mt-3 bg-gray-100 rounded-md p-3 text-sm space-y-2'>
-              <div>
-                <span className='font-medium text-gray-700'>Name:</span>{' '}
-                {faculty.firstName || '—'} {faculty.lastName || ''}
-              </div>
-              <div>
-                <span className='font-medium text-gray-700'>Username:</span>{' '}
-                {faculty.firstName && faculty.lastName
-                  ? faculty.firstName[0].toLowerCase() +
-                    faculty.lastName.toLowerCase() +
-                    Date.now()
-                  : ''}
-              </div>
-              <div>
-                <span className='font-medium text-gray-700'>Email:</span>{' '}
-                {faculty.email || '—'}
-              </div>
-              <div>
-                <span className='font-medium text-gray-700'>phoneNo:</span>{' '}
-                {faculty.phoneNo || '—'}
-              </div>
-              <div>
-                <span className='font-medium text-gray-700'>plateNo:</span>{' '}
-                {motor.plateNo || '—'}
-              </div>
+            <h3 className={`text-sm font-medium ${dark ? 'text-gray-200' : 'text-gray-800'}`}>Summary</h3>
+            <div className='text-xs text-gray-500'>Review details before saving</div>
+            <div className={`mt-3 rounded-md p-3 text-sm space-y-2 ${dark ? 'bg-[#3a3a3a]' : 'bg-gray-100'}`}>
+              <div><span className={`font-medium ${dark ? 'text-gray-300' : 'text-gray-700'}`}>Name:</span> {faculty.firstName || '—'} {faculty.lastName || ''}</div>
+              <div><span className={`font-medium ${dark ? 'text-gray-300' : 'text-gray-700'}`}>Username:</span> {faculty.firstName && faculty.lastName ? faculty.firstName[0].toLowerCase() + faculty.lastName.toLowerCase() + Date.now() : ''}</div>
+              <div><span className={`font-medium ${dark ? 'text-gray-300' : 'text-gray-700'}`}>Email:</span> {faculty.email || '—'}</div>
+              <div><span className={`font-medium ${dark ? 'text-gray-300' : 'text-gray-700'}`}>phoneNo:</span> {faculty.phoneNo || '—'}</div>
+              <div><span className={`font-medium ${dark ? 'text-gray-300' : 'text-gray-700'}`}>plateNo:</span> {motor.plateNo || '—'}</div>
             </div>
           </div>
 

@@ -38,6 +38,61 @@ exports.getMonthlyRevenue = async (req, res) => {
   }
 };
 
+exports.getOccupancyByHour = async (req, res) => {
+  try {
+    const data = await reportService.calculateOccupancyByHour();
+    res.status(200).json({ success: true, data });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.getAvgParkingByHour = async (req, res) => {
+  try {
+    const data = await reportService.calculateAvgParkingByHour();
+    res.status(200).json({ success: true, data });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.getPreferredAreas = async (req, res) => {
+  try {
+    const data = await reportService.calculatePreferredAreas();
+    res.status(200).json({ success: true, data });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.getTopParkingDuration = async (req, res) => {
+  try {
+    const data = await reportService.calculateTopParkingDuration();
+    res.status(200).json({ success: true, data });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.getPeakEntryTime = async (req, res) => {
+  try {
+    const data = await reportService.calculatePeakEntryTime();
+    res.status(200).json({ success: true, data });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.getUsersByCourse = async (req, res) => {
+  try {
+    const { courseId } = req.query;
+    const data = await reportService.calculateUsersByCourse({ courseId });
+    res.status(200).json({ success: true, data });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 exports.generateReport = async (req, res) => {
   try {
     const summary = await reportService.calculateSystemSummary();

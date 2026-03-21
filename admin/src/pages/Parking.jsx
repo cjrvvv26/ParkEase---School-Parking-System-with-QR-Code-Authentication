@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react';
 import useFetch from '../hooks/useFetch';
 import Details from '../components/Parking/Details';
 import { QrCode } from 'lucide-react';
+import useDark from '../hooks/useDark';
 
 export default function Parking() {
   const [reports, setReports] = useState([]);
@@ -26,6 +27,7 @@ export default function Parking() {
   const navigate = useNavigate();
   const location = useLocation();
   const { fetchData, loading } = useFetch();
+  const { dark, border, input } = useDark();
 
   useEffect(() => {
     const fetchMaps = async () => {
@@ -167,9 +169,9 @@ export default function Parking() {
         <ReportSummaryCard reports={reports} loading={loading} />
       </div>
       {/* Parking Map and Details */}
-      <div className='flex flex-col mx-5 border-gray-200 border rounded-xl mb-5'>
+      <div className={`flex flex-col mx-5 border rounded-xl mb-5 ${border}`}>
         {/* Header Parking Section */}
-        <header className='flex justify-between p-5 border-b border-gray-200 w-full'>
+        <header className={`flex justify-between p-5 border-b w-full ${border}`}>
           <div className='flex gap-3 items-center'>
             <h2 className='font-medium text-base'>Parking Area Overview</h2>
             <p className='text-xs py-2 px-4 rounded-lg ring ring-violet-500 bg-violet-100 text-violet-500'>
@@ -200,35 +202,23 @@ export default function Parking() {
             </button>
             {isOpen && (
               <Modal onClose={() => toggleIsOpenModal(false)}>
-                <div className='text-xs w-[450px] text-gray-700 flex flex-col gap-5'>
-                  <h1 className='text-base font-semibold text-gray-700'>
-                    Create New Area
-                  </h1>
+                <div className='text-xs w-[450px] flex flex-col gap-5'>
+                  <h1 className={`text-base font-semibold ${dark ? 'text-gray-200' : 'text-gray-700'}`}>Create New Area</h1>
                   <form onSubmit={handleSubmit} className='flex flex-col gap-5'>
                     <div className='flex flex-col gap-1'>
-                      <label
-                        htmlFor='name'
-                        className='self-start text-xs text-gray-400'
-                      >
-                        Area name
-                      </label>
+                      <label htmlFor='name' className='self-start text-xs text-gray-400'>Area name</label>
                       <input
                         id='name'
                         type='text'
                         value={areaName}
                         placeholder='Admin Bldg (FRONT)'
                         onChange={(e) => setAreaName(e.target.value)}
-                        className='outline-none p-4 w-full rounded-md border border-gray-200'
+                        className={`outline-none p-4 w-full rounded-md border ${input}`}
                       />
                     </div>
                     <div className='flex gap-3 items-center'>
-                      <div className='flex  flex-1 flex-col gap-1'>
-                        <label
-                          htmlFor='height'
-                          className='self-start text-xs text-gray-400'
-                        >
-                          Height
-                        </label>
+                      <div className='flex flex-1 flex-col gap-1'>
+                        <label htmlFor='height' className='self-start text-xs text-gray-400'>Height</label>
                         <div className='flex gap-1 items-end'>
                           <input
                             id='height'
@@ -236,18 +226,13 @@ export default function Parking() {
                             placeholder='Recommended: 350px'
                             value={height}
                             onChange={(e) => setHeight(e.target.value)}
-                            className='outline-none p-4 w-full rounded-md border border-gray-200'
+                            className={`outline-none p-4 w-full rounded-md border ${input}`}
                           />
                           <span className='text-gray-400'>px</span>
                         </div>
                       </div>
-                      <div className='flex  flex-1 flex-col gap-1'>
-                        <label
-                          htmlFor='width'
-                          className='self-start text-xs text-gray-400'
-                        >
-                          Width
-                        </label>
+                      <div className='flex flex-1 flex-col gap-1'>
+                        <label htmlFor='width' className='self-start text-xs text-gray-400'>Width</label>
                         <div className='flex gap-1 items-end'>
                           <input
                             id='width'
@@ -255,29 +240,16 @@ export default function Parking() {
                             value={width}
                             placeholder='Recommended: 1000px'
                             onChange={(e) => setWidth(e.target.value)}
-                            className='outline-none  p-4 w-full rounded-md border border-gray-200'
+                            className={`outline-none p-4 w-full rounded-md border ${input}`}
                           />
                           <span className='text-gray-400'>px</span>
                         </div>
                       </div>
                     </div>
-                    {mapError && (
-                      <p className='text-xs text-red-500'>{mapError}</p>
-                    )}
+                    {mapError && <p className='text-xs text-red-500'>{mapError}</p>}
                     <div className='flex items-center gap-5 w-full'>
-                      <button
-                        type='button'
-                        onClick={() => toggleIsOpenModal(false)}
-                        className='border w-full border-gray-200 py-2 px-4 rounded'
-                      >
-                        Close
-                      </button>
-                      <button
-                        type='submit'
-                        className='bg-violet-500 w-full text-white py-2 px-4 rounded'
-                      >
-                        Create
-                      </button>
+                      <button type='button' onClick={() => toggleIsOpenModal(false)} className={`border w-full py-2 px-4 rounded ${dark ? 'border-[#4a4a4a] text-gray-300' : 'border-gray-200 text-gray-700'}`}>Close</button>
+                      <button type='submit' className='bg-violet-500 w-full text-white py-2 px-4 rounded'>Create</button>
                     </div>
                   </form>
                 </div>
@@ -344,7 +316,7 @@ export default function Parking() {
                   </div>
                   <p className='text-sm text-gray-500'>Are you sure you want to delete <strong>{selectedMap?.name}</strong>? All shapes, slots, and user assignments will be permanently removed.</p>
                   <div className='flex gap-3'>
-                    <button onClick={() => setConfirmDeleteMap(false)} className='flex-1 py-2 rounded-xl border border-gray-200 text-sm text-gray-500 hover:bg-gray-50 transition'>Cancel</button>
+                    <button onClick={() => setConfirmDeleteMap(false)} className={`flex-1 py-2 rounded-xl border text-sm transition ${dark ? 'border-[#4a4a4a] text-gray-400 hover:bg-[#3a3a3a]' : 'border-gray-200 text-gray-500 hover:bg-gray-50'}`}>Cancel</button>
                     <button onClick={handleDeleteMap} disabled={loading} className='flex-1 py-2 rounded-xl bg-rose-500 hover:bg-rose-600 text-sm text-white transition disabled:opacity-60'>
                       {loading ? 'Deleting...' : 'Yes, Delete'}
                     </button>

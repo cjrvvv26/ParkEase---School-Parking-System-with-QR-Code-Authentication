@@ -7,5 +7,6 @@ const activityController = require("../controllers/activityController");
 router.use(verifyUser(), requiredSuperAdmin);
 
 router.get("/", activityController.getAllLogs);
+router.get("/user/:userId", activityController.getUserLogs);
 
 module.exports = router;

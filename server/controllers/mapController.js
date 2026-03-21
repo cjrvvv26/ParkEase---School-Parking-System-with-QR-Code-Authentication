@@ -100,10 +100,10 @@ exports.createMap = async (req, res) => {
 
     await ActivityLogs.create({
       userId: req.user._id,
-      actionType: 'parking',
+      actionType: 'map',
       action: 'REGISTER',
       description: `A new parking map "${map.name}" has been created with ${slotShapes.length} slots.`,
-      entityType: 'Slot',
+      entityType: 'Map',
       entityId: map._id,
       metadata: {
         mapName: map.name,
@@ -275,10 +275,10 @@ exports.updateMap = async (req, res) => {
       // --- Step 5: Log activity ---
       await ActivityLogs.create({
         userId: req.user._id,
-        actionType: 'parking',
+        actionType: 'map',
         action: 'UPDATE_MAP',
         description: `Parking map "${updatedMap.name}" has been updated with ${slotShapes.length} slots.`,
-        entityType: 'Slot',
+        entityType: 'Map',
         entityId: id,
         metadata: {
           mapName: updatedMap.name,
@@ -341,6 +341,16 @@ exports.deleteMap = async (req, res) => {
     if (!deletedMap) {
       return res.status(404).json({ error: 'Map not found' });
     }
+
+    await ActivityLogs.create({
+      userId: req.user._id,
+      actionType: 'map',
+      action: 'DELETE_MAP',
+      description: `Parking map "${deletedMap.name}" has been deleted.`,
+      entityType: 'Map',
+      entityId: deletedMap._id,
+      metadata: { mapName: deletedMap.name },
+    });
 
     res.status(200).json({ message: 'Map deleted successfully' });
   } catch (error) {

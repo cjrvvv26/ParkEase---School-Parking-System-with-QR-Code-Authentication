@@ -99,8 +99,7 @@ export default function SignIn() {
   }, []);
 
   const handleRegistration = async () => {
-    const hasEmptyValue = Object.values(credentials).every((c) => !c);
-    if (hasEmptyValue) return setError('All fields must be filled.');
+    if (!credentials.email || !credentials.password) return setError('All fields must be filled.');
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(credentials.email)) return setError('Invalid email address');
     const data = await execute(login, credentials);
     if (data?.status === 200) {

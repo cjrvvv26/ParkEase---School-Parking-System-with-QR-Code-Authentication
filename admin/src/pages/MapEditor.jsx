@@ -5,9 +5,10 @@ import PropertiesPanel from "../components/maps/PropertiesPanel";
 import Header from "../components/maps/Header";
 import Modal from "../components/Modal";
 import useFetch from "../hooks/useFetch";
+import useDark from "../hooks/useDark";
 import { Building2, ImagePlus, AlignLeft, Tag, X } from "lucide-react";
 
-function BuildingModal({ building, onChange, onSave, onClose }) {
+function BuildingModal({ building, onChange, onSave, onClose, dark, border, input }) {
   const fileRef = useRef();
   const [dragOver, setDragOver] = useState(false);
 
@@ -41,20 +42,17 @@ function BuildingModal({ building, onChange, onSave, onClose }) {
   return (
     <div className="w-[420px] flex flex-col">
       {/* Modal header */}
-      <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-100">
+      <div className={`flex items-center justify-between px-5 pt-5 pb-4 border-b ${border}`}>
         <div className="flex items-center gap-2.5">
           <div className="p-1.5 rounded-lg bg-emerald-50">
             <Building2 size={16} className="text-emerald-500" strokeWidth={1.8} />
           </div>
           <div>
-            <h2 className="text-sm font-semibold text-gray-800">Edit Building</h2>
+            <h2 className={`text-sm font-semibold ${dark ? 'text-gray-200' : 'text-gray-800'}`}>Edit Building</h2>
             <p className="text-[11px] text-gray-400">{info.name || "Unnamed building"}</p>
           </div>
         </div>
-        <button
-          onClick={onClose}
-          className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition"
-        >
+        <button onClick={onClose} className={`p-1.5 rounded-lg text-gray-400 transition ${dark ? 'hover:bg-[#3a3a3a]' : 'hover:bg-gray-100'}`}>
           <X size={15} />
         </button>
       </div>
@@ -74,7 +72,7 @@ function BuildingModal({ building, onChange, onSave, onClose }) {
           className={`relative w-full h-44 rounded-2xl border-2 border-dashed cursor-pointer overflow-hidden flex items-center justify-center transition group ${
             dragOver
               ? "border-violet-400 bg-violet-50"
-              : "border-gray-200 bg-gray-50 hover:border-violet-300 hover:bg-violet-50/30"
+              : dark ? "border-[#4a4a4a] bg-[#3a3a3a] hover:border-violet-400" : "border-gray-200 bg-gray-50 hover:border-violet-300 hover:bg-violet-50/30"
           }`}
         >
           {previewUrl ? (
@@ -94,13 +92,7 @@ function BuildingModal({ building, onChange, onSave, onClose }) {
               </div>
             </div>
           )}
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => handleFile(e.target.files[0])}
-          />
+          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => handleFile(e.target.files[0])} />
         </div>
 
         {/* Name */}
@@ -114,7 +106,7 @@ function BuildingModal({ building, onChange, onSave, onClose }) {
             value={info.name || ""}
             onChange={(e) => setField("name", e.target.value)}
             placeholder="e.g. Main Building"
-            className="w-full bg-gray-50 border border-gray-200 text-gray-700 text-xs rounded-xl px-3 py-2 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 transition"
+            className={`w-full border text-xs rounded-xl px-3 py-2 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 transition ${input}`}
           />
         </div>
 
@@ -129,25 +121,15 @@ function BuildingModal({ building, onChange, onSave, onClose }) {
             onChange={(e) => setField("description", e.target.value)}
             placeholder="Brief description of this building..."
             rows={3}
-            className="w-full bg-gray-50 border border-gray-200 text-gray-700 text-xs rounded-xl px-3 py-2 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 transition resize-none"
+            className={`w-full border text-xs rounded-xl px-3 py-2 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 transition resize-none ${input}`}
           />
         </div>
       </div>
 
       {/* Footer */}
       <div className="px-5 pb-5 flex gap-3">
-        <button
-          onClick={onClose}
-          className="flex-1 py-2.5 rounded-xl border border-gray-200 text-xs text-gray-500 hover:bg-gray-50 transition"
-        >
-          Cancel
-        </button>
-        <button
-          onClick={onSave}
-          className="flex-1 py-2.5 rounded-xl bg-violet-500 hover:bg-violet-600 text-xs text-white font-medium transition"
-        >
-          Save Changes
-        </button>
+        <button onClick={onClose} className={`flex-1 py-2.5 rounded-xl border text-xs transition ${dark ? 'border-[#4a4a4a] text-gray-400 hover:bg-[#3a3a3a]' : 'border-gray-200 text-gray-500 hover:bg-gray-50'}`}>Cancel</button>
+        <button onClick={onSave} className="flex-1 py-2.5 rounded-xl bg-violet-500 hover:bg-violet-600 text-xs text-white font-medium transition">Save Changes</button>
       </div>
     </div>
   );
@@ -314,6 +296,7 @@ export default function MapEditor() {
   const [isSaving, setIsSaving] = useState(false);
   const [confirmDeleteMap, setConfirmDeleteMap] = useState(false);
   const { fetchData } = useFetch();
+  const { dark, border, input } = useDark();
 
   useEffect(() => {
     setCurrentAreaName(initialAreaName || "");
@@ -452,7 +435,9 @@ export default function MapEditor() {
   const handleUpdateShape = (updatedShape) => {
     setShapes((prev) =>
       prev.map((s) =>
-        (s._id || s.tempId) === updatedShape.tempId ? updatedShape : s,
+        (s._id && s._id === updatedShape._id) || (s.tempId && s.tempId === updatedShape.tempId)
+          ? updatedShape
+          : s,
       ),
     );
   };
@@ -604,6 +589,11 @@ export default function MapEditor() {
 
 const handleNewSubmit = (e) => {
     e.preventDefault();
+    if (!newAreaName.trim()) return setErrorMessage('Area name is required.');
+    if (newAreaName.length > 30) return setErrorMessage('Maximum name length is 30.');
+    if (!newHeight || !newWidth) return setErrorMessage('Height and width are required.');
+    if (Number(newHeight) > 500) return setErrorMessage('Maximum height allowed is 500px.');
+    if (Number(newWidth) > 1200) return setErrorMessage('Maximum width allowed is 1200px.');
     setCurrentAreaName(newAreaName);
     setCurrentSvgSize({ width: Number(newWidth), height: Number(newHeight) });
     setShapes([]);
@@ -614,7 +604,10 @@ const handleNewSubmit = (e) => {
     setZoom(1);
     setHistory([[]]);
     setCurrentIndex(0);
-    setMode("select");
+    setMode('select');
+    setNewAreaName('');
+    setNewWidth('');
+    setNewHeight('');
     setIsOpen(false);
   };
   const stopDrag = () => {
@@ -639,7 +632,7 @@ const handleNewSubmit = (e) => {
       <main className="flex-1 relative flex">
         {/* Main */}
         <section
-          className="flex-1 relative flex items-end bg-gray-50"
+          className={`flex-1 relative flex items-end ${dark ? 'bg-[#1a1a1a]' : 'bg-gray-50'}`}
           style={{ height: "600px" }}
         >
           {errorMessage && (
@@ -815,78 +808,33 @@ const handleNewSubmit = (e) => {
       </main>
       {isOpen && (
         <Modal onClose={() => setIsOpen(false)}>
-          <div className="text-xs w-[300px] text-gray-700 flex flex-col gap-5">
-            <h1 className="text-base font-semibold text-gray-700">
-              Create New Area
-            </h1>
-            <form onSubmit={handleNewSubmit} className="flex flex-col gap-5">
-              <div className="flex flex-col gap-1">
-                <label
-                  htmlFor="name"
-                  className="self-start text-xs text-gray-400"
-                >
-                  Area name
-                </label>
-                <input
-                  id="name"
-                  type="text"
-                  value={newAreaName}
-                  onChange={(e) => setNewAreaName(e.target.value)}
-                  className="outline-none w-full rounded-md border border-gray-200 py-1 px-2"
-                />
+          <div className='text-xs w-[450px] flex flex-col gap-5'>
+            <h1 className={`text-base font-semibold ${dark ? 'text-gray-200' : 'text-gray-700'}`}>Create New Area</h1>
+            <form onSubmit={handleNewSubmit} className='flex flex-col gap-5'>
+              <div className='flex flex-col gap-1'>
+                <label htmlFor='name' className='self-start text-xs text-gray-400'>Area name</label>
+                <input id='name' type='text' value={newAreaName} placeholder='Admin Bldg (FRONT)' onChange={(e) => setNewAreaName(e.target.value)} className={`outline-none p-4 w-full rounded-md border ${input}`} />
               </div>
-              <div className="flex gap-3 items-center">
-                <div className="flex flex-col gap-1">
-                  <label
-                    htmlFor="height"
-                    className="self-start text-xs text-gray-400"
-                  >
-                    Height
-                  </label>
-                  <div className="flex gap-1 items-end">
-                    <input
-                      id="height"
-                      type="number"
-                      value={newHeight}
-                      onChange={(e) => setNewHeight(e.target.value)}
-                      className="outline-none w-full rounded-md border border-gray-200 py-1 px-2"
-                    />
-                    <span className="text-gray-400">px</span>
+              <div className='flex gap-3 items-center'>
+                <div className='flex flex-1 flex-col gap-1'>
+                  <label htmlFor='height' className='self-start text-xs text-gray-400'>Height</label>
+                  <div className='flex gap-1 items-end'>
+                    <input id='height' type='number' placeholder='Recommended: 350px' value={newHeight} onChange={(e) => setNewHeight(e.target.value)} className={`outline-none p-4 w-full rounded-md border ${input}`} />
+                    <span className='text-gray-400'>px</span>
                   </div>
                 </div>
-                <div className="flex flex-col gap-1">
-                  <label
-                    htmlFor="width"
-                    className="self-start text-xs text-gray-400"
-                  >
-                    Width
-                  </label>
-                  <div className="flex gap-1 items-end">
-                    <input
-                      id="width"
-                      type="number"
-                      value={newWidth}
-                      onChange={(e) => setNewWidth(e.target.value)}
-                      className="outline-none w-full rounded-md border border-gray-200 py-1 px-2"
-                    />
-                    <span className="text-gray-400">px</span>
+                <div className='flex flex-1 flex-col gap-1'>
+                  <label htmlFor='width' className='self-start text-xs text-gray-400'>Width</label>
+                  <div className='flex gap-1 items-end'>
+                    <input id='width' type='number' placeholder='Recommended: 1000px' value={newWidth} onChange={(e) => setNewWidth(e.target.value)} className={`outline-none p-4 w-full rounded-md border ${input}`} />
+                    <span className='text-gray-400'>px</span>
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-5 w-full">
-                <button
-                  type="button"
-                  onClick={() => setIsOpen(false)}
-                  className="border w-full border-gray-200 py-2 px-4 rounded"
-                >
-                  Close
-                </button>
-                <button
-                  type="submit"
-                  className="bg-violet-500 w-full text-white py-2 px-4 rounded"
-                >
-                  Create
-                </button>
+              {errorMessage && <p className='text-xs text-red-500'>{errorMessage}</p>}
+              <div className='flex items-center gap-5 w-full'>
+                <button type='button' onClick={() => setIsOpen(false)} className={`border w-full py-2 px-4 rounded ${dark ? 'border-[#4a4a4a] text-gray-300' : 'border-gray-200 text-gray-700'}`}>Close</button>
+                <button type='submit' className='bg-violet-500 w-full text-white py-2 px-4 rounded'>Create</button>
               </div>
             </form>
           </div>
@@ -901,11 +849,11 @@ const handleNewSubmit = (e) => {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
                 </svg>
               </div>
-              <h2 className="font-semibold text-gray-800">Delete Map</h2>
+              <h2 className={`font-semibold ${dark ? 'text-gray-200' : 'text-gray-800'}`}>Delete Map</h2>
             </div>
             <p className="text-sm text-gray-500">Are you sure you want to delete <strong>{currentAreaName}</strong>? All shapes, slots, and user assignments will be permanently removed.</p>
             <div className="flex gap-3">
-              <button onClick={() => setConfirmDeleteMap(false)} className="flex-1 py-2 rounded-xl border border-gray-200 text-sm text-gray-500 hover:bg-gray-50 transition">Cancel</button>
+              <button onClick={() => setConfirmDeleteMap(false)} className={`flex-1 py-2 rounded-xl border text-sm transition ${dark ? 'border-[#4a4a4a] text-gray-400 hover:bg-[#3a3a3a]' : 'border-gray-200 text-gray-500 hover:bg-gray-50'}`}>Cancel</button>
               <button onClick={handleDeleteMap} className="flex-1 py-2 rounded-xl bg-rose-500 hover:bg-rose-600 text-sm text-white transition">Yes, Delete</button>
             </div>
           </div>
@@ -918,6 +866,9 @@ const handleNewSubmit = (e) => {
             onChange={setSelectedBuilding}
             onSave={() => handleBuildingUpdate(selectedBuilding)}
             onClose={() => setIsBuildingModalOpen(false)}
+            dark={dark}
+            border={border}
+            input={input}
           />
         </Modal>
       )}

@@ -1,7 +1,7 @@
 import GoogleIcon from '../assets/images/google.webp';
 import { useGoogleLogin } from '@react-oauth/google';
 import axios from '../utils/axiosConfig';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import useFetch from '../hooks/useFetch';
 import { useState } from 'react';
 import { useEffect } from 'react';
@@ -12,6 +12,8 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const passwordReset = location.state?.passwordReset;
 
   useEffect(() => {
     const otp_accesss = sessionStorage.getItem('otp_access');
@@ -62,6 +64,11 @@ export default function Login() {
 
   return (
     <div className='min-h-screen w-full text-sm text-gray-900 bg-white flex flex-col gap-5 items-center justify-center'>
+      {passwordReset && (
+        <div className='fixed top-5 left-1/2 -translate-x-1/2 bg-green-50 border border-green-200 text-green-700 text-sm px-5 py-3 rounded-xl shadow'>
+          Password reset successfully. Please sign in.
+        </div>
+      )}
       <div className='flex flex-col gap-3 items-center mb-5'>
         <h1 className='font-bold text-3xl'>Sign In</h1>
         <h2>to continue to your Super Admin Account.</h2>

@@ -114,6 +114,198 @@ exports.calculateMonthlyRevenue = async () => {
   return monthlyRevenue;
 };
 
+exports.calculateOccupancyByHour = async () => {
+  const ActivityLog = require('../models/activityModel');
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  const slots = [
+    { label: '5-8 AM', start: 5, end: 8 },
+    { label: '9-11 AM', start: 9, end: 11 },
+    { label: '12-2 PM', start: 12, end: 14 },
+    { label: '3-5 PM', start: 15, end: 17 },
+    { label: '6-8 PM', start: 18, end: 20 },
+  ];
+
+  const logs = await ActivityLog.find({
+    actionType: 'parking',
+    createdAt: { $gte: today, $lt: tomorrow },
+  });
+
+  const values = slots.map(({ start, end }) => {
+    return logs.filter((l) => {
+      const h = new Date(l.createdAt).getHours();
+      return h >= start && h < end;
+    }).length;
+  });
+
+  return { labels: slots.map((s) => s.label), values };
+};
+
+exports.calculateAvgParkingByHour = async () => {
+  const ActivityLog = require('../models/activityModel');
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+  const slots = [
+    { label: '5-8 AM', start: 5, end: 8 },
+    { label: '9-11 AM', start: 9, end: 11 },
+    { label: '12-2 PM', start: 12, end: 14 },
+    { label: '3-5 PM', start: 15, end: 17 },
+  ];
+
+  const logs = await ActivityLog.find({
+    actionType: 'parking',
+    createdAt: { $gte: thirtyDaysAgo },
+    duration: { $gt: 0 },
+  });
+
+  const values = slots.map(({ start, end }) => {
+    const slotLogs = logs.filter((l) => {
+      const h = new Date(l.createdAt).getHours();
+      return h >= start && h < end;
+    });
+    if (!slotLogs.length) return 0;
+    return Math.round(slotLogs.reduce((s, l) => s + (l.duration || 0), 0) / slotLogs.length);
+  });
+
+  return { labels: slots.map((s) => s.label), values };
+};
+
+exports.calculatePreferredAreas = async () => {
+  const Map = require('../models/mapModel');
+  const Shape = require('../models/shapeModel');
+  const Slot = require('../models/slotModel');
+
+  const maps = await Map.find().lean();
+  const results = [];
+
+  for (const map of maps) {
+    const shapes = await Shape.find({ mapId: map._id, 'metadata.type': 'slot' }).select('_id').lean();
+    const shapeIds = shapes.map((s) => s._id);
+    const occupied = await Slot.countDocuments({ slotId: { $in: shapeIds }, isOccupied: true });
+    const total = shapes.length;
+    results.push({ name: map.name, occupied, total });
+  }
+
+  return results.sort((a, b) => b.occupied - a.occupied).slice(0, 3);
+};
+
+exports.calculateTopParkingDuration = async () => {
+  const ActivityLog = require('../models/activityModel');
+  const User = require('../models/userModel');
+  const Student = require('../models/studentModel');
+
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+  const logs = await ActivityLog.aggregate([
+    { $match: { actionType: 'parking', action: 'UNPARKED', createdAt: { $gte: thirtyDaysAgo }, 'metadata.duration': { $gt: 0 } } },
+    { $group: { _id: '$userId', totalDuration: { $sum: '$metadata.duration' }, count: { $sum: 1 } } },
+    { $sort: { totalDuration: -1 } },
+    { $limit: 5 },
+  ]);
+
+  const maxDuration = logs[0]?.totalDuration || 1;
+  const results = [];
+
+  for (const log of logs) {
+    const user = await User.findById(log._id).select('role').lean();
+    if (!user) continue;
+    let name = 'Unknown';
+    if (user.role === 'student') {
+      const s = await Student.findOne({ userId: log._id }).select('name').lean();
+      if (s?.name) name = `${s.name.firstName.charAt(0)}. ${s.name.lastName}`;
+    }
+    results.push({ name, duration: log.totalDuration, pct: Math.round((log.totalDuration / maxDuration) * 100) });
+  }
+
+  return results;
+};
+
+exports.calculatePeakEntryTime = async () => {
+  const ActivityLog = require('../models/activityModel');
+  const Map = require('../models/mapModel');
+  const Shape = require('../models/shapeModel');
+  const Slot = require('../models/slotModel');
+
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+  const logs = await ActivityLog.find({
+    actionType: 'parking',
+    action: 'ENTRY_TIME',
+    createdAt: { $gte: thirtyDaysAgo },
+  }).lean();
+
+  if (!logs.length) return { peakTime: null, peakArea: null, peakPct: 0 };
+
+  // Count by hour
+  const hourCounts = {};
+  for (const log of logs) {
+    const h = new Date(log.createdAt).getHours();
+    hourCounts[h] = (hourCounts[h] || 0) + 1;
+  }
+  const peakHour = Object.entries(hourCounts).sort((a, b) => b[1] - a[1])[0];
+  const peakHourNum = parseInt(peakHour[0]);
+  const total = logs.length;
+  const peakPct = Math.round((peakHour[1] / total) * 100);
+
+  const ampm = peakHourNum >= 12 ? 'PM' : 'AM';
+  const h12 = peakHourNum % 12 || 12;
+  const peakTime = `${h12}:00 ${ampm}`;
+
+  // Find most common area (map name) from peak hour logs
+  const peakLogs = logs.filter((l) => new Date(l.createdAt).getHours() === peakHourNum);
+  const areaCounts = {};
+  for (const log of peakLogs) {
+    if (log.metadata?.slotId) {
+      const shape = await Shape.findById(log.metadata.slotId).select('mapId').lean();
+      if (shape?.mapId) {
+        const key = shape.mapId.toString();
+        areaCounts[key] = (areaCounts[key] || 0) + 1;
+      }
+    }
+  }
+  let peakArea = null;
+  if (Object.keys(areaCounts).length) {
+    const topMapId = Object.entries(areaCounts).sort((a, b) => b[1] - a[1])[0][0];
+    const map = await Map.findById(topMapId).select('name').lean();
+    peakArea = map?.name || null;
+  }
+
+  return { peakTime, peakArea, peakPct };
+};
+
+exports.calculateUsersByCourse = async ({ courseId } = {}) => {
+  const Course = require('../models/courseModel');
+  const yearLevels = ['1st', '2nd', '3rd', '4th'];
+
+  // If no course selected, use first course
+  let course = null;
+  if (courseId) {
+    course = await Course.findById(courseId).select('_id name').lean();
+  } else {
+    course = await Course.findOne().select('_id name').lean();
+  }
+
+  if (!course) return { results: [], total: 0, course: null, courses: [] };
+
+  const courses = await Course.find().select('_id name').lean();
+
+  const results = await Promise.all(
+    yearLevels.map(async (yl) => {
+      const count = await Student.countDocuments({ course: course._id, yearLevel: yl });
+      return { yearLevel: yl, count };
+    })
+  );
+
+  const total = results.reduce((s, r) => s + r.count, 0);
+  return { results, total, course, courses };
+};
+
 //Generate info pdf system report summary
 exports.generateReportIntoPDF = ({ summary, semester, parking }) => {
   if (!summary || !semester || !parking) return;

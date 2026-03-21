@@ -130,7 +130,8 @@ exports.getUsersInformation = async (req) => {
 
     allUsers.push(viewModel);
   }
-  return { allUsers, current: allUsers.length + skip, total: allUsers.length };
+  const total = await User.countDocuments(query);
+  return { allUsers, current: allUsers.length + skip, total };
 };
 
 exports.updateInformation = async (superAdmin, id, data, session) => {
@@ -445,30 +446,76 @@ exports.updatePassword = async ({ token, password }) => {
   return newUser;
 };
 
-exports.getSearchUserData = async ({ username }) => {
-  const users = await User.find({
-    username: { $regex: username, $options: 'i' },
-    role: { $nin: 'super admin' },
-  }).limit(6);
+exports.getSearchUserData = async ({ q }) => {
+  const Guard = require('../models/guardModel');
+  const Faculty = require('../models/facultyModel');
 
-  let userData = [];
-  for (const user of users) {
-    let data = {};
-    switch (user.role) {
-      case 'student':
-        data = await Student.findOne({ userId: user._id }).select('-_id');
-        break;
-      case 'guard':
-        DataTransferItem = await Student.findOne({ userId: user._id }).select(
-          '-_id',
-        );
-        break;
-      case 'faculty':
-        data = await Student.findOne({ userId: user._id }).select('-_id');
-        break;
-    }
+  // Search users by username or email first
+  const usersByCredential = await User.find({
+    $or: [
+      { username: { $regex: q, $options: 'i' } },
+      { email: { $regex: q, $options: 'i' } },
+    ],
+    role: { $nin: ['super admin'] },
+  }).limit(10);
 
-    userData.push({ ...user.toObject(), data });
+  // Search students/faculty/guards by name
+  const nameQuery = { $regex: q, $options: 'i' };
+  const [studentMatches, facultyMatches, guardMatches] = await Promise.all([
+    Student.find({
+      $or: [
+        { 'name.firstName': nameQuery },
+        { 'name.lastName': nameQuery },
+        { 'name.middleName': nameQuery },
+      ],
+    }).select('userId name').limit(10),
+    Faculty.find({
+      $or: [
+        { 'name.firstName': nameQuery },
+        { 'name.lastName': nameQuery },
+      ],
+    }).select('userId name').limit(10),
+    Guard.find({
+      $or: [
+        { 'name.firstName': nameQuery },
+        { 'name.lastName': nameQuery },
+      ],
+    }).select('userId name').limit(10),
+  ]);
+
+  const nameMatchedUserIds = [
+    ...studentMatches.map((s) => s.userId?.toString()),
+    ...facultyMatches.map((f) => f.userId?.toString()),
+    ...guardMatches.map((g) => g.userId?.toString()),
+  ].filter(Boolean);
+
+  const usersByName = nameMatchedUserIds.length
+    ? await User.find({
+        _id: { $in: nameMatchedUserIds },
+        role: { $nin: ['super admin'] },
+      }).limit(10)
+    : [];
+
+  // Merge and deduplicate
+  const seen = new Set();
+  const merged = [];
+  for (const u of [...usersByCredential, ...usersByName]) {
+    const key = u._id.toString();
+    if (!seen.has(key)) { seen.add(key); merged.push(u); }
+  }
+
+  const allNameMaps = [
+    ...studentMatches.map((s) => ({ id: s.userId?.toString(), name: s.name })),
+    ...facultyMatches.map((f) => ({ id: f.userId?.toString(), name: f.name })),
+    ...guardMatches.map((g) => ({ id: g.userId?.toString(), name: g.name })),
+  ];
+
+  const userData = [];
+  for (const user of merged.slice(0, 6)) {
+    const obj = user.toObject();
+    const nameEntry = allNameMaps.find((n) => n.id === user._id.toString());
+    if (nameEntry) obj.name = nameEntry.name;
+    userData.push(obj);
   }
   return userData;
 };

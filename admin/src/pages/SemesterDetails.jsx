@@ -1,19 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import useFetch from "../hooks/useFetch";
-import {
-  ArrowLeft,
-  Info,
-  Calendar,
-  DollarSign,
-  CheckCircle,
-} from "lucide-react";
+import useDark from "../hooks/useDark";
+import { ArrowLeft, Info, Calendar, DollarSign, CheckCircle } from "lucide-react";
 
 export default function SemesterDetails() {
   const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
   const { fetchData } = useFetch();
+  const { dark, border } = useDark();
   const [semester, setSemester] = useState(location.state?.semester || null);
   const [loading, setLoading] = useState(!semester);
 
@@ -70,16 +66,12 @@ export default function SemesterDetails() {
 
   if (!semester) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8 px-4">
+      <div className="min-h-screen py-8 px-4">
         <div className="max-w-4xl mx-auto">
-          <button
-            onClick={() => navigate("/semesters")}
-            className="flex items-center gap-2 text-violet-500 hover:text-violet-600 mb-4"
-          >
-            <ArrowLeft size={18} />
-            <span>Back to Semesters</span>
+          <button onClick={() => navigate("/semesters")} className="flex items-center gap-2 text-violet-500 hover:text-violet-600 mb-4">
+            <ArrowLeft size={18} /><span>Back to Semesters</span>
           </button>
-          <div className="bg-white rounded-lg p-8 text-center">
+          <div className={`rounded-lg p-8 text-center ${dark ? 'bg-[#2f2f2f]' : 'bg-white'}`}>
             <p className="text-gray-500">Semester not found</p>
           </div>
         </div>
@@ -99,84 +91,45 @@ export default function SemesterDetails() {
             <ArrowLeft size={18} />
             <span>Back to Semesters</span>
           </button>
-          <h1 className="text-3xl font-bold text-gray-800">{semester.name}</h1>
+          <h1 className={`text-3xl font-bold ${dark ? 'text-gray-100' : 'text-gray-800'}`}>{semester.name}</h1>
           <p className="text-gray-500 mt-2">Semester Details & Statistics</p>
         </div>
 
-        {/* Main Details Card */}
-        <div className="bg-white rounded-lg p-8 mb-6">
+        <div className={`rounded-lg p-8 mb-6 border ${border} ${dark ? 'bg-[#2f2f2f]' : 'bg-white'}`}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Left Column */}
             <div className="space-y-6">
-              {/* Dates */}
               <div>
                 <div className="flex items-center gap-3 mb-3">
                   <Calendar size={20} className="text-violet-500" />
-                  <h3 className="font-semibold text-gray-700">Duration</h3>
+                  <h3 className={`font-semibold ${dark ? 'text-gray-200' : 'text-gray-700'}`}>Duration</h3>
                 </div>
                 <div className="ml-8 space-y-2">
-                  <div>
-                    <p className="text-xs text-gray-400">Start Date</p>
-                    <p className="text-sm font-medium text-gray-800">
-                      {formatDate(semester.startDate)}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-400">End Date</p>
-                    <p className="text-sm font-medium text-gray-800">
-                      {formatDate(semester.endDate)}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-400">Total Duration</p>
-                    <p className="text-sm font-medium text-gray-800">
-                      {calculateDuration(semester.startDate, semester.endDate)}
-                    </p>
-                  </div>
+                  <div><p className="text-xs text-gray-400">Start Date</p><p className={`text-sm font-medium ${dark ? 'text-gray-200' : 'text-gray-800'}`}>{formatDate(semester.startDate)}</p></div>
+                  <div><p className="text-xs text-gray-400">End Date</p><p className={`text-sm font-medium ${dark ? 'text-gray-200' : 'text-gray-800'}`}>{formatDate(semester.endDate)}</p></div>
+                  <div><p className="text-xs text-gray-400">Total Duration</p><p className={`text-sm font-medium ${dark ? 'text-gray-200' : 'text-gray-800'}`}>{calculateDuration(semester.startDate, semester.endDate)}</p></div>
                 </div>
               </div>
-
-              {/* Status */}
               <div>
                 <div className="flex items-center gap-3 mb-3">
                   <CheckCircle size={20} className="text-green-500" />
-                  <h3 className="font-semibold text-gray-700">Status</h3>
+                  <h3 className={`font-semibold ${dark ? 'text-gray-200' : 'text-gray-700'}`}>Status</h3>
                 </div>
                 <div className="ml-8">
-                  <span
-                    className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${
-                      semester.status === "active"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-gray-100 text-gray-700"
-                    }`}
-                  >
+                  <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${semester.status === "active" ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-700"}`}>
                     {semester.status === "active" ? "Active" : "Expired"}
                   </span>
                 </div>
               </div>
             </div>
-
-            {/* Right Column */}
             <div className="space-y-6">
-              {/* Pricing */}
               <div>
                 <div className="flex items-center gap-3 mb-3">
                   <DollarSign size={20} className="text-violet-500" />
-                  <h3 className="font-semibold text-gray-700">Pricing</h3>
+                  <h3 className={`font-semibold ${dark ? 'text-gray-200' : 'text-gray-700'}`}>Pricing</h3>
                 </div>
                 <div className="ml-8 space-y-2">
-                  <div>
-                    <p className="text-xs text-gray-400">Slot Price</p>
-                    <p className="text-lg font-bold text-gray-800">
-                      ₱{semester.slotPrice.toLocaleString()}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-400">Total Revenue</p>
-                    <p className="text-lg font-bold text-green-600">
-                      ₱{(semester.revenue || 0).toLocaleString()}
-                    </p>
-                  </div>
+                  <div><p className="text-xs text-gray-400">Slot Price</p><p className={`text-lg font-bold ${dark ? 'text-gray-200' : 'text-gray-800'}`}>₱{semester.slotPrice.toLocaleString()}</p></div>
+                  <div><p className="text-xs text-gray-400">Total Revenue</p><p className="text-lg font-bold text-green-600">₱{(semester.revenue || 0).toLocaleString()}</p></div>
                 </div>
               </div>
             </div>

@@ -15,7 +15,8 @@ export default function useApiRequest() {
 
       if (response) return response;
     } catch (error) {
-      setError(error.response?.data?.error || 'Something went wrong');
+      console.log('[API ERROR]', error.message, error.response?.status, JSON.stringify(error.response?.data));
+      setError(error.response?.data?.error || error.message || 'Something went wrong');
     } finally {
       setLoading(false);
     }

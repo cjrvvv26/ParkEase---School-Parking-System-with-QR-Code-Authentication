@@ -26,7 +26,6 @@ export default function Header() {
   const searchRef = useRef(null);
   const settingsRef = useRef(null);
   const { user } = useSelector((state) => state.auth);
-  console.log(user);
 
   const dispatch = useDispatch();
   const debounceQuery = useDebounce(query, 500);
@@ -136,11 +135,11 @@ export default function Header() {
   );
 
   const handleUserSearch = async () => {
-    const result = await fetchData(`/user/search?username=${debounceQuery}`, {
+    if (!debounceQuery.trim()) { setUsers([]); return; }
+    const result = await fetchData(`/user/search?q=${encodeURIComponent(debounceQuery)}`, {
       method: 'GET',
     });
-    console.log(result);
-    setUsers(result);
+    setUsers(Array.isArray(result) ? result : []);
   };
 
   useEffect(() => {
@@ -200,7 +199,7 @@ export default function Header() {
           placeholder='Search'
           onFocus={() => setOnFocus(true)}
           onChange={(e) => setQuery(e.target.value)}
-          className='flex-1 h-full outline-none'
+          className={`flex-1 h-full outline-none bg-transparent ${dark ? 'text-gray-200 placeholder-gray-500' : 'text-gray-700'}`}
         />
         <div className={`flex text-xs text-gray-400 mr-2 items-center justify-center gap-1 px-2 rounded-xl h-9 ${dark ? 'bg-[#3a3a3a]' : 'bg-white'}`}>
           <span className={`py-1 px-2 text-[10px] rounded-lg ${dark ? 'bg-[#2f2f2f]' : 'bg-gray-100'}`}>
@@ -253,9 +252,9 @@ export default function Header() {
                     )}
 
                     <div className='flex flex-col'>
-                      <span>{`${user.data.name?.firstName} ${user.data.name?.middleName} ${user.data.name?.lastName}`}</span>
+                      <span>{[user.name?.firstName, user.name?.middleName, user.name?.lastName].filter(Boolean).join(' ') || user.username}</span>
                       <span className='text-[10px] group-hover:text-gray-500 text-gray-400'>
-                        {user.role}
+                        {user.email || user.role}
                       </span>
                     </div>
                   </Link>
@@ -266,7 +265,7 @@ export default function Header() {
         ) : !debounceQuery && onFocus ? (
           <div className='absolute top-13 w-full border-gray-200 border bg-white rounded-xl py-5'>
             <p className='text-center text-xs text-gray-400'>
-              You can search username and pages
+              Search by name, email, username or page
             </p>
           </div>
         ) : null}

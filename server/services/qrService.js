@@ -49,12 +49,34 @@ exports.guardScan = async (qrData, guardId) => {
     const occupiedSlot = await Slot.findOne({ occupiedBy: user._id });
     if (occupiedSlot) {
       const wasExclusive = occupiedSlot.assignedStudentId?.equals(user._id);
+      const exitTime = new Date();
+      const durationMs = occupiedSlot.entryTime ? exitTime - new Date(occupiedSlot.entryTime) : 0;
+      const durationMins = Math.round(durationMs / 60000);
+
       occupiedSlot.isOccupied = false;
       occupiedSlot.occupiedBy = null;
       occupiedSlot.entryTime = null;
-      occupiedSlot.endTime = new Date();
+      occupiedSlot.endTime = exitTime;
       occupiedSlot.status = wasExclusive ? 'exclusive' : 'available';
       await occupiedSlot.save();
+
+      // Log the unpark with duration and slot info
+      const shape = await require('../models/shapeModel').findById(occupiedSlot.slotId).select('metadata.label mapId').populate('mapId', 'name');
+      await ActivityLog.create({
+        userId: user._id,
+        actionType: 'parking',
+        action: 'UNPARKED',
+        description: `${fullName} vacated slot ${occupiedSlot.slotNumber}.`,
+        entityType: 'Slot',
+        entityId: occupiedSlot._id,
+        metadata: {
+          slotNumber: occupiedSlot.slotNumber,
+          slotLabel: shape?.metadata?.label || occupiedSlot.slotNumber,
+          mapName: shape?.mapId?.name || null,
+          duration: durationMins,
+          guardId,
+        },
+      });
     }
 
     message = `Exit recorded. See you next time, ${firstName}!`;
@@ -64,15 +86,15 @@ exports.guardScan = async (qrData, guardId) => {
     notifMessage = `Hey ${firstName}! Your exit has been recorded. See you next time!`;
   }
 
-  // Activity log
+  // Activity log — entry/exit (userId = the scanned user so it shows on their profile)
   await ActivityLog.create({
-    userId: guardId,
-    actionType: 'gate',
+    userId: user._id,
+    actionType: 'parking',
     action,
     description,
     entityType: 'Attendance',
     entityId: user._id,
-    metadata: { scannedUserId: user._id, role: user.role },
+    metadata: { scannedUserId: user._id, guardId, role: user.role },
   });
 
   // Notification for the scanned user
@@ -141,6 +163,16 @@ exports.verifySlotData = async (data) => {
     slot.status = 'occupied';
     await slot.save();
     message = "You're now in your exclusive slot";
+    const shape = await require('../models/shapeModel').findById(slot.slotId).select('metadata.label mapId').populate('mapId', 'name');
+    await ActivityLog.create({
+      userId,
+      actionType: 'parking',
+      action: 'PARKED',
+      description: `User parked in exclusive slot ${slot.slotNumber}.`,
+      entityType: 'Slot',
+      entityId: slot._id,
+      metadata: { slotNumber: slot.slotNumber, slotLabel: shape?.metadata?.label || slot.slotNumber, mapName: shape?.mapId?.name || null, exclusive: true },
+    });
   } else if (
     !slot.entryTime &&
     slot.assignedStudentId &&
@@ -152,6 +184,16 @@ exports.verifySlotData = async (data) => {
     slot.occupiedBy = userId;
     await slot.save();
     message = "Warning: This is someone's slot";
+    const shape2 = await require('../models/shapeModel').findById(slot.slotId).select('metadata.label mapId').populate('mapId', 'name');
+    await ActivityLog.create({
+      userId,
+      actionType: 'parking',
+      action: 'PARKED',
+      description: `User parked in an assigned slot ${slot.slotNumber} (not their own).`,
+      entityType: 'Slot',
+      entityId: slot._id,
+      metadata: { slotNumber: slot.slotNumber, slotLabel: shape2?.metadata?.label || slot.slotNumber, mapName: shape2?.mapId?.name || null, exclusive: false },
+    });
   } else if (!slot.entryTime && !slot.assignedStudentId) {
     slot.entryTime = Date.now();
     slot.isOccupied = true;
@@ -159,6 +201,16 @@ exports.verifySlotData = async (data) => {
     slot.status = 'occupied';
     await slot.save();
     message = 'Thanks for parking!';
+    const shape3 = await require('../models/shapeModel').findById(slot.slotId).select('metadata.label mapId').populate('mapId', 'name');
+    await ActivityLog.create({
+      userId,
+      actionType: 'parking',
+      action: 'PARKED',
+      description: `User parked in available slot ${slot.slotNumber}.`,
+      entityType: 'Slot',
+      entityId: slot._id,
+      metadata: { slotNumber: slot.slotNumber, slotLabel: shape3?.metadata?.label || slot.slotNumber, mapName: shape3?.mapId?.name || null, exclusive: false },
+    });
   }
 
   return message;

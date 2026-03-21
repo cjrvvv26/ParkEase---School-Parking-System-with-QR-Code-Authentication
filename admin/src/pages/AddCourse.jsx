@@ -3,12 +3,14 @@ import DefaultInput from '../components/forms/DefaultInput';
 import useFetch from '../hooks/useFetch';
 import { Link, useNavigate } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
+import useDark from '../hooks/useDark';
 
 export default function AddCourse() {
   const navigate = useNavigate();
   const [course, setCourse] = useState('');
   const [description, setDescription] = useState('');
   const { fetchData, loading, setError, error } = useFetch();
+  const { dark } = useDark();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -38,7 +40,7 @@ export default function AddCourse() {
         </Link>
 
         <div className='flex flex-col'>
-          <h1 className='font-bold text-3xl'>Add Course</h1>
+          <h1 className={`font-bold text-3xl ${dark ? 'text-gray-100' : ''}`}>Add Course</h1>
           <p className='text-gray-400'>Add new course in the system.</p>
         </div>
       </header>

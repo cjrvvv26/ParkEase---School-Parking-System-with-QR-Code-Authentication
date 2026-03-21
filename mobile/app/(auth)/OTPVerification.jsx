@@ -16,6 +16,7 @@ import { useDispatch } from 'react-redux';
 import { verifyOtp, resendOtp } from '../services/authService';
 import { login } from '../features/authSlicer';
 import useApiRequest from '../hooks/useApiRequest';
+import api from '../services/api';
 
 const COUNTDOWN = 60;
 const DIGITS = 6;
@@ -323,7 +324,7 @@ export default function OTPVerification() {
               disabled={loading}
               onPress={async () => {
                 try {
-                  await api.delete('super-admin/auth/cancel-verification', { data: { email } });
+                  await api.delete('auth/cancel-verification', { data: { email } });
                 } catch (_) {}
                 await AsyncStorage.removeItem('hasVerification');
                 router.replace('/SignIn');

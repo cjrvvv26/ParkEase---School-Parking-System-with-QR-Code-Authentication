@@ -6,7 +6,7 @@ const otpSchema = new Schema(
     email: { type: String, required: true, unique: true },
     payload: { type: Schema.Types.Mixed, required: true },
     otp: { type: String, required: true },
-    type: { type: String, enum: ["register", "login"] },
+    type: { type: String, enum: ["register", "login", "forgot-password"] },
     expiresAt: { type: Date, required: true },
   },
   { timestamps: true }

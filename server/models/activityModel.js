@@ -6,12 +6,12 @@ const activityLogSchema = new Schema(
     userId: {
       type: Schema.Types.ObjectId,
       ref: "user",
-      default: null, // null for system actions
+      default: null,
     },
 
     actionType: {
       type: String,
-      enum: ["system", "users", "parking", "gate"],
+      enum: ["system", "users", "parking", "map"],
       required: true,
     },
 
@@ -27,13 +27,15 @@ const activityLogSchema = new Schema(
         "SIGN_IN",
         "REGISTER",
         "UPDATE_MAP",
+        "DELETE_MAP",
+        "PARKED",
+        "UNPARKED",
       ],
     },
 
     description: {
       type: String,
       required: true,
-      // Human-readable summary
     },
 
     entityType: {
@@ -45,6 +47,7 @@ const activityLogSchema = new Schema(
         "SlotAssignment",
         "Theme",
         "Attendance",
+        "Map",
       ],
       required: true,
     },
@@ -53,15 +56,11 @@ const activityLogSchema = new Schema(
       type: Schema.Types.ObjectId,
       refPath: "entityType",
       default: null,
-      // dynamically reference the proper collection
     },
 
     metadata: {
       type: Schema.Types.Mixed,
       default: {},
-      /* Example metadata: 
-       { semesterId, amount, slotId, oldValue, newValue, ip, device } 
-    */
     },
   },
   { timestamps: true },

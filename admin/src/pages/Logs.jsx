@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react';
-import { ClipboardList, ParkingCircle, Settings, Users } from 'lucide-react';
+import { ClipboardList, ParkingCircle, Settings, Users, Map } from 'lucide-react';
 import useFetch from '../hooks/useFetch';
 import useDark from '../hooks/useDark';
 
 export default function Logs() {
   const filterList = [
-    { icon: <ClipboardList strokeWidth={1.5} size={20} />, label: 'All' },
-    { icon: <Users strokeWidth={1.5} size={20} />, label: 'Users' },
-    { icon: <ParkingCircle strokeWidth={1.5} size={20} />, label: 'Parking' },
-    { icon: <Settings strokeWidth={1.5} size={20} />, label: 'System' },
+    { icon: <ClipboardList strokeWidth={1.5} size={20} />, label: 'All', value: 'all' },
+    { icon: <Users strokeWidth={1.5} size={20} />, label: 'Users', value: 'users' },
+    { icon: <ParkingCircle strokeWidth={1.5} size={20} />, label: 'Parking', value: 'parking' },
+    { icon: <Map strokeWidth={1.5} size={20} />, label: 'Map', value: 'map' },
+    { icon: <Settings strokeWidth={1.5} size={20} />, label: 'System', value: 'system' },
   ];
   const { fetchData, loading, error } = useFetch();
   const [activeIndex, setActiveIndex] = useState(0);
@@ -49,11 +50,11 @@ export default function Logs() {
       </div>
 
       <div className='flex flex-1 flex-col'>
-        <div className={`border-b-2 ${border} px-5 gap-3 grid grid-cols-[230px_230px_230px_230px] place-items-center`}>
+        <div className={`border-b-2 ${border} px-5 gap-3 grid grid-cols-[repeat(5,minmax(0,1fr))] place-items-center`}>
           {filterList.map((header, index) => (
             <button
               key={index}
-              onClick={() => { setActiveIndex(index); setActionType(header.label.toLowerCase()); }}
+              onClick={() => { setActiveIndex(index); setActionType(header.value); }}
               className={`${activeIndex === index ? "before:content-[''] before:absolute before:w-full before:-bottom-[1.5px] before:rounded-ss-md before:rounded-se-md before:border-b-4 before:border-violet-500 text-violet-500" : ''} flex gap-3 items-center py-2 justify-center w-full rounded-ss-xl rounded-se-xl relative cursor-pointer z-0 ${dark ? 'hover:bg-violet-500/10' : 'hover:bg-violet-100'} hover:text-violet-500`}
             >
               {header.icon}
