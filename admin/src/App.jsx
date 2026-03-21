@@ -45,27 +45,29 @@ export default function App() {
   const { fetchData } = useFetch();
   const dispatch = useDispatch();
   const [checkSession, setCheckSession] = useState(true);
+  const [superAdminExists, setSuperAdminExists] = useState(false);
 
   useEffect(() => {
     const verifyUserSession = async () => {
       try {
-        const data = await fetchData('super-admin/me', {
-          method: 'GET',
-          timeout: 5000,
-        });
-        console.log(data);
-
-        dispatch(login(data));
+        const [sessionData, existsData] = await Promise.all([
+          fetchData('super-admin/me', { method: 'GET', timeout: 5000 }),
+          fetchData('super-admin/exists', { method: 'GET' }),
+        ]);
+        dispatch(login(sessionData));
+        setSuperAdminExists(existsData.exists);
       } catch (error) {
+        // exists check may have succeeded even if session failed — re-fetch exists separately
+        try {
+          const existsData = await fetchData('super-admin/exists', { method: 'GET' });
+          setSuperAdminExists(existsData.exists);
+        } catch (_) {}
         dispatch(logout());
 
         if (error.code === 'ECONNABORTED') {
           console.error('Session check timed out');
         } else if (error.response) {
-          console.error(
-            'Session check error:',
-            error.response.data?.error || 'Unauthorized',
-          );
+          console.error('Session check error:', error.response.data?.error || 'Unauthorized');
         } else {
           console.error('Network or unknown error:', error.message);
         }
@@ -104,7 +106,7 @@ export default function App() {
         },
         {
           path: 'sign-up',
-          element: <Registration />,
+          element: superAdminExists ? <Navigate to='sign-in' replace /> : <Registration />,
         },
         {
           path: 'email',

@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { Moon, Sun, ChevronLeft, LogOut } from 'lucide-react-native';
+import { Moon, Sun, ChevronLeft, LogOut, KeyRound, ChevronRight } from 'lucide-react-native';
 import { View, Text, ScrollView, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch } from 'react-redux';
@@ -222,6 +222,59 @@ export default function Settings() {
                   />
                 )}
               </View>
+            </Pressable>
+          </View>
+        </View>
+
+        {/* Security */}
+        <View style={{ marginHorizontal: 20, marginBottom: 24 }}>
+          <Text
+            style={{
+              fontFamily: 'Poppins600',
+              fontSize: 13,
+              color: t.textFaint,
+              marginBottom: 10,
+              textTransform: 'uppercase',
+              letterSpacing: 0.8,
+            }}
+          >
+            Security
+          </Text>
+          <View
+            style={{
+              backgroundColor: t.card,
+              borderRadius: 16,
+              borderWidth: 1,
+              borderColor: t.cardBorder,
+            }}
+          >
+            <Pressable
+              onPress={() => router.push('/ChangePassword')}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                padding: 16,
+              }}
+            >
+              <View
+                style={{
+                  backgroundColor: t.primaryLight,
+                  padding: 10,
+                  borderRadius: 12,
+                  marginRight: 14,
+                }}
+              >
+                <KeyRound color={t.primary} size={20} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontFamily: 'Poppins600', fontSize: 14, color: t.text }}>
+                  Change Password
+                </Text>
+                <Text style={{ fontFamily: 'Poppins400', fontSize: 12, color: t.textFaint, marginTop: 1 }}>
+                  Update your account password
+                </Text>
+              </View>
+              <ChevronRight color={t.textFaint} size={18} />
             </Pressable>
           </View>
         </View>

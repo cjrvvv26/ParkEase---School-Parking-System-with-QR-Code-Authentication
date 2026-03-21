@@ -6,7 +6,7 @@ import Modal from '../components/Modal';
 import { useState, useEffect } from 'react';
 import useFetch from '../hooks/useFetch';
 import Details from '../components/Parking/Details';
-import { QrCode } from 'lucide-react';
+import { QrCode, Eye, X } from 'lucide-react';
 import useDark from '../hooks/useDark';
 
 export default function Parking() {
@@ -24,6 +24,7 @@ export default function Parking() {
   const [selectedMap, setSelectedMap] = useState(null);
   const [slotQRBtn, toggleSlotQRBtn] = useState(false);
   const [confirmDeleteMap, setConfirmDeleteMap] = useState(false);
+  const [isPreview, setIsPreview] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { fetchData, loading } = useFetch();
@@ -283,7 +284,7 @@ export default function Parking() {
                   });
                 }
               }}
-              className='flex items-center gap-1 py-2 px-3 rounded-full  text-violet-500 border-violet-500 border'
+              className='flex items-center gap-1 py-2 px-3 rounded-full text-violet-500 border-violet-500 border'
             >
               <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='size-4'>
                 <path strokeLinecap='round' strokeLinejoin='round' d='M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z' />
@@ -291,6 +292,16 @@ export default function Parking() {
               </svg>
               <p>Manage</p>
             </button>
+            {/* Preview */}
+            {maps && maps.length > 0 && (
+              <button
+                onClick={() => setIsPreview(true)}
+                className={`flex items-center gap-1 py-2 px-3 rounded-full border transition ${dark ? 'border-[#3a3a3a] text-gray-300 hover:bg-[#3a3a3a]' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+              >
+                <Eye size={16} strokeWidth={1.5} />
+                <p>Preview</p>
+              </button>
+            )}
             {/* Delete Map */}
             {maps && maps.length > 0 && (
               <button
@@ -374,26 +385,29 @@ export default function Parking() {
             {/* Legends */}
             <div className='flex items-center justify-between absolute top-5 right-5'>
               <div className='flex gap-3'>
-                <div className='flex items-center gap-1 text-xs text-gray-400'>
-                  <div class='relative flex items-center justify-center w-10 h-10'>
-                    <div class='absolute w-9 h-9 rounded-full bg-green-100 opacity-50 z-10'></div>
-
-                    <div class='absolute w-6 h-6 rounded-full bg-green-300 opacity-[.3] z-0'></div>
-
-                    <div class='relative w-3 h-3 rounded-full bg-green-500 -z-0'></div>
+                <div className={`flex items-center gap-1 text-xs ${dark ? 'text-gray-400' : 'text-gray-400'}`}>
+                  <div className='relative flex items-center justify-center w-10 h-10'>
+                    <div className='absolute w-9 h-9 rounded-full bg-green-100 opacity-50 z-10'></div>
+                    <div className='absolute w-6 h-6 rounded-full bg-green-300 opacity-[.3] z-0'></div>
+                    <div className='relative w-3 h-3 rounded-full bg-green-500'></div>
                   </div>
-
                   <p>Available</p>
                 </div>
-                <div className='flex items-center gap-1 text-xs text-gray-400'>
-                  <div class='relative flex items-center justify-center w-10 h-10'>
-                    <div class='absolute w-9 h-9 rounded-full bg-rose-100 opacity-50 z-10'></div>
-
-                    <div class='absolute w-6 h-6 rounded-full bg-rose-300 opacity-[.3] z-0'></div>
-
-                    <div class='relative w-3 h-3 rounded-full bg-rose-500 -z-0'></div>
+                <div className={`flex items-center gap-1 text-xs ${dark ? 'text-gray-400' : 'text-gray-400'}`}>
+                  <div className='relative flex items-center justify-center w-10 h-10'>
+                    <div className='absolute w-9 h-9 rounded-full bg-rose-100 opacity-50 z-10'></div>
+                    <div className='absolute w-6 h-6 rounded-full bg-rose-300 opacity-[.3] z-0'></div>
+                    <div className='relative w-3 h-3 rounded-full bg-rose-500'></div>
                   </div>
                   <p>Occupied</p>
+                </div>
+                <div className={`flex items-center gap-1 text-xs ${dark ? 'text-gray-400' : 'text-gray-400'}`}>
+                  <div className='relative flex items-center justify-center w-10 h-10'>
+                    <div className='absolute w-9 h-9 rounded-full bg-amber-100 opacity-50 z-10'></div>
+                    <div className='absolute w-6 h-6 rounded-full bg-amber-300 opacity-[.3] z-0'></div>
+                    <div className='relative w-3 h-3 rounded-full bg-amber-500'></div>
+                  </div>
+                  <p>Exclusive</p>
                 </div>
               </div>
             </div>
@@ -420,6 +434,44 @@ export default function Parking() {
           <Details selectedShape={selectedShape} loading={loading} />
         </main>
       </div>
+      {isPreview && selectedMap && (
+        <div className='fixed inset-0 z-50 flex flex-col' style={{ background: dark ? '#1a1a1a' : '#f3f4f6' }}>
+          {/* Top bar */}
+          <div className={`flex items-center justify-between px-6 py-3 border-b shrink-0 ${dark ? 'bg-[#242424] border-[#3a3a3a]' : 'bg-white border-gray-200'}`}>
+            <div className='flex items-center gap-3'>
+              <span className={`font-semibold text-sm ${dark ? 'text-gray-200' : 'text-gray-700'}`}>{selectedMap.name}</span>
+              <span className='text-[11px] px-2 py-0.5 rounded-full bg-violet-100 text-violet-600 border border-violet-200'>Preview</span>
+            </div>
+            <div className='flex items-center gap-4'>
+              {/* Legend */}
+              <div className='flex items-center gap-4'>
+                {[['#22c55e', 'Available'], ['#f43f5e', 'Occupied'], ['#f59e0b', 'Exclusive']].map(([color, label]) => (
+                  <div key={label} className={`flex items-center gap-1.5 text-xs ${dark ? 'text-gray-400' : 'text-gray-500'}`}>
+                    <div className='w-2.5 h-2.5 rounded-full' style={{ background: color }} />
+                    <span>{label}</span>
+                  </div>
+                ))}
+              </div>
+              <button
+                onClick={() => setIsPreview(false)}
+                className={`p-1.5 rounded-lg text-gray-400 transition ${dark ? 'hover:bg-[#3a3a3a]' : 'hover:bg-gray-100'}`}
+              >
+                <X size={18} />
+              </button>
+            </div>
+          </div>
+          {/* Full-screen map */}
+          <div className='flex-1 flex items-center justify-center p-8'>
+            <div style={{ width: '100%', height: '100%' }}>
+              <DynamicMap
+                shapes={selectedMap.shapes}
+                width={selectedMap.width}
+                height={selectedMap.height}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

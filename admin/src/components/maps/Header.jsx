@@ -1,16 +1,23 @@
 import Button from './Button';
 import { Eye } from 'lucide-react';
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
 export default function Header({ areaName, onNew, onUndo, onRedo, onZoomIn, onZoomOut, onPreview, onSave, onDelete, isUpdateMode, isSaving = false }) {
   const { user, theme } = useSelector((s) => s.auth);
   const dark = theme === 'dark';
+  const navigate = useNavigate();
 
   return (
     <div className={`flex flex-col gap-3 text-xs p-2 border-b ${dark ? 'bg-[#242424] border-[#3a3a3a] text-gray-200' : 'bg-white border-gray-200 text-gray-700'}`}>
       <section className='flex relative justify-between'>
         <div className='flex gap-3 items-center'>
-          <h1 className='text-base font-semibold'>ParkEase - Map Editor</h1>
+          <h1
+            onClick={() => navigate('/parking')}
+            className='text-base font-semibold cursor-pointer hover:text-violet-500 transition'
+          >
+            ParkEase - Map Editor
+          </h1>
           <p className='py-1 px-2 rounded-sm border border-violet-500 text-violet-500'>BETA</p>
         </div>
         <p className='-translate-x-1/2 left-1/2 absolute font-semibold text-base'>{areaName || 'Admin Bldg'}</p>

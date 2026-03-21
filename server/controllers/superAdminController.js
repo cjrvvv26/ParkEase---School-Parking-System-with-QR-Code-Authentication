@@ -161,25 +161,35 @@ exports.identifyAccountByEmail = async (req, res) => {
     const user = await User.findOne({ email }).select(
       'email username role profileDetails _id',
     );
-    const data = {};
     if (!user) {
-      return res.status(404).json({ message: 'No account found' });
+      return res.status(404).json({ exists: false, message: 'No account found' });
     }
 
-    data.exists = true;
-    data.account = {
-      email: user.email,
-      username: user.username,
-      role: user.role,
-      profileDetails: user.profileDetails,
-    };
+    const Guard = require('../models/guardModel');
+    const Faculty = require('../models/facultyModel');
+    const allModels = { 'super admin': SuperAdmin, student: Student, faculty: Faculty, guard: Guard };
+    const RoleModel = allModels[user.role];
+    const roleRecord = RoleModel ? await RoleModel.findOne({ userId: user._id }).select('name') : null;
 
-    const SAData = await SuperAdmin.findOne({ userId: user._id }).select(
-      'name',
-    );
-    data.account.fullName = SAData?.name || null;
+    let fullName = null;
+    if (roleRecord) {
+      if (typeof roleRecord.name === 'string') {
+        fullName = roleRecord.name;
+      } else if (roleRecord.name?.firstName) {
+        fullName = [roleRecord.name.firstName, roleRecord.name.middleName, roleRecord.name.lastName].filter(Boolean).join(' ');
+      }
+    }
 
-    res.status(200).json(data);
+    res.status(200).json({
+      exists: true,
+      account: {
+        email: user.email,
+        username: user.username,
+        role: user.role,
+        profileDetails: user.profileDetails,
+        fullName,
+      },
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

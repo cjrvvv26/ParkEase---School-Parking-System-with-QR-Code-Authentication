@@ -144,6 +144,10 @@ export default function MainLayout() {
         options={{ href: null, tabBarStyle: { display: 'none' } }}
       />
       <Tabs.Screen
+        name='ChangePassword'
+        options={{ href: null, tabBarStyle: { display: 'none' } }}
+      />
+      <Tabs.Screen
         name='Analytics'
         options={{
           title: 'Analytics',

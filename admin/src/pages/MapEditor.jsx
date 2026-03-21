@@ -6,7 +6,8 @@ import Header from "../components/maps/Header";
 import Modal from "../components/Modal";
 import useFetch from "../hooks/useFetch";
 import useDark from "../hooks/useDark";
-import { Building2, ImagePlus, AlignLeft, Tag, X } from "lucide-react";
+import DynamicMap from '../components/maps/DynamicMap';
+import { Building2, ImagePlus, AlignLeft, Tag, X } from 'lucide-react';
 
 function BuildingModal({ building, onChange, onSave, onClose, dark, border, input }) {
   const fileRef = useRef();
@@ -142,41 +143,40 @@ function SlotShape({
   onMouseDown,
   isDragging,
   isHovering,
+  isSelected,
   onMouseEnter,
   onMouseLeave,
   onBuildingClick,
+  shapeColor,
 }) {
   const renderShape = () => {
-    if (shape.geometry.shape === "rect") {
+    const cursorClass = isDragging ? 'cursor-grabbing' : isHovering ? 'cursor-grab' : 'cursor-default';
+    const active = isSelected || isDragging;
+    const stroke = active ? '#8e51ff' : 'none';
+    const strokeWidth = active ? '2' : '0';
+    const strokeDasharray = isDragging ? '5,3' : 'none';
+    if (shape.geometry.shape === 'rect') {
       return (
         <rect
           width={shape.geometry.width}
           height={shape.geometry.height}
-          fill="#d1d5dc"
-          className={
-            isDragging
-              ? "cursor-grabbing"
-              : isHovering
-                ? "cursor-grab"
-                : "cursor-default"
-          }
+          fill={shapeColor}
+          stroke={stroke}
+          strokeWidth={strokeWidth}
+          strokeDasharray={strokeDasharray}
+          className={cursorClass}
         />
       );
-    } else if (shape.geometry.shape === "polygon") {
-      const pointsStr = shape.geometry.points
-        .map((p) => `${p.x},${p.y}`)
-        .join(" ");
+    } else if (shape.geometry.shape === 'polygon') {
+      const pointsStr = shape.geometry.points.map((p) => `${p.x},${p.y}`).join(' ');
       return (
         <polygon
           points={pointsStr}
-          fill="#E5E7EB"
-          className={
-            isDragging
-              ? "cursor-grabbing"
-              : isHovering
-                ? "cursor-grab"
-                : "cursor-default"
-          }
+          fill={shapeColor}
+          stroke={stroke}
+          strokeWidth={strokeWidth}
+          strokeDasharray={strokeDasharray}
+          className={cursorClass}
         />
       );
     }
@@ -214,17 +214,16 @@ function SlotShape({
       >
         {renderShape()}
       </g>
-      <text
-        x={labelPos.x}
-        y={labelPos.y}
-        className="text-xs"
-        fill="#8e51ff"
-        fontSize="12"
-      >
-        {typeof shape.metadata?.label === "string"
-          ? shape.metadata.label
-          : "No Label"}
-      </text>
+      {(isSelected || isDragging) && (
+        <text
+          x={labelPos.x}
+          y={labelPos.y}
+          fill="#8e51ff"
+          fontSize="12"
+        >
+          {typeof shape.metadata?.label === 'string' ? shape.metadata.label : 'No Label'}
+        </text>
+      )}
       {shape.geometry.shape === "polygon" && (
         <g>
           <circle
@@ -295,8 +294,9 @@ export default function MapEditor() {
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
   const [isSaving, setIsSaving] = useState(false);
   const [confirmDeleteMap, setConfirmDeleteMap] = useState(false);
+  const [isPreview, setIsPreview] = useState(false);
   const { fetchData } = useFetch();
-  const { dark, border, input } = useDark();
+  const { dark, border, input, canvasBg, canvasOuterBg, canvasGridStroke, shapeColor } = useDark();
 
   useEffect(() => {
     setCurrentAreaName(initialAreaName || "");
@@ -499,9 +499,7 @@ export default function MapEditor() {
     setZoom((prev) => Math.max(0.1, prev * 0.8));
   };
 
-  const handlePreview = () => {
-    console.log("Preview mode");
-  };
+  const handlePreview = () => setIsPreview(true);
 
   const handleDeleteMap = async () => {
     try {
@@ -711,19 +709,19 @@ const handleNewSubmit = (e) => {
                   <path
                     d="M 50 0 L 0 0 0 50"
                     fill="none"
-                    stroke="#e5e7eb"
+                    stroke={canvasGridStroke}
                     strokeWidth="0.8"
                   />
                 </pattern>
               </defs>
 
-              {/* Extended draggable area - allows dragging way beyond canvas boundaries */}
+              {/* Extended draggable area */}
               <rect
                 x={-currentSvgSize.width / zoom}
                 y={-currentSvgSize.height / zoom}
                 width={(currentSvgSize.width * 4) / zoom}
                 height={(currentSvgSize.height * 4) / zoom}
-                fill="#f3f4f6"
+                fill={canvasOuterBg}
                 pointerEvents="auto"
               />
 
@@ -731,7 +729,7 @@ const handleNewSubmit = (e) => {
               <rect
                 width={currentSvgSize.width / zoom}
                 height={currentSvgSize.height / zoom}
-                fill="white"
+                fill={canvasBg}
                 pointerEvents="none"
               />
 
@@ -771,6 +769,7 @@ const handleNewSubmit = (e) => {
                   }
                   onMouseLeave={() => setHoveredShapeId(null)}
                   onBuildingClick={openBuildingModal}
+                  shapeColor={shapeColor}
                 />
               ))}
               {isDrawing && points.length > 1 && (
@@ -871,6 +870,40 @@ const handleNewSubmit = (e) => {
             input={input}
           />
         </Modal>
+      )}
+      {isPreview && (
+        <div className='fixed inset-0 z-50 flex flex-col' style={{ background: dark ? '#1a1a1a' : '#f3f4f6' }}>
+          {/* Top bar */}
+          <div className={`flex items-center justify-between px-6 py-3 border-b shrink-0 ${dark ? 'bg-[#242424] border-[#3a3a3a]' : 'bg-white border-gray-200'}`}>
+            <div className='flex items-center gap-3'>
+              <span className={`font-semibold text-sm ${dark ? 'text-gray-200' : 'text-gray-700'}`}>{currentAreaName || 'Preview'}</span>
+              <span className='text-[11px] px-2 py-0.5 rounded-full bg-violet-100 text-violet-600 border border-violet-200'>Preview</span>
+            </div>
+            <div className='flex items-center gap-4'>
+              <div className='flex items-center gap-4'>
+                {[['#22c55e', 'Available'], ['#f43f5e', 'Occupied'], ['#f59e0b', 'Exclusive']].map(([color, label]) => (
+                  <div key={label} className={`flex items-center gap-1.5 text-xs ${dark ? 'text-gray-400' : 'text-gray-500'}`}>
+                    <div className='w-2.5 h-2.5 rounded-full' style={{ background: color }} />
+                    <span>{label}</span>
+                  </div>
+                ))}
+              </div>
+              <button onClick={() => setIsPreview(false)} className={`p-1.5 rounded-lg text-gray-400 transition ${dark ? 'hover:bg-[#3a3a3a]' : 'hover:bg-gray-100'}`}>
+                <X size={18} />
+              </button>
+            </div>
+          </div>
+          {/* Full-screen map */}
+          <div className='flex-1 flex items-center justify-center p-8'>
+            <div style={{ width: '100%', height: '100%' }}>
+              <DynamicMap
+                shapes={shapes}
+                width={currentSvgSize.width}
+                height={currentSvgSize.height}
+              />
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -21,7 +21,7 @@ const facultySchema = new Schema({
     lastName: { type: String, trim: true, required: true },
   },
   phoneNo: { type: String, required: true },
-  QRCode: String,
+  QRCode: { url: String, public_id: String },
   entryTime: Date,
   outTime: Date,
   motorDetails,

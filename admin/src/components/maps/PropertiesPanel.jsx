@@ -17,14 +17,14 @@ function Field({ icon: Icon, label, children }) {
 
 function StyledInput({ value, onChange, type = 'text', suffix, dark }) {
   return (
-    <div className='flex items-center gap-1'>
+    <div className='flex items-center gap-1 min-w-0'>
       <input
         type={type}
         value={value}
         onChange={onChange}
-        className={`flex-1 border text-xs rounded-lg px-2.5 py-1.5 outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-400/20 transition ${dark ? 'bg-[#3a3a3a] border-[#4a4a4a] text-gray-200 placeholder-gray-500' : 'bg-gray-50 border-gray-200 text-gray-700'}`}
+        className={`min-w-0 w-full border text-xs rounded-lg px-2.5 py-1.5 outline-none focus:border-violet-400 focus:ring-1 focus:ring-violet-400/20 transition ${dark ? 'bg-[#3a3a3a] border-[#4a4a4a] text-gray-200 placeholder-gray-500' : 'bg-gray-50 border-gray-200 text-gray-700'}`}
       />
-      {suffix && <span className='text-gray-400 text-[11px]'>{suffix}</span>}
+      {suffix && <span className='text-gray-400 text-[11px] shrink-0'>{suffix}</span>}
     </div>
   );
 }
@@ -46,7 +46,7 @@ export default function PropertiesPanel({ selectedShape, onUpdateShape, onDelete
   const isBuilding = selectedShape?.metadata?.type === 'building';
   const isRect = selectedShape?.geometry?.shape === 'rect';
 
-  const panelCls = `w-72 h-[calc(100vh-94.4px)] border-l flex flex-col overflow-y-auto ${dark ? 'bg-[#242424] border-[#3a3a3a]' : 'bg-white border-gray-100'}`;
+  const panelCls = `w-64 min-w-0 h-[calc(100vh-94.4px)] border-l flex flex-col overflow-y-auto overflow-x-hidden ${dark ? 'bg-[#242424] border-[#3a3a3a]' : 'bg-white border-gray-100'}`;
   const sectionBorder = dark ? 'border-[#3a3a3a]' : 'border-gray-100';
   const headingText = dark ? 'text-gray-200' : 'text-gray-700';
   const mutedText = dark ? 'text-gray-500' : 'text-gray-300';
@@ -131,13 +131,17 @@ export default function PropertiesPanel({ selectedShape, onUpdateShape, onDelete
           {isRect && (
             <div className={`px-4 py-4 flex flex-col gap-4 border-b ${sectionBorder}`}>
               <p className={`text-[10px] uppercase tracking-widest font-semibold ${mutedText}`}>Geometry</p>
-              <div className='grid grid-cols-2 gap-3'>
-                <Field icon={Ruler} label='Height'>
-                  <StyledInput dark={dark} type='number' value={selectedShape.geometry?.height || ''} suffix='px' onChange={(e) => onUpdateShape({ ...selectedShape, geometry: { ...selectedShape.geometry, height: parseFloat(e.target.value) || 0 } })} />
-                </Field>
-                <Field icon={Ruler} label='Width'>
-                  <StyledInput dark={dark} type='number' value={selectedShape.geometry?.width || ''} suffix='px' onChange={(e) => onUpdateShape({ ...selectedShape, geometry: { ...selectedShape.geometry, width: parseFloat(e.target.value) || 0 } })} />
-                </Field>
+              <div className='grid grid-cols-2 gap-3 min-w-0'>
+                <div className='min-w-0'>
+                  <Field icon={Ruler} label='Height'>
+                    <StyledInput dark={dark} type='number' value={selectedShape.geometry?.height || ''} suffix='px' onChange={(e) => onUpdateShape({ ...selectedShape, geometry: { ...selectedShape.geometry, height: parseFloat(e.target.value) || 0 } })} />
+                  </Field>
+                </div>
+                <div className='min-w-0'>
+                  <Field icon={Ruler} label='Width'>
+                    <StyledInput dark={dark} type='number' value={selectedShape.geometry?.width || ''} suffix='px' onChange={(e) => onUpdateShape({ ...selectedShape, geometry: { ...selectedShape.geometry, width: parseFloat(e.target.value) || 0 } })} />
+                  </Field>
+                </div>
               </div>
               <Field icon={RotateCw} label='Rotation'>
                 <div className='flex items-center gap-2'>

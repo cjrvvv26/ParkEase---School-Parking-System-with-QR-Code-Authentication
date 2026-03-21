@@ -1,10 +1,10 @@
 import {
   View, Text, TextInput, Pressable,
-  KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator,
+  KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator, Image,
 } from 'react-native';
 import { useState, useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Mail, ChevronLeft, CircleUserIcon } from 'lucide-react-native';
+import { Mail, ChevronLeft, UserCircle } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from '../services/api';
@@ -27,7 +27,7 @@ export default function Recovery() {
   const [checking, setChecking] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const debounced = useDebounce(email, 500);
+  const debounced = useDebounce(email, 600);
 
   useEffect(() => {
     if (!debounced) { setAccountInfo(null); setError(''); return; }
@@ -37,10 +37,16 @@ export default function Recovery() {
       setChecking(true);
       try {
         const res = await api.post('super-admin/check-account', { email: debounced });
-        setAccountInfo(res.data?.exists ? res.data.account : null);
-        if (!res.data?.exists) setError('No account found with that email');
-      } catch (_) {
+        if (res.data?.exists) {
+          setAccountInfo(res.data.account);
+        } else {
+          setError('No account found with that email');
+        }
+      } catch (e) {
         setAccountInfo(null);
+        if (e.response?.status === 404) {
+          setError('No account found with that email');
+        }
       } finally {
         setChecking(false);
       }
@@ -53,8 +59,8 @@ export default function Recovery() {
     setLoading(true);
     setError('');
     try {
-      await api.post('auth/forgot-password/send-otp', { email });
-      await AsyncStorage.setItem('fp_email', email);
+      await api.post('auth/forgot-password/send-otp', { email: email.trim() });
+      await AsyncStorage.setItem('fp_email', email.trim());
       router.push('/ForgotOTP');
     } catch (e) {
       setError(e.response?.data?.error || 'Failed to send code');
@@ -83,50 +89,56 @@ export default function Recovery() {
           <View style={{ flex: 1, backgroundColor: t.card, borderTopLeftRadius: 32, borderTopRightRadius: 32, paddingHorizontal: 28, paddingTop: 36, paddingBottom: 40 }}>
 
             <Text style={{ fontFamily: 'Poppins700', fontSize: 22, color: t.text, marginBottom: 4 }}>Find your account</Text>
-            <Text style={{ fontFamily: 'Poppins400', fontSize: 13, color: t.textMuted, marginBottom: 28 }}>We'll verify your identity before resetting</Text>
-
-            {/* Account preview */}
-            <View style={{ minHeight: 72, marginBottom: 20 }}>
-              {checking && email ? (
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, backgroundColor: t.inputBg, borderRadius: 16, borderWidth: 1, borderColor: t.cardBorder }}>
-                  <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: t.cardBorder }} />
-                  <View style={{ gap: 6, flex: 1 }}>
-                    <View style={{ height: 12, width: 120, borderRadius: 6, backgroundColor: t.cardBorder }} />
-                    <View style={{ height: 10, width: 80, borderRadius: 5, backgroundColor: t.cardBorder }} />
-                  </View>
-                  <ActivityIndicator size='small' color='#8e51ff' />
-                </View>
-              ) : accountInfo ? (
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, backgroundColor: '#f0ebff', borderRadius: 16, borderWidth: 1, borderColor: '#d8b4fe' }}>
-                  <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: '#ddd6fe', alignItems: 'center', justifyContent: 'center' }}>
-                    <CircleUserIcon color='#8e51ff' size={26} strokeWidth={1.5} />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ fontFamily: 'Poppins600', fontSize: 14, color: '#3b0764' }}>{accountInfo.fullName}</Text>
-                    <Text style={{ fontFamily: 'Poppins400', fontSize: 12, color: '#7c3aed' }}>{accountInfo.username}</Text>
-                  </View>
-                </View>
-              ) : null}
-            </View>
+            <Text style={{ fontFamily: 'Poppins400', fontSize: 13, color: t.textMuted, marginBottom: 24 }}>We'll verify your identity before resetting</Text>
 
             {/* Email input */}
             <Text style={{ fontFamily: 'Poppins600', fontSize: 13, color: t.text, marginBottom: 8 }}>Email Address</Text>
-            <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: t.inputBg, borderRadius: 14, borderWidth: 1, borderColor: t.cardBorder, paddingHorizontal: 14, gap: 10, marginBottom: 8 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: t.inputBg, borderRadius: 14, borderWidth: 1, borderColor: accountInfo ? '#8e51ff' : t.cardBorder, paddingHorizontal: 14, gap: 10, marginBottom: 8 }}>
               <Mail color={t.textFaint} size={18} />
               <TextInput
                 value={email}
-                onChangeText={(v) => { setEmail(v); setError(''); }}
+                onChangeText={(v) => { setEmail(v); setError(''); setAccountInfo(null); }}
                 placeholder='Enter your email address'
                 placeholderTextColor={t.textFaint}
                 keyboardType='email-address'
                 autoCapitalize='none'
                 style={{ flex: 1, fontFamily: 'Poppins400', fontSize: 14, color: t.text, paddingVertical: 14 }}
               />
+              {checking && <ActivityIndicator size='small' color='#8e51ff' />}
             </View>
 
             {error ? (
-              <Text style={{ fontFamily: 'Poppins400', fontSize: 12, color: '#ef4444', marginBottom: 16 }}>{error}</Text>
-            ) : <View style={{ height: 16 }} />}
+              <Text style={{ fontFamily: 'Poppins400', fontSize: 12, color: '#ef4444', marginBottom: 12 }}>{error}</Text>
+            ) : <View style={{ height: 12 }} />}
+
+            {/* Account preview */}
+            {accountInfo && (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, backgroundColor: '#f0ebff', borderRadius: 16, borderWidth: 1, borderColor: '#d8b4fe', marginBottom: 20 }}>
+                {accountInfo.profileDetails?.url ? (
+                  <Image
+                    source={{ uri: accountInfo.profileDetails.url }}
+                    style={{ width: 46, height: 46, borderRadius: 23 }}
+                  />
+                ) : (
+                  <View style={{ width: 46, height: 46, borderRadius: 23, backgroundColor: '#ddd6fe', alignItems: 'center', justifyContent: 'center' }}>
+                    <UserCircle color='#8e51ff' size={28} strokeWidth={1.5} />
+                  </View>
+                )}
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontFamily: 'Poppins600', fontSize: 14, color: '#3b0764' }}>
+                    {accountInfo.fullName || accountInfo.username}
+                  </Text>
+                  <Text style={{ fontFamily: 'Poppins400', fontSize: 12, color: '#7c3aed' }}>
+                    {accountInfo.username}
+                  </Text>
+                </View>
+                <View style={{ backgroundColor: '#ddd6fe', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 99 }}>
+                  <Text style={{ fontFamily: 'Poppins600', fontSize: 10, color: '#6d28d9', textTransform: 'capitalize' }}>
+                    {accountInfo.role}
+                  </Text>
+                </View>
+              </View>
+            )}
 
             {/* Send button */}
             <Pressable
@@ -140,9 +152,13 @@ export default function Recovery() {
                 elevation: accountInfo && !loading ? 6 : 0,
               }}
             >
-              <Text style={{ fontFamily: 'Poppins600', fontSize: 15, color: accountInfo && !loading ? '#fff' : '#9ca3af' }}>
-                {loading ? 'Sending...' : 'Send Verification Code'}
-              </Text>
+              {loading ? (
+                <ActivityIndicator color='#fff' size='small' />
+              ) : (
+                <Text style={{ fontFamily: 'Poppins600', fontSize: 15, color: accountInfo && !loading ? '#fff' : '#9ca3af' }}>
+                  Send Verification Code
+                </Text>
+              )}
             </Pressable>
 
             {/* Back */}

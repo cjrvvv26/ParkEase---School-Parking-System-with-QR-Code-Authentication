@@ -33,7 +33,7 @@ const studentSchema = new Schema({
     amount: { type: Number, default: 0 },
     semesterId: { type: Schema.Types.ObjectId, ref: 'semester' },
   },
-  QRCode: String,
+  QRCode: { url: String, public_id: String },
   entryTime: Date,
   outTime: Date,
   motorDetails,

@@ -6,6 +6,15 @@ const authController = require('../controllers/authController');
 const upload = require('../middlewares/uploadImage');
 
 router.post('/check-account', superAdminController.identifyAccountByEmail);
+router.get('/exists', async (req, res) => {
+  try {
+    const User = require('../models/userModel');
+    const exists = await User.exists({ role: 'super admin' });
+    res.status(200).json({ exists: !!exists });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 router.get('/id', superAdminController.getSuperAdminId);
 router.get('/chat/:chatId', superAdminController.getChatMessages);
 router.get('/chat-users', superAdminController.getChatUsers);

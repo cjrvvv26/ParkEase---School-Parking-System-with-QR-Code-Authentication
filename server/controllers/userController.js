@@ -263,6 +263,26 @@ exports.getAvailableUsers = async (req, res) => {
   }
 };
 
+exports.changePassword = async (req, res) => {
+  try {
+    const { _id } = req.user;
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword)
+      return res.status(400).json({ error: 'All fields are required' });
+
+    const bcrypt = require('bcrypt');
+    const user = await User.findById(_id);
+    const match = await bcrypt.compare(currentPassword, user.password);
+    if (!match) return res.status(400).json({ error: 'Current password is incorrect' });
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+    await User.findByIdAndUpdate(_id, { password: hashed });
+    res.status(200).json({ message: 'Password changed successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 exports.updateSelf = async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();

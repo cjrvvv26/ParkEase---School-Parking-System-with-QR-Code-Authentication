@@ -6,6 +6,10 @@ export default function useDark() {
   return {
     dark,
     bg: dark ? 'bg-[#242424]' : 'bg-white',
+    canvasBg: dark ? '#2f2f2f' : '#f9fafb',
+    canvasOuterBg: dark ? '#1a1a1a' : '#f3f4f6',
+    canvasGridStroke: dark ? '#3a3a3a' : '#e5e7eb',
+    shapeColor: dark ? '#3a3a3a' : '#d1d5dc',
     card: dark ? 'bg-[#2f2f2f]' : 'bg-gray-100',
     cardInner: dark ? 'bg-[#3a3a3a]' : 'bg-white',
     border: dark ? 'border-[#3a3a3a]' : 'border-gray-200',

@@ -189,9 +189,9 @@ export default function Scan() {
               overflow: 'hidden',
             }}
           >
-            {user?.QRCode ? (
+            {user?.QRCode?.url ? (
               <Image
-                source={{ uri: user.QRCode }}
+                source={{ uri: user.QRCode.url }}
                 style={{ width: 240, height: 240 }}
                 resizeMode='contain'
               />
