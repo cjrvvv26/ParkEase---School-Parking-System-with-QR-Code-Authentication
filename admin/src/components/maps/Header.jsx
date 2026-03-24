@@ -16,7 +16,7 @@ export default function Header({ areaName, onNew, onUndo, onRedo, onZoomIn, onZo
             onClick={() => navigate('/parking')}
             className='text-base font-semibold cursor-pointer hover:text-violet-500 transition'
           >
-            ParkEase - Map Editor
+            School Parking System - Map Editor
           </h1>
           <p className='py-1 px-2 rounded-sm border border-violet-500 text-violet-500'>BETA</p>
         </div>

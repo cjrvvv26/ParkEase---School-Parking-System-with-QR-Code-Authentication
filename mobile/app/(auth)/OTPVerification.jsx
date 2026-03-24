@@ -81,7 +81,11 @@ export default function OTPVerification() {
       await AsyncStorage.removeItem('hasVerification');
       await AsyncStorage.setItem('token', res.data.user.token);
       dispatch(login({ user: res.data.user }));
-      router.replace('/(main)/Home');
+      if (!res.data.user.termsAccepted) {
+        router.replace('/(main)/TermsAndConditions');
+      } else {
+        router.replace('/(main)/Home');
+      }
     }
   };
 

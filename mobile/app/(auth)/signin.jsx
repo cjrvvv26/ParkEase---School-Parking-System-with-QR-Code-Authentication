@@ -1,8 +1,9 @@
 import { View, Text, Pressable, TextInput, Image, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { useState, useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Eye, EyeOff, Mail, Lock, ParkingSquare, CheckCircle } from 'lucide-react-native';
+import { Eye, EyeOff, Mail, Lock, CheckCircle } from 'lucide-react-native';
 import GoogleIcon from '../assets/images/google.webp';
+import Logo from '../assets/images/new-logo.png';
 import { Link, useRouter, useLocalSearchParams } from 'expo-router';
 import { login } from '../services/authService';
 import useApiRequest from '../hooks/useApiRequest';
@@ -116,11 +117,9 @@ export default function SignIn() {
 
           {/* Hero — always purple */}
           <View style={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 48, gap: 12 }}>
-            <View style={{ backgroundColor: 'rgba(255,255,255,0.2)', padding: 18, borderRadius: 24, marginBottom: 4 }}>
-              <ParkingSquare color='#fff' size={40} strokeWidth={1.5} />
-            </View>
-            <Text style={{ fontFamily: 'Poppins700', fontSize: 28, color: '#fff', letterSpacing: 0.3 }}>ParkEase</Text>
-            <Text style={{ fontFamily: 'Poppins400', fontSize: 14, color: 'rgba(255,255,255,0.75)' }}>School Parking System</Text>
+            <Image source={Logo} style={{ width: 80, height: 80 }} resizeMode='contain' />
+            <Text style={{ fontFamily: 'Poppins700', fontSize: 28, color: '#fff', letterSpacing: 0.3 }}>School Parking System</Text>
+            <Text style={{ fontFamily: 'Poppins400', fontSize: 14, color: 'rgba(255,255,255,0.75)' }}>Secure. Smart. Simple.</Text>
           </View>
 
           {/* Form Card */}

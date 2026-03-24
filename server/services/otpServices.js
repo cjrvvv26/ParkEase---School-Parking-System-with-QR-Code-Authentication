@@ -83,7 +83,7 @@ exports.verifyOtp = async (email, otp, type) => {
 
     let roleData = null;
 
-    if (role === 'superadmin') {
+    if (role === 'super admin') {
       roleData = await SuperAdmin.create({
         userId: createUser._id,
         name,

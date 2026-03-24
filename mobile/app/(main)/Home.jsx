@@ -32,11 +32,12 @@ export default function Home() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const semesterData = await execute(getSemester);
-      const slotsData = await execute(getAvailableSlots);
-      if (semesterData?.status === 200 && slotsData?.status === 200)
-        setAvailableSlots(slotsData.data);
-      return setSemester(semesterData.data.data);
+      const [semesterData, slotsData] = await Promise.all([
+        execute(getSemester),
+        execute(getAvailableSlots),
+      ]);
+      if (semesterData?.status === 200) setSemester(semesterData.data?.data ?? null);
+      if (slotsData?.status === 200) setAvailableSlots(slotsData.data ?? []);
     };
     fetchData();
   }, []);
@@ -79,7 +80,7 @@ export default function Home() {
                 fontFamily: 'Poppins700',
               }}
             >
-              {user.name?.firstName?.split(' ')[0]}!
+              {(typeof user.name === 'string' ? user.name : user.name?.firstName ?? '')?.split(' ')[0]}!
             </Text>
             <Text
               style={{
@@ -488,7 +489,7 @@ export default function Home() {
                         fontSize: 14,
                       }}
                     >
-                      {slot.slotId.metadata.label}
+                      {slot.slotId?.metadata?.label ?? 'Slot'}
                     </Text>
                     <Text
                       style={{
@@ -498,7 +499,7 @@ export default function Home() {
                         marginTop: 1,
                       }}
                     >
-                      {slot.slotId.mapId.name}
+                      {slot.slotId?.mapId?.name ?? 'Unknown Area'}
                     </Text>
                   </View>
                   <View

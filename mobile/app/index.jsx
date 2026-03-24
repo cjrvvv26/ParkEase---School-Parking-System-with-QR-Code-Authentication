@@ -34,7 +34,11 @@ export default function Index() {
 
       if (res?.status === 200) {
         dispatch(login({ user: res.data }));
-        router.replace('/(main)/Home');
+        if (!res.data.termsAccepted) {
+          router.replace('/(main)/TermsAndConditions');
+        } else {
+          router.replace('/(main)/Home');
+        }
       } else {
         await AsyncStorage.removeItem('token');
         router.replace('/(auth)/SignIn');

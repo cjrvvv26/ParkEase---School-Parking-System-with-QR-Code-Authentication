@@ -106,7 +106,7 @@ export default function App() {
         },
         {
           path: 'sign-up',
-          element: superAdminExists ? <Navigate to='sign-in' replace /> : <Registration />,
+          element: superAdminExists ? <Navigate to='/sign-in' replace /> : <Registration />,
         },
         {
           path: 'email',

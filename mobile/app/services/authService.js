@@ -5,4 +5,4 @@ export const login = (data) => api.post('auth/sign-in', { ...data });
 export const verifyOtp = (data) => api.post('auth/verify-otp', { ...data });
 export const resendOtp = (data) => api.post('auth/resend-otp', { ...data });
 export const updateProfile = (data) => api.patch('user/me', data);
-export const changePassword = (data) => api.patch('user/me/password', data);
+export const acceptTerms = () => api.patch('user/me/terms');

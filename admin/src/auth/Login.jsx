@@ -5,6 +5,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import useFetch from '../hooks/useFetch';
 import { useState } from 'react';
 import { useEffect } from 'react';
+import { useSelector } from 'react-redux';
 
 export default function Login() {
   const { error, loading, fetchData } = useFetch();
@@ -14,6 +15,7 @@ export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   const passwordReset = location.state?.passwordReset;
+  const superAdminExists = useSelector((s) => s.auth.superAdminExists);
 
   useEffect(() => {
     const otp_accesss = sessionStorage.getItem('otp_access');
@@ -176,12 +178,14 @@ export default function Login() {
           </button>
         </div>
         <div className='text-center text-gray-400 mt-5 flex flex-col gap-3'>
-          <p>
-            Don't you have an account?{' '}
-            <Link className='hover:underline text-purple-500' to='/sign-up'>
-              Sign up
-            </Link>
-          </p>
+          {superAdminExists && (
+            <p>
+              Don't you have an account?{' '}
+              <Link className='hover:underline text-purple-500' to='/sign-up'>
+                Sign up
+              </Link>
+            </p>
+          )}
           <p>
             Can't sign in?{' '}
             <Link

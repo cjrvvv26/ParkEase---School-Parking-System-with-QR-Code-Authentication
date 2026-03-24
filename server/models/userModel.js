@@ -22,6 +22,7 @@ const userSchema = new Schema(
       required: true,
     },
     emailVerified: { type: Boolean, default: false, required: true },
+    termsAccepted: { type: Boolean, default: false },
     recoveryDetails: {
       token: { type: String, default: null },
       expiresAt: { type: Date, default: null },

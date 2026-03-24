@@ -3,6 +3,7 @@ const userController = require('../controllers/userController');
 const verifyUser = require('../middlewares/verifyUser');
 const requiredSuperAdmin = require('../middlewares/requiredSuperAdmin');
 const upload = require('../middlewares/uploadImage');
+const User = require('../models/userModel');
 
 router.get(
   '/recovery/verify-request/:token',
@@ -16,6 +17,14 @@ router.patch('/recovery/reset-password', userController.resetUserPassword);
 
 router.patch('/me', verifyUser(), userController.updateSelf);
 router.patch('/me/password', verifyUser(), userController.changePassword);
+router.patch('/me/terms', verifyUser(), async (req, res) => {
+  try {
+    await User.findByIdAndUpdate(req.user._id, { termsAccepted: true });
+    res.status(200).json({ message: 'Terms accepted' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 router.use(verifyUser(), requiredSuperAdmin);
 
