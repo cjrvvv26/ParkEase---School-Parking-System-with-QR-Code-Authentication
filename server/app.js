@@ -44,7 +44,7 @@ app.use(
     allowedHeaders: ['Content-Type', 'Authorization'],
   }),
 );
-app.options('*', cors({
+app.options('/{*path}', cors({
   origin: (origin, callback) => callback(null, origin || true),
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
