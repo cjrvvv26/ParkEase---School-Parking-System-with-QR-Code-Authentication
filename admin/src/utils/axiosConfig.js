@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const axiosConfig = axios.create({
-  baseURL: "http://localhost:5000",
+  baseURL: "https://parkease-school-parking-system-with-qr.onrender.com",
   withCredentials: true,
 });
 
