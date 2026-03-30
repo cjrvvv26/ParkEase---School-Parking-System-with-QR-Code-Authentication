@@ -288,6 +288,10 @@ exports.updateSelf = async (req, res) => {
   session.startTransaction();
   try {
     const { id: _id, role } = req.user;
+    const data = req.body;
+
+    let additionalData = null;
+    if (role === 'student') {
       additionalData = await Student.findOneAndUpdate(
         { userId: _id },
         { $set: { name: data.name, phoneNo: data.phoneNo } },
