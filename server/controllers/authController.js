@@ -133,8 +133,8 @@ exports.verifyUserOtp = async (req, res) => {
     if (platform === 'website') {
       res.cookie(tokenName, token, {
         httpOnly: true,
-        secure: false,
-        sameSite: 'strict',
+        secure: true,
+        sameSite: 'none',
         maxAge: expiredAt,
       });
     }
@@ -284,8 +284,8 @@ exports.signOutUser = async (req, res) => {
 
     res.clearCookie(tokenName, {
       httpOnly: true,
-      secure: false,
-      sameSite: 'strict',
+      secure: true,
+      sameSite: 'none',
     });
 
     res.status(200).json({ message: 'Signed out successfully' });

@@ -287,11 +287,7 @@ exports.updateSelf = async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
-    const { _id, role } = req.user;
-    const data = req.body;
-
-    let additionalData = null;
-    if (role === 'student') {
+    const { id: _id, role } = req.user;
       additionalData = await Student.findOneAndUpdate(
         { userId: _id },
         { $set: { name: data.name, phoneNo: data.phoneNo } },

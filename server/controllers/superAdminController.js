@@ -31,7 +31,7 @@ exports.updateInformation = async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
-    const { _id } = req.user;
+    const { id: _id } = req.user;
     const data = req.body;
     let oldProfileId = null;
 
@@ -109,7 +109,7 @@ exports.registerUser = async (req, res) => {
     await notificationService.createNotification(notifData);
 
     await ActivityLogs.create({
-      userId: req.user._id, // or adminId if created by admin
+      userId: req.user.id,
       actionType: 'users',
       action: 'REGISTER',
       description: `A new account has been successfully created in the system.`,
@@ -146,7 +146,7 @@ exports.deactivateUser = async (req, res) => {
 
 exports.updatePassword = async (req, res) => {
   try {
-    const { _id } = req.user;
+    const { id: _id } = req.user;
     const { password } = req.body;
     await userService.updatePassword(_id, password);
     res.status(200).json({ message: 'Password was successfully updated' });

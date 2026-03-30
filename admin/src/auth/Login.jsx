@@ -24,19 +24,26 @@ export default function Login() {
     }
   }, []);
 
+  const [slowConnection, setSlowConnection] = useState(false);
+
   const handleManualLogin = async (e) => {
     e.preventDefault();
+    setSlowConnection(false);
+    const slowTimer = setTimeout(() => setSlowConnection(true), 8000);
     try {
       const data = await fetchData('auth/sign-in', {
         method: 'POST',
         data: { email, password, type: 'login', platform: 'website' },
       });
+      clearTimeout(slowTimer);
       console.log(data);
       navigate('/otp-verification');
       sessionStorage.setItem('otp_access', 'true');
       sessionStorage.setItem('otp_type', 'login');
       sessionStorage.setItem('email', email);
     } catch (error) {
+      clearTimeout(slowTimer);
+      setSlowConnection(false);
       console.log(error);
     }
   };
@@ -146,7 +153,7 @@ export default function Login() {
             !loading ? 'bg-violet-500' : 'bg-gray-400'
           } rounded-lg hover:bg-violet-400 duration-75 p-4 text-white`}
         >
-          {loading ? 'Verifying' : 'Continue'}
+          {loading ? (slowConnection ? 'Waking up server...' : 'Verifying') : 'Continue'}
         </button>
         {error !== 'All fields must be filled' &&
           error !== 'Wrong credentials! Please try again.' &&
