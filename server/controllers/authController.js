@@ -25,7 +25,7 @@ exports.localSignIn = async (req, res) => {
       type: 'login',
     });
 
-    await sendOtp(payload.email, otp);
+    sendOtp(payload.email, otp).catch(console.error);
 
     res
       .status(200)
@@ -53,7 +53,7 @@ exports.localSignUp = async (req, res) => {
       type: 'register',
     });
 
-    await sendOtp(payload.email, otp);
+    sendOtp(payload.email, otp).catch(console.error);
 
     res
       .status(200)
@@ -95,7 +95,7 @@ exports.authWithGoogle = async (req, res) => {
       type,
     });
 
-    await sendOtp(payload.email, otp);
+    sendOtp(payload.email, otp).catch(console.error);
 
     res
       .status(200)
@@ -184,7 +184,7 @@ exports.resendOtp = async (req, res) => {
 
     await otpService.updateOtpRecord({ id: oldRecord._id, otp });
 
-    await sendOtp(oldRecord.email, otp);
+    sendOtp(oldRecord.email, otp).catch(console.error);
 
     res.status(200).json({ message: 'OTP was successfully resend' });
   } catch (error) {
