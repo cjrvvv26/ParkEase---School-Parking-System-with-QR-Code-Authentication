@@ -27,6 +27,8 @@ const io = new Server(server, {
   cors: {
     origin: (origin, callback) => callback(null, origin || true),
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   },
 });
 
@@ -38,8 +40,16 @@ app.use(
   cors({
     origin: (origin, callback) => callback(null, origin || true),
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   }),
 );
+app.options('*', cors({
+  origin: (origin, callback) => callback(null, origin || true),
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

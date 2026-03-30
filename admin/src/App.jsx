@@ -11,8 +11,8 @@ import Users from './pages/Users';
 import EmailConfirmation from './auth/EmailConfirmation';
 import { useEffect, useState } from 'react';
 import useFetch from './hooks/useFetch';
-import { useDispatch } from 'react-redux';
-import { login, logout } from './features/authSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { login, logout, setSuperAdminExists } from './features/authSlice';
 import ProtectedRoute from './routers/ProtectedRoute';
 import PublicRoutes from './routers/PublicRoutes';
 import Logs from './pages/Logs';
@@ -45,7 +45,7 @@ export default function App() {
   const { fetchData } = useFetch();
   const dispatch = useDispatch();
   const [checkSession, setCheckSession] = useState(true);
-  const [superAdminExists, setSuperAdminExists] = useState(false);
+  const superAdminExists = useSelector((s) => s.auth.superAdminExists);
 
   useEffect(() => {
     const verifyUserSession = async () => {
@@ -55,12 +55,12 @@ export default function App() {
           fetchData('super-admin/exists', { method: 'GET' }),
         ]);
         dispatch(login(sessionData));
-        setSuperAdminExists(existsData.exists);
+        dispatch(setSuperAdminExists(existsData.exists));
       } catch (error) {
         // exists check may have succeeded even if session failed — re-fetch exists separately
         try {
           const existsData = await fetchData('super-admin/exists', { method: 'GET' });
-          setSuperAdminExists(existsData.exists);
+          dispatch(setSuperAdminExists(existsData.exists));
         } catch (_) {}
         dispatch(logout());
 
