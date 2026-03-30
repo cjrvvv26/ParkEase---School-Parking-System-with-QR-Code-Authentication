@@ -265,7 +265,7 @@ exports.getAvailableUsers = async (req, res) => {
 
 exports.changePassword = async (req, res) => {
   try {
-    const { _id } = req.user;
+    const { id: _id } = req.user;
     const { currentPassword, newPassword } = req.body;
     if (!currentPassword || !newPassword)
       return res.status(400).json({ error: 'All fields are required' });

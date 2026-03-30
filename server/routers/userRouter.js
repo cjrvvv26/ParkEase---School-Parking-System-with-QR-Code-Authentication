@@ -19,7 +19,7 @@ router.patch('/me', verifyUser(), userController.updateSelf);
 router.patch('/me/password', verifyUser(), userController.changePassword);
 router.patch('/me/terms', verifyUser(), async (req, res) => {
   try {
-    await User.findByIdAndUpdate(req.user._id, { termsAccepted: true });
+    await User.findByIdAndUpdate(req.user.id, { termsAccepted: true });
     res.status(200).json({ message: 'Terms accepted' });
   } catch (error) {
     res.status(500).json({ error: error.message });

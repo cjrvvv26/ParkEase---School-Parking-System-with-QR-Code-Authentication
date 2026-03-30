@@ -1,7 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export const BASE_URL = 'http://192.168.1.4:5000';
+export const BASE_URL = 'https://your-deployed-server.up.railway.app';
 
 const api = axios.create({
   baseURL: BASE_URL,

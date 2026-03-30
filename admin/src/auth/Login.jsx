@@ -178,7 +178,7 @@ export default function Login() {
           </button>
         </div>
         <div className='text-center text-gray-400 mt-5 flex flex-col gap-3'>
-          {superAdminExists && (
+          {!superAdminExists && (
             <p>
               Don't you have an account?{' '}
               <Link className='hover:underline text-purple-500' to='/sign-up'>

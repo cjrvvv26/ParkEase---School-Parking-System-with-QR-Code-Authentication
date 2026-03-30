@@ -1,18 +1,23 @@
 {
   "expo": {
-    "name": "mobile",
+    "name": "School Parking System",
     "slug": "mobile",
     "scheme": "parkease",
     "version": "1.0.0",
     "orientation": "portrait",
+    "icon": "./app/assets/images/new-logo.png",
     "userInterfaceStyle": "light",
     "splash": {
+      "image": "./app/assets/images/new-logo.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#8e51ff"
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.parkease.mobile"
+      "bundleIdentifier": "com.parkease.mobile",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -22,6 +27,11 @@
     },
     "web": {
       "bundler": "metro"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "46af8dd8-56b9-4814-a39d-a6d8c80b52fb"
+      }
     }
   }
 }
