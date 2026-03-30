@@ -1,11 +1,11 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export const BASE_URL = 'https://your-deployed-server.up.railway.app';
+export const BASE_URL = 'https://parkease-school-parking-system-with-qr.onrender.com';
 
 const api = axios.create({
   baseURL: BASE_URL,
-  timeout: 10000,
+  timeout: 30000,
 });
 
 api.interceptors.request.use(async (config) => {
