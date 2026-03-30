@@ -25,7 +25,7 @@ exports.localSignIn = async (req, res) => {
       type: 'login',
     });
 
-    sendOtp(payload.email, otp).catch(console.error);
+    sendOtp(payload.email, otp).catch((e) => console.error('[OTP EMAIL ERROR]', e.message));
 
     res
       .status(200)
