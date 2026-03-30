@@ -9,10 +9,15 @@ const transporter = nodemailer.createTransport({
 });
 
 module.exports = async ({ to, subject, html }) => {
-  await transporter.sendMail({
-    from: `"ParkEase - URSC Motor Parking System" <${process.env.GMAIL_EMAIL}>`,
-    to,
-    subject,
-    html,
-  });
+  try {
+    await transporter.sendMail({
+      from: `"School Parking System" <${process.env.GMAIL_EMAIL}>`,
+      to,
+      subject,
+      html,
+    });
+    console.log(`[EMAIL] Sent to ${to}`);
+  } catch (error) {
+    console.error(`[EMAIL ERROR] Failed to send to ${to}:`, error.message);
+  }
 };
