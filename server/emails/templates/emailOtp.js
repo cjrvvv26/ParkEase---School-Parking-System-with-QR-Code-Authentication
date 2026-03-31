@@ -1,9 +1,9 @@
 module.exports = ({ otp }) => ({
-  subject: "Your OTP Code",
+  subject: 'Your OTP Code',
   html: `<div style="font-family: Arial, sans-serif; max-width: 400px; margin: auto;">
   <div style="width: 100%; margin-bottom: 12px; text-align: center;">
     <h1 style="font-weight: bold; font-size: 18px; color: #8b5cf6; margin: 0;">
-      ParkEase
+      School Parking System
       <span style="color: #1f2937;">
         - URSC Motor Parking Management
       </span>

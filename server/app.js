@@ -59,44 +59,51 @@ app.use(express.urlencoded({ extended: true }));
 // Email test endpoint for debugging
 app.get('/test-email', async (req, res) => {
   try {
-    const nodemailer = require('nodemailer');
+    const { Resend } = require('resend');
+    const resend = new Resend(process.env.RESEND_API_KEY);
 
-    const transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 465,
-      secure: true, // Use SSL on port 465
-      auth: {
-        user: process.env.GMAIL_EMAIL,
-        pass: process.env.GMAIL_APP_PASSWORD,
-      },
-      connectionTimeout: 30000,
-      socketTimeout: 30000,
-    });
+    if (!process.env.RESEND_API_KEY) {
+      return res.status(500).json({
+        success: false,
+        error: 'RESEND_API_KEY not configured',
+      });
+    }
 
-    // Verify connection
-    await transporter.verify();
-    console.log('[TEST EMAIL] SMTP connection verified');
+    console.log('[TEST EMAIL] Attempting to send test email via Resend');
 
-    // Send test email
-    const result = await transporter.sendMail({
-      from: `"School Parking System" <${process.env.GMAIL_EMAIL}>`,
-      to: req.query.email || process.env.GMAIL_EMAIL,
-      subject: 'ParkEase Test Email',
-      html: '<h1>Test Email</h1><p>If you see this, Gmail SMTP is working!</p>',
+    const result = await resend.emails.send({
+      from: 'School Parking System <onboarding@resend.dev>',
+      to: [req.query.email || 'clarencevalle0026@gmail.com'],
+      subject: 'School Parking System Test Email',
+      html: '<h1>Test Email</h1><p>If you see this, Resend is working!</p>',
     });
 
     res.json({
       success: true,
-      message: 'Test email sent successfully',
-      messageId: result.messageId,
-      to: req.query.email || process.env.GMAIL_EMAIL,
+      message: 'Test email sent successfully via Resend',
+      messageId: result.data?.id,
+      to: req.query.email || 'clarencevalle0026@gmail.com',
     });
   } catch (error) {
     console.error('[TEST EMAIL ERROR]', error.message);
+    console.error('[TEST EMAIL ERROR] Full error:', error);
+
+    let errorMessage = error.message;
+    let hint = 'Check Render logs for more details.';
+
+    if (error.message.includes('domain')) {
+      hint =
+        'Domain not verified in Resend. Currently using Resend default domain. For custom domain, verify parkease-system.com in Resend dashboard.';
+    } else if (error.message.includes('rate limit')) {
+      hint = 'Rate limit exceeded. Try again later.';
+    } else if (error.message.includes('unauthorized')) {
+      hint = 'Invalid RESEND_API_KEY. Check your API key in .env';
+    }
+
     res.status(500).json({
       success: false,
-      error: error.message,
-      hint: 'Check Render logs for more details. Common issues: Invalid app password, Gmail security settings, or network issues',
+      error: errorMessage,
+      hint,
     });
   }
 });

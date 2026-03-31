@@ -2,9 +2,9 @@ module.exports = ({ email, name, token }) => {
   const base = process.env.SERVER_URL || 'http://localhost:5000';
   const verifyUrl = `${base}/user/verify-email/${token}`;
   return {
-  subject: 'Email Verification',
+    subject: 'Email Verification',
 
-  html: `<html lang="en">
+    html: `<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <title>Email Verification</title>
@@ -61,7 +61,7 @@ module.exports = ({ email, name, token }) => {
               C32.9,55.2,9.9,78.2,9.9,106.6z"
             />
           </svg>
-          <span>ParkEase</span>
+          <span>School Parking System</span>
         </div>
 
         <!-- Greeting -->
@@ -70,7 +70,7 @@ module.exports = ({ email, name, token }) => {
         </p>
 
         <p style="font-size: 14px; line-height: 1.6; margin: 0 0 20px 0;">
-          Thank you for registering with <strong>ParkEase</strong>. To complete
+          Thank you for registering with <strong>School Parking System</strong>. To complete
           your account setup, please verify your email address by clicking the
           button below.
         </p>
@@ -116,7 +116,7 @@ module.exports = ({ email, name, token }) => {
 
         <!-- Footer -->
         <p style="font-size: 12px; color: #9ca3af; text-align: center; margin: 0;">
-          © 2025 ParkEase – URSC Motor Parking Management System
+          © 2025 School Parking System – URSC Motor Parking Management System
         </p>
       </div>
     </div>

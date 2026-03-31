@@ -6,12 +6,12 @@ module.exports = ({ resetLink, email }) => ({
 
     <!-- Header -->
     <div style="text-align:center;font-size:22px;font-weight:bold;color:#7c3aed;margin-bottom:24px;">
-      ParkEase
+      School Parking System
     </div>
 
     <p style="font-size:14px;line-height:1.6;margin-bottom:20px;">
       We received a request to recover your account for
-      <strong>ParkEase – URSC Motor Parking Management System</strong>.
+      <strong>School Parking System – URSC Motor Parking Management System</strong>.
       If you made this request, click the button below to reset your password.
     </p>
 
@@ -29,7 +29,7 @@ module.exports = ({ resetLink, email }) => ({
     <table role="presentation" cellspacing="0" cellpadding="0" align="center" style="margin-bottom:24px;">
       <tr>
         <td align="center" bgcolor="#7c3aed" style="border-radius:6px;">
-          <a target="_blank" href="${resetLink}" 
+          <a target="_blank" href="${resetLink}"
              style="display:inline-block;padding:12px 22px;font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;">
             Reset Your Password
           </a>
@@ -47,10 +47,4 @@ module.exports = ({ resetLink, email }) => ({
     <p style="font-size:11px;color:#9ca3af;text-align:center;line-height:1.5;">
       If you did not request account recovery, you can safely ignore this email.
       Your account will remain secure.<br/>
-      © 2026 ParkEase – URSC Motor Parking Management System
-    </p>
-
-  </div>
-</div>
-`,
-});
+      © 2026 School Parking System – URSC Motor Parking Management System

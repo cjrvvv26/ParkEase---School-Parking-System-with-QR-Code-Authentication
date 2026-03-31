@@ -1,5 +1,5 @@
 module.exports = ({ firstName, email, username, password }) => ({
-  subject: "Your ParkEase Account Details",
+  subject: 'Your School Parking System Account Details',
   html: `
     <!DOCTYPE html>
 <html lang="en">
@@ -45,7 +45,7 @@ module.exports = ({ firstName, email, username, password }) => ({
             margin-bottom: 24px;
           "
         >
-          ParkEase
+          School Parking System
         </div>
 
         <!-- Greeting -->
@@ -66,7 +66,7 @@ module.exports = ({ firstName, email, username, password }) => ({
           "
         >
           Your student account has been successfully created in
-          <strong>ParkEase – URSC Motor Parking Management System</strong>.
+          <strong>School Parking System – URSC Motor Parking Management System</strong>.
           Below are your account details.
         </p>
 
@@ -136,7 +136,7 @@ module.exports = ({ firstName, email, username, password }) => ({
               border-radius: 8px;
             "
           >
-            Log In to ParkEase
+            Log In to School Parking System
           </a>
         </div>
 
@@ -151,7 +151,7 @@ module.exports = ({ firstName, email, username, password }) => ({
           "
         >
           If you did not request this account, please ignore this email.<br />
-          © 2025 ParkEase – URSC Motor Parking Management System
+          © 2025 School Parking System – URSC Motor Parking Management System
         </p>
       </div>
     </div>
