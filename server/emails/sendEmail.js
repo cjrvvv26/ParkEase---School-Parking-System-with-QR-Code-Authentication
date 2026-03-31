@@ -13,17 +13,16 @@ module.exports = async ({ to, subject, html }) => {
 
     const transporter = nodemailer.createTransport({
       host: 'smtp.gmail.com',
-      port: 587,
-      secure: false,
-      requireTLS: true,
-      connectionTimeout: 60000, // 60 seconds for Render
-      socketTimeout: 60000, // 60 seconds for Render
+      port: 465,
+      secure: true, // Use SSL instead of STARTTLS
       auth: {
         user: process.env.GMAIL_EMAIL,
         pass: process.env.GMAIL_APP_PASSWORD,
       },
-      debug: true, // Enable debug logging
-      logger: true, // Enable logger
+      connectionTimeout: 30000,
+      socketTimeout: 30000,
+      debug: true,
+      logger: true,
     });
 
     console.log('[EMAIL] Verifying SMTP connection...');

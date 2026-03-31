@@ -65,15 +65,14 @@ app.get('/test-email', async (req, res) => {
 
     const transporter = nodemailer.createTransport({
       host: 'smtp.gmail.com',
-      port: 587,
-      secure: false,
-      requireTLS: true,
-      connectionTimeout: 60000,
-      socketTimeout: 60000,
+      port: 465,
+      secure: true, // Use SSL instead of STARTTLS
       auth: {
         user: process.env.GMAIL_EMAIL,
         pass: process.env.GMAIL_APP_PASSWORD,
       },
+      connectionTimeout: 30000,
+      socketTimeout: 30000,
       debug: true,
       logger: true,
     });
