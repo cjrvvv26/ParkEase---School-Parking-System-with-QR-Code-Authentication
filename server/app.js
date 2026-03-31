@@ -54,6 +54,32 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 //API Endpoints base urlse
+app.get('/test-email', async (req, res) => {
+  const nodemailer = require('nodemailer');
+  try {
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure: false,
+      requireTLS: true,
+      auth: {
+        user: process.env.GMAIL_EMAIL,
+        pass: process.env.GMAIL_APP_PASSWORD,
+      },
+    });
+    await transporter.verify();
+    await transporter.sendMail({
+      from: process.env.GMAIL_EMAIL,
+      to: process.env.GMAIL_EMAIL,
+      subject: 'Test Email from Render',
+      html: '<p>Port 587 works!</p>',
+    });
+    res.json({ success: true, message: 'Email sent via port 587!' });
+  } catch (error) {
+    res.json({ success: false, error: error.message, code: error.code });
+  }
+});
+
 app.use('/auth', authRouters);
 app.use('/super-admin', superAdminRouters);
 // app.use("/guard", guardRouters);
