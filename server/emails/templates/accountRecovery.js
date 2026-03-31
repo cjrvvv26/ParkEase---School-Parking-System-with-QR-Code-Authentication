@@ -48,3 +48,9 @@ module.exports = ({ resetLink, email }) => ({
       If you did not request account recovery, you can safely ignore this email.
       Your account will remain secure.<br/>
       © 2026 School Parking System – URSC Motor Parking Management System
+    </p>
+
+  </div>
+</div>
+`,
+});
