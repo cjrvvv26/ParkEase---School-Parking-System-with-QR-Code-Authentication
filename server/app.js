@@ -44,15 +44,64 @@ app.use(
     allowedHeaders: ['Content-Type', 'Authorization'],
   }),
 );
-app.options('/{*path}', cors({
-  origin: (origin, callback) => callback(null, origin || true),
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-}));
+app.options(
+  '/{*path}',
+  cors({
+    origin: (origin, callback) => callback(null, origin || true),
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  }),
+);
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+// Email test endpoint for debugging
+app.get('/test-email', async (req, res) => {
+  try {
+    const nodemailer = require('nodemailer');
+
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure: false,
+      requireTLS: true,
+      connectionTimeout: 10000,
+      socketTimeout: 10000,
+      auth: {
+        user: process.env.GMAIL_EMAIL,
+        pass: process.env.GMAIL_APP_PASSWORD,
+      },
+    });
+
+    // Verify connection
+    await transporter.verify();
+    console.log('[TEST EMAIL] SMTP connection verified');
+
+    // Send test email
+    const result = await transporter.sendMail({
+      from: `"School Parking System" <${process.env.GMAIL_EMAIL}>`,
+      to: req.query.email || process.env.GMAIL_EMAIL,
+      subject: 'ParkEase Test Email',
+      html: '<h1>Test Email</h1><p>If you see this, Gmail SMTP is working!</p>',
+    });
+
+    res.json({
+      success: true,
+      message: 'Test email sent successfully',
+      messageId: result.messageId,
+      to: req.query.email || process.env.GMAIL_EMAIL,
+    });
+  } catch (error) {
+    console.error('[TEST EMAIL ERROR]', error.message);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      hint: 'Check Render logs for more details. Common issues: Invalid app password, Gmail security settings, or network issues',
+    });
+  }
+});
+
 //API Endpoints base urlse
 app.use('/auth', authRouters);
 app.use('/super-admin', superAdminRouters);

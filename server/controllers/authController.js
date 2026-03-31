@@ -25,7 +25,11 @@ exports.localSignIn = async (req, res) => {
       type: 'login',
     });
 
-    sendOtp(payload.email, otp).catch((e) => console.error('[OTP EMAIL ERROR]', e.message));
+    try {
+      await sendOtp(payload.email, otp);
+    } catch (emailError) {
+      console.error('[OTP EMAIL ERROR]', emailError.message);
+    }
 
     res
       .status(200)
@@ -53,7 +57,11 @@ exports.localSignUp = async (req, res) => {
       type: 'register',
     });
 
-    sendOtp(payload.email, otp).catch(console.error);
+    try {
+      await sendOtp(payload.email, otp);
+    } catch (emailError) {
+      console.error('[OTP EMAIL ERROR]', emailError.message);
+    }
 
     res
       .status(200)
@@ -66,12 +74,17 @@ exports.localSignUp = async (req, res) => {
 //Only sends email in gmail and stores payload in otp
 exports.authWithGoogle = async (req, res) => {
   try {
-    const { access_token, code, code_verifier, redirect_uri, type, platform } = req.body;
+    const { access_token, code, code_verifier, redirect_uri, type, platform } =
+      req.body;
     let payload;
     if (type === 'register') {
       payload = await authService.superAdminSignUpWithGoogle(access_token);
     } else if (type === 'login' && code) {
-      payload = await authService.signInWithGoogleCode({ code, code_verifier, redirect_uri });
+      payload = await authService.signInWithGoogleCode({
+        code,
+        code_verifier,
+        redirect_uri,
+      });
     } else if (type === 'login') {
       payload = await authService.signInWithGoogle(access_token);
     } else {
@@ -95,7 +108,11 @@ exports.authWithGoogle = async (req, res) => {
       type,
     });
 
-    sendOtp(payload.email, otp).catch(console.error);
+    try {
+      await sendOtp(payload.email, otp);
+    } catch (emailError) {
+      console.error('[OTP EMAIL ERROR]', emailError.message);
+    }
 
     res
       .status(200)
@@ -184,7 +201,11 @@ exports.resendOtp = async (req, res) => {
 
     await otpService.updateOtpRecord({ id: oldRecord._id, otp });
 
-    sendOtp(oldRecord.email, otp).catch(console.error);
+    try {
+      await sendOtp(oldRecord.email, otp);
+    } catch (emailError) {
+      console.error('[OTP EMAIL ERROR]', emailError.message);
+    }
 
     res.status(200).json({ message: 'OTP was successfully resend' });
   } catch (error) {
@@ -209,7 +230,10 @@ exports.forgotPasswordSendOtp = async (req, res) => {
     if (!email) return res.status(400).json({ error: 'Email is required' });
 
     const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ error: 'No account found with that email' });
+    if (!user)
+      return res
+        .status(404)
+        .json({ error: 'No account found with that email' });
 
     const otp = otpGenerator.generate(6, {
       lowerCaseAlphabets: false,
@@ -234,10 +258,12 @@ exports.forgotPasswordSendOtp = async (req, res) => {
 exports.forgotPasswordVerifyOtp = async (req, res) => {
   try {
     const { email, otp } = req.body;
-    if (!email || !otp) return res.status(400).json({ error: 'Email and OTP are required' });
+    if (!email || !otp)
+      return res.status(400).json({ error: 'Email and OTP are required' });
 
     const record = await Otp.findOne({ email, type: 'forgot-password' });
-    if (!record) return res.status(400).json({ error: 'Invalid or expired OTP' });
+    if (!record)
+      return res.status(400).json({ error: 'Invalid or expired OTP' });
 
     const bcrypt = require('bcrypt');
     const valid = await bcrypt.compare(String(otp), record.otp);
@@ -262,8 +288,14 @@ exports.forgotPasswordReset = async (req, res) => {
       return res.status(400).json({ error: 'All fields are required' });
 
     const record = await Otp.findOne({ email, type: 'forgot-password' });
-    if (!record || !record.payload?.verified || record.payload?.resetToken !== resetToken)
-      return res.status(400).json({ error: 'Invalid or expired reset session' });
+    if (
+      !record ||
+      !record.payload?.verified ||
+      record.payload?.resetToken !== resetToken
+    )
+      return res
+        .status(400)
+        .json({ error: 'Invalid or expired reset session' });
 
     const bcrypt = require('bcrypt');
     const hashed = await bcrypt.hash(password, 10);
