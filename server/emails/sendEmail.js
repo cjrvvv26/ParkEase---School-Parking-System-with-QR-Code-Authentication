@@ -1,64 +1,33 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 module.exports = async ({ to, subject, html }) => {
   try {
     // Validate environment variables
-    if (!process.env.GMAIL_EMAIL || !process.env.GMAIL_APP_PASSWORD) {
-      throw new Error(
-        'Gmail credentials not configured in environment variables',
-      );
+    if (!process.env.RESEND_API_KEY) {
+      throw new Error('RESEND_API_KEY not configured in environment variables');
     }
 
-    console.log(`[EMAIL] Setting up Gmail SMTP for ${to}`);
+    console.log(`[EMAIL] Sending to ${to} via Resend API`);
 
-    const transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 465,
-      secure: true, // Use SSL instead of STARTTLS
-      auth: {
-        user: process.env.GMAIL_EMAIL,
-        pass: process.env.GMAIL_APP_PASSWORD,
-      },
-      connectionTimeout: 30000,
-      socketTimeout: 30000,
-      debug: true,
-      logger: true,
-    });
-
-    console.log('[EMAIL] Verifying SMTP connection...');
-
-    // Verify connection before sending
-    await transporter.verify();
-    console.log('[EMAIL] SMTP connection verified successfully');
-
-    console.log(`[EMAIL] Sending email to ${to}...`);
-
-    const result = await transporter.sendMail({
-      from: `"School Parking System" <${process.env.GMAIL_EMAIL}>`,
-      to,
+    const result = await resend.emails.send({
+      from: 'School Parking System <onboarding@resend.dev>',
+      to: [to],
       subject,
       html,
     });
 
-    console.log(
-      `[EMAIL] ✅ Successfully sent to ${to}. Message ID: ${result.messageId}`,
-    );
-    console.log(`[EMAIL] Response:`, result.response);
-
-    return { success: true, messageId: result.messageId };
+    console.log(`[EMAIL] ✅ Sent successfully. Message ID: ${result.data?.id}`);
+    return { success: true, messageId: result.data?.id };
   } catch (error) {
     console.error(`[EMAIL ERROR] ❌ Failed to send to ${to}:`, error.message);
-    console.error('[EMAIL ERROR] Full error details:', error);
 
-    // More detailed error logging
-    if (error.code) {
-      console.error('[EMAIL ERROR] Error code:', error.code);
-    }
-    if (error.response) {
-      console.error('[EMAIL ERROR] SMTP response:', error.response);
-    }
-    if (error.command) {
-      console.error('[EMAIL ERROR] SMTP command:', error.command);
+    // For testing: if it's your own email domain, it should work
+    if (to.includes('@gmail.com') || to.includes('@yourdomain.com')) {
+      console.log(
+        '[EMAIL] Note: Resend default domain only works reliably for same-domain emails',
+      );
     }
 
     throw error;

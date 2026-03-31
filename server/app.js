@@ -59,82 +59,72 @@ app.use(express.urlencoded({ extended: true }));
 // Email test endpoint for debugging
 app.get('/test-email', async (req, res) => {
   try {
-    const nodemailer = require('nodemailer');
+    const { Resend } = require('resend');
+    const resend = new Resend(process.env.RESEND_API_KEY);
 
-    console.log('[TEST EMAIL] Setting up Gmail SMTP...');
+    if (!process.env.RESEND_API_KEY) {
+      return res.status(500).json({
+        success: false,
+        error: 'RESEND_API_KEY not configured',
+      });
+    }
 
-    const transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 465,
-      secure: true, // Use SSL instead of STARTTLS
-      auth: {
-        user: process.env.GMAIL_EMAIL,
-        pass: process.env.GMAIL_APP_PASSWORD,
-      },
-      connectionTimeout: 30000,
-      socketTimeout: 30000,
-      debug: true,
-      logger: true,
-    });
-
-    console.log('[TEST EMAIL] Verifying connection...');
-
-    // Verify connection
-    await transporter.verify();
-    console.log('[TEST EMAIL] ✅ SMTP connection verified');
+    console.log('[TEST EMAIL] Sending via Resend API');
 
     const testEmail = req.query.email || 'cjrv026.work@gmail.com';
-    console.log(`[TEST EMAIL] Sending test email to ${testEmail}...`);
+    console.log(`[TEST EMAIL] To: ${testEmail}`);
 
-    // Send test email
-    const result = await transporter.sendMail({
-      from: `"School Parking System" <${process.env.GMAIL_EMAIL}>`,
-      to: testEmail,
+    const result = await resend.emails.send({
+      from: 'School Parking System <onboarding@resend.dev>',
+      to: [testEmail],
       subject: 'School Parking System - Test Email',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h1 style="color: #8b5cf6;">School Parking System</h1>
-          <p>This is a test email to verify Gmail SMTP is working on Render.</p>
+          <p>This is a test email via Resend API.</p>
           <p><strong>Sent at:</strong> ${new Date().toISOString()}</p>
-          <p><strong>From:</strong> ${process.env.GMAIL_EMAIL}</p>
           <p><strong>To:</strong> ${testEmail}</p>
-          <p>If you received this, Gmail SMTP is working correctly! ✅</p>
+          <p>If you received this, Resend API is working! ✅</p>
+          <p><em>Note: Resend default domain works best for same-domain emails.</em></p>
         </div>
       `,
     });
 
     console.log(
-      `[TEST EMAIL] ✅ Email sent successfully. Message ID: ${result.messageId}`,
+      `[TEST EMAIL] ✅ Sent successfully. Message ID: ${result.data?.id}`,
     );
 
     res.json({
       success: true,
-      message: 'Test email sent successfully via Gmail SMTP',
-      messageId: result.messageId,
+      message: 'Test email sent successfully via Resend API',
+      messageId: result.data?.id,
       to: testEmail,
+      note: 'Resend default domain works best for same-domain emails',
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
     console.error('[TEST EMAIL ERROR] ❌ Failed:', error.message);
-    console.error('[TEST EMAIL ERROR] Full details:', error);
 
-    let hint = 'Check Render logs for detailed error information.';
+    let hint = 'Check Render logs for details.';
 
-    if (error.message.includes('Authentication failed')) {
+    if (error.message.includes('rate limit')) {
+      hint = 'Rate limit exceeded. Try again later.';
+    } else if (error.message.includes('unauthorized')) {
       hint =
-        'Gmail app password is incorrect or expired. Generate a new one at myaccount.google.com/apppasswords';
-    } else if (error.message.includes('connect ETIMEDOUT')) {
+        'Invalid RESEND_API_KEY. Check your API key in Render environment variables';
+    } else if (
+      error.message.includes('blocked') ||
+      error.message.includes('spam')
+    ) {
       hint =
-        'Connection timeout - Render may be blocking SMTP. Try using port 465 with secure: true';
-    } else if (error.message.includes('Invalid login')) {
-      hint =
-        'Invalid Gmail credentials. Check GMAIL_EMAIL and GMAIL_APP_PASSWORD in Render environment variables';
+        'Email blocked by recipient provider. This is normal with Resend default domain.';
     }
 
     res.status(500).json({
       success: false,
       error: error.message,
       hint,
+      note: 'For testing, try sending to your own Gmail address first',
       timestamp: new Date().toISOString(),
     });
   }
