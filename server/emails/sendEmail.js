@@ -11,15 +11,14 @@ module.exports = async ({ to, subject, html }) => {
 
     const transporter = nodemailer.createTransport({
       host: 'smtp.gmail.com',
-      port: 587,
-      secure: false,
-      requireTLS: true,
-      connectionTimeout: 10000, // 10 seconds
-      socketTimeout: 10000, // 10 seconds
+      port: 465,
+      secure: true, // Use SSL on port 465
       auth: {
         user: process.env.GMAIL_EMAIL,
         pass: process.env.GMAIL_APP_PASSWORD,
       },
+      connectionTimeout: 30000, // 30 seconds
+      socketTimeout: 30000, // 30 seconds
     });
 
     // Verify connection before sending
