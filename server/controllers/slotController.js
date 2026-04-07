@@ -8,18 +8,23 @@ const slotService = require('../services/slotService');
 
 exports.getSlotDetails = async (req, res) => {
   try {
-    let student = null;
+    let assignedStudent = null;
+    let occupyingUser = null;
 
     if (!mongoose.Types.ObjectId.isValid(req.body._id))
       throw new Error('Invalid slot id');
     let slot = await Slot.findOne({ slotId: req.body._id });
     if (slot.assignedStudentId) {
-      student = await slotService.getAssignedStudent(slot.assignedStudentId);
+      assignedStudent = await slotService.getAssignedStudent(slot.assignedStudentId);
+    }
+    if (slot.occupiedBy && !slot.occupiedBy.equals(slot.assignedStudentId)) {
+      occupyingUser = await slotService.getAssignedStudent(slot.occupiedBy);
     }
 
     const details = {
       ...(slot ? slot.toObject() : {}),
-      ...student,
+      ...assignedStudent,
+      occupyingUser: slot.occupiedBy ? (occupyingUser || assignedStudent) : null,
     };
 
     res

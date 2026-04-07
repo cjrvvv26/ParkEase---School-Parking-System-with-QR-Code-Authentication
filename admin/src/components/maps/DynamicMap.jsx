@@ -14,8 +14,9 @@ function getSlotFill(shape, dark) {
     return dark ? SLOT_COLORS.structure.dark : SLOT_COLORS.structure.light;
   }
   const mode = dark ? 'dark' : 'light';
-  if (shape.assignedStudentId) return SLOT_COLORS.exclusive[mode];
-  if (shape.occupiedBy)        return SLOT_COLORS.occupied[mode];
+  const status = shape.slotStatus || shape.status;
+  if (status === 'occupied' || shape.occupiedBy) return SLOT_COLORS.occupied[mode];
+  if (status === 'exclusive' || shape.assignedStudentId) return SLOT_COLORS.exclusive[mode];
   return SLOT_COLORS.available[mode];
 }
 

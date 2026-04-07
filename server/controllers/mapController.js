@@ -147,7 +147,25 @@ exports.getAllMapsWithShapes = async (req, res) => {
     const mapsWithShapes = await Promise.all(
       maps.map(async (map) => {
         const shapes = await Shape.find({ mapId: map._id });
-        return { ...map.toObject(), shapes };
+        const shapeIds = shapes.map((s) => s._id);
+        const slots = await Slot.find({ slotId: { $in: shapeIds } }).select(
+          'slotId assignedStudentId occupiedBy isOccupied status entryTime',
+        );
+        const slotMap = {};
+        slots.forEach((slot) => { slotMap[slot.slotId.toString()] = slot; });
+        const shapesWithSlot = shapes.map((shape) => {
+          const slot = slotMap[shape._id.toString()];
+          if (!slot) return shape.toObject();
+          return {
+            ...shape.toObject(),
+            assignedStudentId: slot.assignedStudentId,
+            occupiedBy: slot.occupiedBy,
+            isOccupied: slot.isOccupied,
+            slotStatus: slot.status,
+            entryTime: slot.entryTime,
+          };
+        });
+        return { ...map.toObject(), shapes: shapesWithSlot };
       }),
     );
     res.status(200).json(mapsWithShapes);
