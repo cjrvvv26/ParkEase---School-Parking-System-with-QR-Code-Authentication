@@ -28,9 +28,8 @@ export default function Home() {
   const { t } = useTheme();
   const { loading, error, execute } = useApiRequest();
 
-  if (!user) return null;
-
   useEffect(() => {
+    if (!user?._id) return;
     const fetchData = async () => {
       const [semesterData, slotsData] = await Promise.all([
         execute(getSemester),
@@ -40,7 +39,9 @@ export default function Home() {
       if (slotsData?.status === 200) setAvailableSlots(slotsData.data ?? []);
     };
     fetchData();
-  }, []);
+  }, [user?._id]);
+
+  if (!user?._id) return null;
 
   const centerNavData = [
     { icon: User, label: 'Profile', to: '/Account' },

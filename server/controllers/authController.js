@@ -132,8 +132,9 @@ exports.verifyUserOtp = async (req, res) => {
     let generatedPassword = null;
 
     if (type === 'login') {
-      const user = await otpService.verifyOtp(email, inputOtp, type);
-      viewModel = user;
+      const otpPayload = await otpService.verifyOtp(email, inputOtp, type);
+      const userService = require('../services/userService');
+      viewModel = await userService.getUserData(otpPayload._id);
     } else if (type === 'register') {
       const result = await otpService.verifyOtp(email, inputOtp, type);
       viewModel = result.viewModel;

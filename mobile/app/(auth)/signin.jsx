@@ -1,4 +1,13 @@
-import { View, Text, Pressable, TextInput, Image, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import {
+  View,
+  Text,
+  Pressable,
+  TextInput,
+  Image,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
 import { useState, useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Eye, EyeOff, Mail, Lock, CheckCircle } from 'lucide-react-native';
@@ -18,8 +27,12 @@ import api from '../services/api';
 
 WebBrowser.maybeCompleteAuthSession();
 
-const GOOGLE_CLIENT_ID = '376193942979-6hs98pha8pv81g19g7klssvpjf58s4js.apps.googleusercontent.com';
-const REDIRECT_URI = AuthSession.makeRedirectUri({ scheme: 'parkease', path: 'auth' });
+const GOOGLE_CLIENT_ID =
+  '376193942979-6hs98pha8pv81g19g7klssvpjf58s4js.apps.googleusercontent.com';
+const REDIRECT_URI = AuthSession.makeRedirectUri({
+  scheme: 'parkease',
+  path: 'auth',
+});
 
 export default function SignIn() {
   const router = useRouter();
@@ -30,21 +43,28 @@ export default function SignIn() {
   const [showPassword, setShowPassword] = useState(false);
   const [toast, setToast] = useState('');
   const [googleLoading, setGoogleLoading] = useState(false);
-  const [credentials, setCredentials] = useState({ email: '', password: '', platform: 'mobile' });
+  const [credentials, setCredentials] = useState({
+    email: '',
+    password: '',
+    platform: 'mobile',
+  });
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
     try {
       // Generate PKCE code verifier + challenge
       const codeVerifier = AuthSession.generateRandomBytes(32)
-        .map(b => b.toString(16).padStart(2, '0')).join('');
+        .map((b) => b.toString(16).padStart(2, '0'))
+        .join('');
       const digest = await Crypto.digestStringAsync(
         Crypto.CryptoDigestAlgorithm.SHA256,
         codeVerifier,
-        { encoding: Crypto.CryptoEncoding.BASE64 }
+        { encoding: Crypto.CryptoEncoding.BASE64 },
       );
       const codeChallenge = digest
-        .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=/g, '');
 
       const authUrl =
         `https://accounts.google.com/o/oauth2/v2/auth?` +
@@ -57,7 +77,10 @@ export default function SignIn() {
 
       console.log('[GOOGLE] redirect_uri:', REDIRECT_URI);
 
-      const result = await WebBrowser.openAuthSessionAsync(authUrl, REDIRECT_URI);
+      const result = await WebBrowser.openAuthSessionAsync(
+        authUrl,
+        REDIRECT_URI,
+      );
       if (result.type !== 'success') return;
 
       const match = result.url.match(/code=([^&]+)/);
@@ -100,9 +123,20 @@ export default function SignIn() {
   }, []);
 
   const handleRegistration = async () => {
-    if (!credentials.email || !credentials.password) return setError('All fields must be filled.');
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(credentials.email)) return setError('Invalid email address');
+    if (!credentials.email || !credentials.password)
+      return setError('All fields must be filled.');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(credentials.email))
+      return setError('Invalid email address');
+
+    console.log('[LOGIN] Attempting login with:', {
+      email: credentials.email,
+      platform: credentials.platform,
+    });
+    console.log('[LOGIN] API Base URL:', api.defaults.baseURL);
+
     const data = await execute(login, credentials);
+    console.log('[LOGIN] Response:', data);
+
     if (data?.status === 200) {
       await AsyncStorage.setItem('email', credentials.email);
       await AsyncStorage.setItem('hasVerification', 'true');
@@ -112,69 +146,224 @@ export default function SignIn() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#8e51ff' }}>
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps='handled' showsVerticalScrollIndicator={false}>
-
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps='handled'
+          showsVerticalScrollIndicator={false}
+        >
           {/* Hero — always purple */}
-          <View style={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 48, gap: 12 }}>
-            <Image source={Logo} style={{ width: 80, height: 80 }} resizeMode='contain' />
-            <Text style={{ fontFamily: 'Poppins700', fontSize: 28, color: '#fff', letterSpacing: 0.3 }}>School Parking System</Text>
-            <Text style={{ fontFamily: 'Poppins400', fontSize: 14, color: 'rgba(255,255,255,0.75)' }}>Secure. Smart. Simple.</Text>
+          <View
+            style={{
+              alignItems: 'center',
+              justifyContent: 'center',
+              paddingVertical: 48,
+              gap: 12,
+            }}
+          >
+            <Image
+              source={Logo}
+              style={{ width: 80, height: 80 }}
+              resizeMode='contain'
+            />
+            <Text
+              style={{
+                fontFamily: 'Poppins700',
+                fontSize: 28,
+                color: '#fff',
+                letterSpacing: 0.3,
+              }}
+            >
+              School Parking System
+            </Text>
+            <Text
+              style={{
+                fontFamily: 'Poppins400',
+                fontSize: 14,
+                color: 'rgba(255,255,255,0.75)',
+              }}
+            >
+              Secure. Smart. Simple.
+            </Text>
           </View>
 
           {/* Form Card */}
-          <View style={{ flex: 1, backgroundColor: t.card, borderTopLeftRadius: 32, borderTopRightRadius: 32, paddingHorizontal: 28, paddingTop: 36, paddingBottom: 40 }}>
-
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: t.card,
+              borderTopLeftRadius: 32,
+              borderTopRightRadius: 32,
+              paddingHorizontal: 28,
+              paddingTop: 36,
+              paddingBottom: 40,
+            }}
+          >
             {/* Logout toast */}
             {toast ? (
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#dcfce7', borderRadius: 12, padding: 12, marginBottom: 20, borderWidth: 1, borderColor: '#bbf7d0' }}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 10,
+                  backgroundColor: '#dcfce7',
+                  borderRadius: 12,
+                  padding: 12,
+                  marginBottom: 20,
+                  borderWidth: 1,
+                  borderColor: '#bbf7d0',
+                }}
+              >
                 <CheckCircle color='#16a34a' size={16} />
-                <Text style={{ fontFamily: 'Poppins500', fontSize: 13, color: '#15803d', flex: 1 }}>{toast}</Text>
+                <Text
+                  style={{
+                    fontFamily: 'Poppins500',
+                    fontSize: 13,
+                    color: '#15803d',
+                    flex: 1,
+                  }}
+                >
+                  {toast}
+                </Text>
               </View>
             ) : null}
 
-            <Text style={{ fontFamily: 'Poppins700', fontSize: 24, color: t.text, marginBottom: 4 }}>Welcome back</Text>
-            <Text style={{ fontFamily: 'Poppins400', fontSize: 14, color: t.textMuted, marginBottom: 28 }}>Sign in to access your account</Text>
+            <Text
+              style={{
+                fontFamily: 'Poppins700',
+                fontSize: 24,
+                color: t.text,
+                marginBottom: 4,
+              }}
+            >
+              Welcome back
+            </Text>
+            <Text
+              style={{
+                fontFamily: 'Poppins400',
+                fontSize: 14,
+                color: t.textMuted,
+                marginBottom: 28,
+              }}
+            >
+              Sign in to access your account
+            </Text>
 
             {/* Email */}
             <View style={{ marginBottom: 16 }}>
-              <Text style={{ fontFamily: 'Poppins600', fontSize: 13, color: t.text, marginBottom: 8 }}>Email Address</Text>
-              <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: t.inputBg, borderRadius: 14, borderWidth: 1, borderColor: t.cardBorder, paddingHorizontal: 14, gap: 10 }}>
+              <Text
+                style={{
+                  fontFamily: 'Poppins600',
+                  fontSize: 13,
+                  color: t.text,
+                  marginBottom: 8,
+                }}
+              >
+                Email Address
+              </Text>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  backgroundColor: t.inputBg,
+                  borderRadius: 14,
+                  borderWidth: 1,
+                  borderColor: t.cardBorder,
+                  paddingHorizontal: 14,
+                  gap: 10,
+                }}
+              >
                 <Mail color={t.textFaint} size={18} />
                 <TextInput
                   value={credentials.email}
-                  onChangeText={(text) => setCredentials((prev) => ({ ...prev, email: text }))}
+                  onChangeText={(text) =>
+                    setCredentials((prev) => ({ ...prev, email: text }))
+                  }
                   placeholder='you@school.edu'
                   placeholderTextColor={t.textFaint}
                   keyboardType='email-address'
                   autoCapitalize='none'
-                  style={{ flex: 1, fontFamily: 'Poppins400', fontSize: 14, color: t.text, paddingVertical: 14 }}
+                  style={{
+                    flex: 1,
+                    fontFamily: 'Poppins400',
+                    fontSize: 14,
+                    color: t.text,
+                    paddingVertical: 14,
+                  }}
                 />
               </View>
             </View>
 
             {/* Password */}
             <View style={{ marginBottom: 8 }}>
-              <Text style={{ fontFamily: 'Poppins600', fontSize: 13, color: t.text, marginBottom: 8 }}>Password</Text>
-              <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: t.inputBg, borderRadius: 14, borderWidth: 1, borderColor: t.cardBorder, paddingHorizontal: 14, gap: 10 }}>
+              <Text
+                style={{
+                  fontFamily: 'Poppins600',
+                  fontSize: 13,
+                  color: t.text,
+                  marginBottom: 8,
+                }}
+              >
+                Password
+              </Text>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  backgroundColor: t.inputBg,
+                  borderRadius: 14,
+                  borderWidth: 1,
+                  borderColor: t.cardBorder,
+                  paddingHorizontal: 14,
+                  gap: 10,
+                }}
+              >
                 <Lock color={t.textFaint} size={18} />
                 <TextInput
                   value={credentials.password}
-                  onChangeText={(text) => setCredentials((prev) => ({ ...prev, password: text }))}
+                  onChangeText={(text) =>
+                    setCredentials((prev) => ({ ...prev, password: text }))
+                  }
                   secureTextEntry={!showPassword}
                   placeholder='••••••••'
                   placeholderTextColor={t.textFaint}
-                  style={{ flex: 1, fontFamily: 'Poppins400', fontSize: 14, color: t.text, paddingVertical: 14 }}
+                  style={{
+                    flex: 1,
+                    fontFamily: 'Poppins400',
+                    fontSize: 14,
+                    color: t.text,
+                    paddingVertical: 14,
+                  }}
                 />
-                <Pressable onPress={() => setShowPassword(!showPassword)} hitSlop={8}>
-                  {showPassword ? <Eye color={t.textFaint} size={20} strokeWidth={1.5} /> : <EyeOff color={t.textFaint} size={20} strokeWidth={1.5} />}
+                <Pressable
+                  onPress={() => setShowPassword(!showPassword)}
+                  hitSlop={8}
+                >
+                  {showPassword ? (
+                    <Eye color={t.textFaint} size={20} strokeWidth={1.5} />
+                  ) : (
+                    <EyeOff color={t.textFaint} size={20} strokeWidth={1.5} />
+                  )}
                 </Pressable>
               </View>
             </View>
 
             {/* Error */}
             {error ? (
-              <Text style={{ fontFamily: 'Poppins400', fontSize: 13, color: t.red, marginBottom: 12, marginTop: 4 }}>{error}</Text>
+              <Text
+                style={{
+                  fontFamily: 'Poppins400',
+                  fontSize: 13,
+                  color: t.red,
+                  marginBottom: 12,
+                  marginTop: 4,
+                }}
+              >
+                {error}
+              </Text>
             ) : (
               <View style={{ height: 20 }} />
             )}
@@ -183,36 +372,107 @@ export default function SignIn() {
             <Pressable
               disabled={loading}
               onPress={handleRegistration}
-              style={{ backgroundColor: loading ? '#c4b5fd' : t.primary, borderRadius: 14, paddingVertical: 16, alignItems: 'center', marginBottom: 24, shadowColor: t.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: loading ? 0 : 0.3, shadowRadius: 8, elevation: loading ? 0 : 6 }}
+              style={{
+                backgroundColor: loading ? '#c4b5fd' : t.primary,
+                borderRadius: 14,
+                paddingVertical: 16,
+                alignItems: 'center',
+                marginBottom: 24,
+                shadowColor: t.primary,
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: loading ? 0 : 0.3,
+                shadowRadius: 8,
+                elevation: loading ? 0 : 6,
+              }}
             >
-              <Text style={{ fontFamily: 'Poppins600', fontSize: 15, color: '#fff' }}>{loading ? 'Signing in...' : 'Sign In'}</Text>
+              <Text
+                style={{
+                  fontFamily: 'Poppins600',
+                  fontSize: 15,
+                  color: '#fff',
+                }}
+              >
+                {loading ? 'Signing in...' : 'Sign In'}
+              </Text>
             </Pressable>
 
             {/* Divider */}
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 24, gap: 12 }}>
-              <View style={{ flex: 1, height: 1, backgroundColor: t.cardBorder }} />
-              <Text style={{ fontFamily: 'Poppins400', fontSize: 13, color: t.textFaint }}>or continue with</Text>
-              <View style={{ flex: 1, height: 1, backgroundColor: t.cardBorder }} />
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                marginBottom: 24,
+                gap: 12,
+              }}
+            >
+              <View
+                style={{ flex: 1, height: 1, backgroundColor: t.cardBorder }}
+              />
+              <Text
+                style={{
+                  fontFamily: 'Poppins400',
+                  fontSize: 13,
+                  color: t.textFaint,
+                }}
+              >
+                or continue with
+              </Text>
+              <View
+                style={{ flex: 1, height: 1, backgroundColor: t.cardBorder }}
+              />
             </View>
 
             {/* Google */}
             <Pressable
               disabled={googleLoading}
               onPress={handleGoogleSignIn}
-              style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, borderWidth: 1, borderColor: t.cardBorder, borderRadius: 14, paddingVertical: 14, marginBottom: 28, backgroundColor: t.card, opacity: googleLoading ? 0.6 : 1 }}>
-              <Image source={GoogleIcon} style={{ width: 20, height: 20 }} resizeMode='contain' />
-              <Text style={{ fontFamily: 'Poppins600', fontSize: 14, color: t.text }}>{googleLoading ? 'Signing in...' : 'Google'}</Text>
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 10,
+                borderWidth: 1,
+                borderColor: t.cardBorder,
+                borderRadius: 14,
+                paddingVertical: 14,
+                marginBottom: 28,
+                backgroundColor: t.card,
+                opacity: googleLoading ? 0.6 : 1,
+              }}
+            >
+              <Image
+                source={GoogleIcon}
+                style={{ width: 20, height: 20 }}
+                resizeMode='contain'
+              />
+              <Text
+                style={{
+                  fontFamily: 'Poppins600',
+                  fontSize: 14,
+                  color: t.text,
+                }}
+              >
+                {googleLoading ? 'Signing in...' : 'Google'}
+              </Text>
             </Pressable>
 
             {/* Footer */}
-            <Text style={{ textAlign: 'center', fontFamily: 'Poppins400', fontSize: 13, color: t.textFaint }}>
+            <Text
+              style={{
+                textAlign: 'center',
+                fontFamily: 'Poppins400',
+                fontSize: 13,
+                color: t.textFaint,
+              }}
+            >
               Can't sign in?{' '}
               <Link href='/Recovery'>
-                <Text style={{ fontFamily: 'Poppins600', color: t.primary }}>Get help</Text>
+                <Text style={{ fontFamily: 'Poppins600', color: t.primary }}>
+                  Get help
+                </Text>
               </Link>
             </Text>
           </View>
-
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

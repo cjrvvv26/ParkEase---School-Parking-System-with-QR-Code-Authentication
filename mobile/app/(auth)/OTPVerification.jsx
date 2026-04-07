@@ -145,7 +145,9 @@ export default function OTPVerification() {
             >
               Verify Your Identity
             </Text>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <View
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}
+            >
               <Mail color='rgba(255,255,255,0.7)' size={14} />
               <Text
                 style={{
@@ -242,7 +244,9 @@ export default function OTPVerification() {
                   </Text>
                 </Pressable>
               ) : (
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <View
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}
+                >
                   <Text
                     style={{
                       fontFamily: 'Poppins400',
@@ -317,7 +321,11 @@ export default function OTPVerification() {
               }}
             >
               <Text
-                style={{ fontFamily: 'Poppins600', fontSize: 15, color: '#fff' }}
+                style={{
+                  fontFamily: 'Poppins600',
+                  fontSize: 15,
+                  color: '#fff',
+                }}
               >
                 {loading ? 'Verifying...' : 'Verify'}
               </Text>
@@ -326,9 +334,12 @@ export default function OTPVerification() {
             {/* Cancel */}
             <Pressable
               disabled={loading}
+              className='self-center py-4'
               onPress={async () => {
                 try {
-                  await api.delete('auth/cancel-verification', { data: { email } });
+                  await api.delete('auth/cancel-verification', {
+                    data: { email },
+                  });
                 } catch (_) {}
                 await AsyncStorage.removeItem('hasVerification');
                 router.replace('/SignIn');
@@ -343,7 +354,11 @@ export default function OTPVerification() {
               })}
             >
               <Text
-                style={{ fontFamily: 'Poppins500', fontSize: 14, color: '#71717a' }}
+                style={{
+                  fontFamily: 'Poppins500',
+                  fontSize: 14,
+                  color: '#71717a',
+                }}
               >
                 Cancel
               </Text>

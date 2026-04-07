@@ -519,4 +519,3 @@ exports.getSearchUserData = async ({ q }) => {
   }
   return userData;
 };
-

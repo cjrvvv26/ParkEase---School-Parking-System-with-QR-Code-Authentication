@@ -30,10 +30,12 @@ exports.getUserByToken = async (req, res) => {
       return res.status(404).json({ error: 'No session found' });
     }
 
-    const session = jwt.verify(token, process.env.SECRET, (err, decoded) => {
-      if (err) return res.status(403).json({ error: err.message });
-      return decoded;
-    });
+    let session;
+    try {
+      session = jwt.verify(token, process.env.SECRET);
+    } catch (err) {
+      return res.status(403).json({ error: err.message });
+    }
 
     if (!session) {
       return res.status(404).json({ error: 'Session expired' });

@@ -151,7 +151,6 @@ exports.localSignUp = async (data) => {
     email,
     username: generatedUsername,
     role: 'super admin',
-    username: generatedUsername,
     name: fullName,
   };
 
