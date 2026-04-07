@@ -138,10 +138,6 @@ exports.verifySlotData = async (data) => {
     throw new Error("You're not in school. You can't occupy a slot");
   }
 
-  if (user.emailVerified) {
-    throw new Error('Verify your account first');
-  }
-
   let message = '';
 
   const slot = await Slot.findOne({ slotId });

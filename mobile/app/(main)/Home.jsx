@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'expo-router';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { Text, View, Pressable, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from 'expo-router';
 import {
   Bell,
   ParkingSquare,
@@ -17,14 +18,18 @@ import {
 } from 'lucide-react-native';
 import { getSemester } from '../services/semesterService';
 import { getAvailableSlots } from '../services/slotService';
+import { getData } from '../services/authService';
 import useApiRequest from '../hooks/useApiRequest';
 import useTheme from '../hooks/useTheme';
+import { login } from '../features/authSlicer';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Home() {
   const router = useRouter();
   const [semester, setSemester] = useState(null);
   const [availableSlots, setAvailableSlots] = useState([]);
   const { user } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
   const { t } = useTheme();
   const { loading, error, execute } = useApiRequest();
 
@@ -40,6 +45,18 @@ export default function Home() {
     };
     fetchData();
   }, [user?._id]);
+
+  useFocusEffect(
+    useCallback(() => {
+      const refreshUser = async () => {
+        const token = await AsyncStorage.getItem('token');
+        if (!token) return;
+        const res = await execute(getData, token);
+        if (res?.status === 200) dispatch(login({ user: res.data }));
+      };
+      refreshUser();
+    }, [])
+  );
 
   if (!user?._id) return null;
 

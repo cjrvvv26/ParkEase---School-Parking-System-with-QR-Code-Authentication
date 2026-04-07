@@ -1,0 +1,33 @@
+[dotenv@17.2.3] injecting env (16) from .env -- tip: 👥 sync secrets across teammates & machines: https://dotenvx.com/ops
+The server is running on port: http://localhost:5000
+User connected:  6Y3TDP25kx1CqIcCAAAB
+User connected:  UN-VWdB9nFxcg-DWAAAD
+{
+  name: {
+    firstName: 'Clarence James',
+    middleName: 'Rodriguez',
+    lastName: 'Valle'
+  },
+  payment: { isPaid: false, amount: 0 },
+  QRCode: {
+    url: 'https://res.cloudinary.com/dul4bggr3/image/upload/v1775441161/ParkEase/qrcodes/xdgnnehgj2ctbabm6vjt.png',
+    public_id: 'ParkEase/qrcodes/xdgnnehgj2ctbabm6vjt'
+  },
+  studentNo: 'C2023-00067',
+  yearLevel: '3rd',
+  course: new ObjectId('69cabda6a8e1a2d224b0a94d'),
+  phoneNo: '09081233234',
+  motorDetails: {
+    plateNo: 'YIS 678',
+    brand: 'Honda',
+    model: 'Wave 125',
+    color: 'Black',
+    _id: new ObjectId('69d30f7e87bc5887fc191847')
+  },
+  entryTime: 2026-04-07T14:05:41.420Z
+}
+{
+  _id: new ObjectId('69cabda6a8e1a2d224b0a94d'),
+  name: 'BSIT',
+  description: 'Bachelor of Science in Information Technology'
+}

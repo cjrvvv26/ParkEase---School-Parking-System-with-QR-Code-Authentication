@@ -151,11 +151,9 @@ exports.verifyOtp = async (email, otp, type) => {
       userData = await Guard.findOne({ userId: recordUser._id });
     }
 
-    // Set emailVerified on first successful OTP login + generate QR for student/faculty
-    if (!recordUser.emailVerified) {
-      recordUser.emailVerified = true;
-
-      if (recordUser.role === 'student' || recordUser.role === 'faculty') {
+    // Generate QR for student/faculty if they don't have one yet
+    if (recordUser.role === 'student' || recordUser.role === 'faculty') {
+      if (!userData?.QRCode?.url) {
         const generateQR = require('../utils/generateQRCode');
         const qr = await generateQR(`PARKEASE_USER:${recordUser._id}`);
         const Model = recordUser.role === 'student' ? Student : Faculty;
@@ -165,6 +163,11 @@ exports.verifyOtp = async (email, otp, type) => {
         );
         if (userData) userData.QRCode = qr;
       }
+    }
+
+    // Set emailVerified on first successful OTP login
+    if (!recordUser.emailVerified) {
+      recordUser.emailVerified = true;
     }
 
     // Always update lastActive on login
