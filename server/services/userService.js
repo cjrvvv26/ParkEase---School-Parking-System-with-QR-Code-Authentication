@@ -1,6 +1,7 @@
 const Guard = require('../models/guardModel');
 const Student = require('../models/studentModel');
 const Faculty = require('../models/facultyModel');
+const SuperAdmin = require('../models/superAdminModel');
 const Course = require('../models/courseModel');
 const User = require('../models/userModel');
 const Semester = require('../models/semesterModel');
@@ -26,6 +27,10 @@ exports.getUserData = async (id) => {
   let userData = null;
 
   switch (user.role) {
+    case 'super admin':
+      userData = await SuperAdmin.findOne({ userId: id }).select('-_id name');
+      viewModel = { ...viewModel, ...(userData?.toObject() || {}) };
+      break;
     case 'student':
       userData = await Student.findOne({ userId: id }).select(
         '-_id name course phoneNo studentNo payment entryTime outTime yearLevel motorDetails QRCode',

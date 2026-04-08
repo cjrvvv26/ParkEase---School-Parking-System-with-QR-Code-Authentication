@@ -52,7 +52,7 @@ exports.registerOtp = async ({ email, payload, otp, type }) => {
   return storeTempCredentials;
 };
 exports.verifyOtp = async (email, otp, type) => {
-  const user = await Otp.findOne({ email }).sort({ createdAt: -1 });
+  const user = await Otp.findOne({ email, type }).sort({ createdAt: -1 });
 
   if (!user || !user.payload) {
     throw new Error('Invalid or expired OTP');

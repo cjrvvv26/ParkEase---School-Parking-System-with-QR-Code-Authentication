@@ -16,7 +16,7 @@ exports.signInWithGoogle = async (accessToken) => {
   const { email } = googleResponse.data;
   const user = await User.findOne({ email });
   if (!user) throw new Error("Email address doesn't exist");
-  return user;
+  return { _id: user._id, email: user.email, role: user.role, username: user.username };
 };
 
 exports.signInWithGoogleCode = async ({ code, code_verifier, redirect_uri }) => {
@@ -41,7 +41,7 @@ exports.signInWithGoogleCode = async ({ code, code_verifier, redirect_uri }) => 
   const { email } = googleResponse.data;
   const user = await User.findOne({ email });
   if (!user) throw new Error("Email address doesn't exist");
-  return user;
+  return { _id: user._id, email: user.email, role: user.role, username: user.username };
 };
 
 exports.superAdminSignUpWithGoogle = async (accessToken) => {
