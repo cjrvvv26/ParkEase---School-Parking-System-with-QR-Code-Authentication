@@ -218,7 +218,7 @@ export default function Dashboard() {
         {/* Right column */}
         <div className='flex-1 flex flex-col gap-5'>
           {/* Parking Slots */}
-          <div className='flex-1 w-full rounded-xl bg-gradient-to-tl to-violet-500 via-violet-900 from-[#2d2d2d]'>
+          <div className='flex-1 w-full rounded-xl bg-gradient-to-tl to-blue-500 via-blue-900 from-[#2d2d2d]'>
             <div className='p-5 h-full flex flex-col text-white justify-between'>
               <h1 className='font-medium text-base'>Parking Slots</h1>
               <h2 className='text-center mt-5'>
@@ -263,7 +263,7 @@ export default function Dashboard() {
             <h1 className='text-base font-medium'>Security Guards</h1>
             <Link
               to='/add-guard'
-              className='py-2 px-4 rounded-full bg-transparent ring ring-violet-500 text-violet-500 flex items-center gap-2 hover:bg-violet-500 hover:text-white transition-colors'
+              className='py-2 px-4 rounded-full bg-transparent ring ring-blue-500 text-blue-500 flex items-center gap-2 hover:bg-blue-500 hover:text-white transition-colors'
             >
               <Plus size={16} />
               <p>New</p>
@@ -315,7 +315,7 @@ export default function Dashboard() {
           </div>
           <Link
             to='/users?role=guard'
-            className='bg-violet-500 mt-3 mb-5 rounded-xl py-4 text-white mx-5 font-medium text-center hover:bg-violet-600 transition-colors'
+            className='bg-blue-500 mt-3 mb-5 rounded-xl py-4 text-white mx-5 font-medium text-center hover:bg-blue-600 transition-colors'
           >
             View All Guards
           </Link>

@@ -3,7 +3,7 @@ import useFetch from '../../hooks/useFetch';
 import useDark from '../../hooks/useDark';
 
 const SLOT_COLORS = {
-  exclusive: { light: '#fef3c7', dark: '#78350f' },
+  exclusive: { light: '#dbeafe', dark: '#1e3a5f' },
   occupied:  { light: '#ffe4e6', dark: '#7f1d1d' },
   available: { light: '#dcfce7', dark: '#14532d' },
   structure: { light: '#E5E7EB', dark: '#3a3a3a' },
@@ -41,7 +41,7 @@ export default function DynamicMap({ shapes, width = 800, height = 600, onShapeC
     const fill = getSlotFill(shape, dark);
     const id = shape._id || shape.tempId;
     const isSelected = selectedId === id;
-    const stroke = isSelected ? '#8e51ff' : dark ? '#4a4a4a' : '#d1d5dc';
+    const stroke = isSelected ? '#3b82f6' : dark ? '#4a4a4a' : '#d1d5dc';
     const strokeWidth = isSelected ? '2' : '1';
 
     if (shape.geometry.shape === 'rect') {

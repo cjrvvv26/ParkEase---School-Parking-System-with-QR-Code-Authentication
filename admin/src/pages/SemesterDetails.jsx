@@ -68,7 +68,7 @@ export default function SemesterDetails() {
     return (
       <div className="min-h-screen py-8 px-4">
         <div className="max-w-4xl mx-auto">
-          <button onClick={() => navigate("/semesters")} className="flex items-center gap-2 text-violet-500 hover:text-violet-600 mb-4">
+          <button onClick={() => navigate("/semesters")} className="flex items-center gap-2 text-blue-500 hover:text-blue-600 mb-4">
             <ArrowLeft size={18} /><span>Back to Semesters</span>
           </button>
           <div className={`rounded-lg p-8 text-center ${dark ? 'bg-[#2f2f2f]' : 'bg-white'}`}>
@@ -86,7 +86,7 @@ export default function SemesterDetails() {
         <div className="mb-8">
           <button
             onClick={() => navigate("/semesters")}
-            className="flex items-center gap-2 text-violet-500 hover:text-violet-600 mb-4"
+            className="flex items-center gap-2 text-blue-500 hover:text-blue-600 mb-4"
           >
             <ArrowLeft size={18} />
             <span>Back to Semesters</span>
@@ -100,7 +100,7 @@ export default function SemesterDetails() {
             <div className="space-y-6">
               <div>
                 <div className="flex items-center gap-3 mb-3">
-                  <Calendar size={20} className="text-violet-500" />
+                  <Calendar size={20} className="text-blue-500" />
                   <h3 className={`font-semibold ${dark ? 'text-gray-200' : 'text-gray-700'}`}>Duration</h3>
                 </div>
                 <div className="ml-8 space-y-2">
@@ -124,7 +124,7 @@ export default function SemesterDetails() {
             <div className="space-y-6">
               <div>
                 <div className="flex items-center gap-3 mb-3">
-                  <DollarSign size={20} className="text-violet-500" />
+                  <DollarSign size={20} className="text-blue-500" />
                   <h3 className={`font-semibold ${dark ? 'text-gray-200' : 'text-gray-700'}`}>Pricing</h3>
                 </div>
                 <div className="ml-8 space-y-2">
@@ -137,8 +137,8 @@ export default function SemesterDetails() {
         </div>
 
         {/* Additional Information */}
-        <div className="bg-violet-100 border border-violet-500 inline-block text-violet-500 rounded-lg p-4">
-          <p className="text-sm text-violet-500 flex items-center gap-2">
+        <div className="bg-blue-100 border border-blue-500 inline-block text-blue-500 rounded-lg p-4">
+          <p className="text-sm text-blue-500 flex items-center gap-2">
             <div className="flex items-center gap-1 font-semibold">
               <Info className="size-5" />
               <span>Note:</span>

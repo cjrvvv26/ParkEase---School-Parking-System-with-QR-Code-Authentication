@@ -158,7 +158,7 @@ export default function EmailConfirmation() {
           onClick={handleResendOtp}
           className={`${
             timer <= 0
-              ? 'bg-violet-500 hover:bg-violet-400'
+              ? 'bg-blue-500 hover:bg-blue-400'
               : 'bg-gray-400 hover:bg-gray-500'
           } p-4 w-full mb-1 rounded-lg 
 text-white duration-75 flex items-center gap-2 justify-center`}

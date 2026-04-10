@@ -407,7 +407,7 @@ export default function Header() {
                   <h2 className='text-sm font-medium'>{user.name}</h2>
                   <Link
                     to='/account-details'
-                    className='text-xs hover:text-violet-500 hover:underline text-gray-400'
+                    className='text-xs hover:text-blue-500 hover:underline text-gray-400'
                   >
                     Account details
                   </Link>
@@ -424,7 +424,7 @@ export default function Header() {
                       if (feature.action) await feature.action();
                     }}
                     key={index}
-                    className={`flex items-center gap-3 py-4 px-4 hover:bg-violet-500 hover:text-white ${dark ? 'text-gray-300' : ''}`}
+                    className={`flex items-center gap-3 py-4 px-4 hover:bg-blue-500 hover:text-white ${dark ? 'text-gray-300' : ''}`}
                   >
                     {feature.icon}
                     <p>{feature.label}</p>

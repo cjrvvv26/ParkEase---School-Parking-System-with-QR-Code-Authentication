@@ -11,9 +11,9 @@ export default function RevenueChart({ monthlyData = null, loading = false }) {
       : ctx.canvas.height;
     const gradient = ctx.createLinearGradient(0, 0, 0, height);
 
-    gradient.addColorStop(0, "rgba(142, 81, 255, 0.5)");
-    gradient.addColorStop(0.5, "rgba(67, 45, 215, 0.10)");
-    gradient.addColorStop(1, "rgb(47, 13, 10, 0.00)");
+    gradient.addColorStop(0, "rgba(59, 130, 246, 0.5)");
+    gradient.addColorStop(0.5, "rgba(37, 99, 235, 0.10)");
+    gradient.addColorStop(1, "rgb(0, 0, 0, 0.00)");
     return gradient;
   }
 
@@ -43,10 +43,10 @@ export default function RevenueChart({ monthlyData = null, loading = false }) {
         fill: true,
         tension: 0.3,
         borderWidth: 2,
-        borderColor: "rgba(142, 81, 255, 1)",
+        borderColor: "rgba(59, 130, 246, 1)",
         pointRadius: 2,
-        pointBackgroundColor: "rgba(142, 81, 255, 1)",
-        pointBorderColor: "rgba(142, 81, 255, 1)",
+        pointBackgroundColor: "rgba(59, 130, 246, 1)",
+        pointBorderColor: "rgba(59, 130, 246, 1)",
         backgroundColor: (context) => {
           const chart = context.chart;
           const { ctx, chartArea } = chart;

@@ -14,11 +14,11 @@ export default function Header({ areaName, onNew, onUndo, onRedo, onZoomIn, onZo
         <div className='flex gap-3 items-center'>
           <h1
             onClick={() => navigate('/parking')}
-            className='text-base font-semibold cursor-pointer hover:text-violet-500 transition'
+            className='text-base font-semibold cursor-pointer hover:text-blue-500 transition'
           >
             School Parking System - Map Editor
           </h1>
-          <p className='py-1 px-2 rounded-sm border border-violet-500 text-violet-500'>BETA</p>
+          <p className='py-1 px-2 rounded-sm border border-blue-500 text-blue-500'>BETA</p>
         </div>
         <p className='-translate-x-1/2 left-1/2 absolute font-semibold text-base'>{areaName || 'Admin Bldg'}</p>
         <div className='flex items-center gap-3'>
@@ -47,7 +47,7 @@ export default function Header({ areaName, onNew, onUndo, onRedo, onZoomIn, onZo
             <Eye strokeWidth={1.5} className='size-4' />
             <span>Preview</span>
           </button>
-          <button onClick={onSave} disabled={isSaving} className='rounded-md py-2 px-3 bg-violet-500 text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2'>
+          <button onClick={onSave} disabled={isSaving} className='rounded-md py-2 px-3 bg-blue-500 text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2'>
             {isSaving ? (
               <>
                 <svg className='animate-spin size-4' xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24'>

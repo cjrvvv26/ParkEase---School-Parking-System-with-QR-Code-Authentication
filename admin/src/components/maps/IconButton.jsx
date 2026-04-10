@@ -7,7 +7,7 @@ export default function IconButton({ name, label, action, ...props }) {
   if (!Icon) return null;
 
   return (
-    <button onClick={action} className='hover:bg-violet-500 group p-2 rounded-md relative'>
+    <button onClick={action} className='hover:bg-blue-500 group p-2 rounded-md relative'>
       <Icon
         className={`size-5 group-hover:text-white ${dark ? 'text-gray-300' : 'text-gray-600'}`}
         strokeWidth={1.5}

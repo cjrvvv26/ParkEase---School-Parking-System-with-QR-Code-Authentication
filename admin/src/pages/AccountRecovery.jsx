@@ -45,8 +45,8 @@ export default function AccountRecovery() {
       <div className='w-[420px] flex flex-col gap-6'>
         {/* Header */}
         <div className='flex flex-col items-center gap-1 mb-2'>
-          <div className='h-14 w-14 rounded-full bg-violet-100 flex items-center justify-center mb-2'>
-            <Mail className='text-violet-500' strokeWidth={1.5} size={26} />
+          <div className='h-14 w-14 rounded-full bg-blue-100 flex items-center justify-center mb-2'>
+            <Mail className='text-blue-500' strokeWidth={1.5} size={26} />
           </div>
           <h1 className='text-2xl font-bold'>Forgot Password</h1>
           <p className='text-sm text-gray-400 text-center'>
@@ -65,7 +65,7 @@ export default function AccountRecovery() {
               </div>
             </div>
           ) : accountInfo ? (
-            <div className='flex gap-3 items-center p-3 rounded-xl bg-violet-50 border border-violet-100'>
+            <div className='flex gap-3 items-center p-3 rounded-xl bg-blue-50 border border-blue-100'>
               {accountInfo.profileDetails?.url ? (
                 <img src={accountInfo.profileDetails.url} className='h-12 w-12 rounded-full object-cover flex-shrink-0' />
               ) : (
@@ -85,7 +85,7 @@ export default function AccountRecovery() {
             type='email'
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className='p-4 rounded-xl ring ring-gray-300 hover:ring-violet-400 focus:ring-2 focus:ring-violet-500 outline-none w-full text-sm'
+            className='p-4 rounded-xl ring ring-gray-300 hover:ring-blue-400 focus:ring-2 focus:ring-blue-500 outline-none w-full text-sm'
             placeholder='Enter your email address'
           />
           {error && <p className='text-xs text-red-500'>{error}</p>}
@@ -95,7 +95,7 @@ export default function AccountRecovery() {
             disabled={!accountInfo || loading}
             className={`p-4 rounded-xl text-sm font-medium transition-colors ${
               accountInfo && !loading
-                ? 'bg-violet-500 hover:bg-violet-600 text-white cursor-pointer'
+                ? 'bg-blue-500 hover:bg-blue-600 text-white cursor-pointer'
                 : 'bg-gray-100 text-gray-400 cursor-not-allowed'
             }`}
           >

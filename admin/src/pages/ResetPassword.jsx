@@ -56,8 +56,8 @@ export default function ResetPassword() {
       <div className='w-[420px] flex flex-col gap-6'>
         {/* Header */}
         <div className='flex flex-col items-center gap-1 mb-2'>
-          <div className='h-14 w-14 rounded-full bg-violet-100 flex items-center justify-center mb-2'>
-            <KeyRound className='text-violet-500' strokeWidth={1.5} size={26} />
+          <div className='h-14 w-14 rounded-full bg-blue-100 flex items-center justify-center mb-2'>
+            <KeyRound className='text-blue-500' strokeWidth={1.5} size={26} />
           </div>
           <h1 className='text-2xl font-bold'>Reset Password</h1>
           <p className='text-sm text-gray-400 text-center'>
@@ -74,7 +74,7 @@ export default function ResetPassword() {
                 type={showPassword.new ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => { setPassword(e.target.value); setTouched(true); }}
-                className='w-full p-4 pr-12 rounded-xl ring ring-gray-300 hover:ring-violet-400 focus:ring-2 focus:ring-violet-500 outline-none text-sm'
+                className='w-full p-4 pr-12 rounded-xl ring ring-gray-300 hover:ring-blue-400 focus:ring-2 focus:ring-blue-500 outline-none text-sm'
                 placeholder='Enter new password'
               />
               <button type='button' onClick={() => setShowPassword((p) => ({ ...p, new: !p.new }))}
@@ -114,7 +114,7 @@ export default function ResetPassword() {
                     ? passwordsMatch
                       ? 'ring-green-400 focus:ring-2 focus:ring-green-500'
                       : 'ring-red-400 focus:ring-2 focus:ring-red-500'
-                    : 'ring-gray-300 hover:ring-violet-400 focus:ring-2 focus:ring-violet-500'
+                    : 'ring-gray-300 hover:ring-blue-400 focus:ring-2 focus:ring-blue-500'
                 }`}
                 placeholder='Confirm new password'
               />
@@ -138,7 +138,7 @@ export default function ResetPassword() {
             disabled={!canSubmit}
             className={`p-4 rounded-xl text-sm font-medium transition-colors mt-1 ${
               canSubmit
-                ? 'bg-violet-500 hover:bg-violet-600 text-white'
+                ? 'bg-blue-500 hover:bg-blue-600 text-white'
                 : 'bg-gray-100 text-gray-400 cursor-not-allowed'
             }`}
           >

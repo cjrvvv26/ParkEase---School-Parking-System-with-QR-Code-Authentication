@@ -44,7 +44,7 @@ export default function UserTable({ users = [] }) {
       <td className="flex items-center gap-2">
         <Link
           to={`/users/${user._id}`}
-          className={`duration-75 p-2 rounded-xl border border-transparent hover:border-violet-500 hover:text-violet-500 ${dark ? 'hover:bg-violet-500/10' : 'hover:bg-violet-100'}`}
+          className={`duration-75 p-2 rounded-xl border border-transparent hover:border-blue-500 hover:text-blue-500 ${dark ? 'hover:bg-blue-500/10' : 'hover:bg-blue-100'}`}
         >
           <MoveRight strokeWidth={1.5} />
         </Link>

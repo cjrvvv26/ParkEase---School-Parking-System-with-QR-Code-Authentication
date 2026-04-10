@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 import useDark from '../hooks/useDark';
 
 const PencilIcon = () => (
-  <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-4 h-4 text-gray-400 group-hover:text-violet-600 transition'>
+  <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-4 h-4 text-gray-400 group-hover:text-blue-600 transition'>
     <path strokeLinecap='round' strokeLinejoin='round' d='M16.862 3.487a2.1 2.1 0 0 1 2.97 2.97L8.25 18.04l-4.5 1.125 1.125-4.5L16.862 3.487z' />
   </svg>
 );
@@ -52,7 +52,7 @@ export default function Profile() {
 
   const fieldClass = (field) =>
     `w-full px-3 py-2 pr-8 rounded-md border outline-none ${
-      editingField === field ? 'border-violet-500 ' + (dark ? 'bg-[#3a3a3a] text-gray-200' : 'bg-white text-gray-800') : input
+      editingField === field ? 'border-blue-500 ' + (dark ? 'bg-[#3a3a3a] text-gray-200' : 'bg-white text-gray-800') : input
     }`;
 
   return (
@@ -70,13 +70,13 @@ export default function Profile() {
           <div className='flex items-center flex-col gap-5'>
             <div className='relative'>
               {information?.profileDetails?.url ? (
-                <img src={information.profileDetails.url} alt='Profile' className='w-50 h-50 rounded-full border-4 border-violet-500 object-cover' />
+                <img src={information.profileDetails.url} alt='Profile' className='w-50 h-50 rounded-full border-4 border-blue-500 object-cover' />
               ) : (
                 <UserCircle className={`size-45 ${dark ? 'text-gray-500' : 'text-gray-600'}`} strokeWidth={1} />
               )}
               <span className='absolute bottom-2 right-2 w-4 h-4 bg-green-500 rounded-full border-2 border-white' />
             </div>
-            <button className='flex items-center gap-2 px-5 py-2.5 rounded-xl bg-violet-500 text-white font-medium hover:bg-violet-400 active:scale-95 transition relative'>
+            <button className='flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-500 text-white font-medium hover:bg-blue-400 active:scale-95 transition relative'>
               <input type='file' name='profileDetails' onChange={handleChangePhoto} className='absolute h-full w-full z-10 opacity-0 cursor-pointer' />
               <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='w-5 h-5'>
                 <path strokeLinecap='round' strokeLinejoin='round' d='M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3' />
@@ -125,7 +125,7 @@ export default function Profile() {
             {error && <p className='text-xs text-red-500'>{error}</p>}
             <div className={`mt-8 ${dark ? 'text-gray-400' : 'text-gray-400'}`}>
               <span>Change your password? </span>
-              <Link to='/change-password' className='hover:text-violet-500 hover:underline'>Go here</Link>
+              <Link to='/change-password' className='hover:text-blue-500 hover:underline'>Go here</Link>
             </div>
           </div>
         </div>

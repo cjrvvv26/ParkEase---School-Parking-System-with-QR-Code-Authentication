@@ -30,7 +30,7 @@ export default function NotificationDetails() {
   if (loading || !notification) {
     return (
       <div className='flex flex-1 items-center justify-center'>
-        <div className='border-2 mb-30 border-t-violet-500 border-violet-100 h-12 w-12 rounded-full animate-spin'></div>
+        <div className='border-2 mb-30 border-t-blue-500 border-blue-100 h-12 w-12 rounded-full animate-spin'></div>
       </div>
     );
   }

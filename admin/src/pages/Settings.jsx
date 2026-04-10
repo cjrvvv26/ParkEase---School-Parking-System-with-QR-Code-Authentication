@@ -26,7 +26,7 @@ export default function Settings() {
               onClick={() => dispatch(setTheme(t))}
               className={`flex select-none cursor-pointer flex-col flex-1 rounded-xl border text-left transition-all ${
                 isActive
-                  ? 'border-violet-500 ring-2 ring-violet-500'
+                  ? 'border-blue-500 ring-2 ring-blue-500'
                   : dark ? 'border-[#3a3a3a]' : 'border-gray-200'
               }`}
             >
@@ -50,7 +50,7 @@ export default function Settings() {
                   } h-full w-full flex flex-col p-5`}
                 >
                   <header className={`${isDarkCard ? 'bg-[#3d3d3d]' : 'bg-gray-100'} h-[50px] flex items-center rounded-xl gap-2 px-5 justify-end`}>
-                    <span className="h-5 w-5 rounded-sm bg-violet-500"></span>
+                    <span className="h-5 w-5 rounded-sm bg-blue-500"></span>
                     <span className="h-5 w-5 rounded-sm bg-rose-500"></span>
                   </header>
                   <div className="flex gap-5 mt-5 flex-1">

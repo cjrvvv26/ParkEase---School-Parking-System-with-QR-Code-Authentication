@@ -41,7 +41,7 @@ export default function SlotsQRCode() {
         <div className='flex flex-col'>
           <Link
             to={'/parking'}
-            className='flex mb-2 cursor-pointer gap-2 items-center text-violet-500'
+            className='flex mb-2 cursor-pointer gap-2 items-center text-blue-500'
           >
             <ChevronLeft size={15} />
             <span>Parking</span>
@@ -60,7 +60,7 @@ export default function SlotsQRCode() {
       <section className='flex items-center flex-wrap gap-5 p-5'>
         {loading ? (
           <div className='flex-1 flex items-center justify-center'>
-            <div className='border-2 mt-30 border-t-violet-500 border-violet-100 h-12 w-12 rounded-full animate-spin'></div>
+            <div className='border-2 mt-30 border-t-blue-500 border-blue-100 h-12 w-12 rounded-full animate-spin'></div>
           </div>
         ) : mapSlots.length > 0 ? (
           mapSlots.map((slot, _) => (

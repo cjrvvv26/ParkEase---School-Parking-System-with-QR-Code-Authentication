@@ -235,7 +235,7 @@ export default function UserAccount() {
   if (userLoad) {
     return (
       <div className='items-center justify-center h-full w-full'>
-        <span className='border-t-2 border-t-violet-500 animate-spin h-12 w-12 rounded-full'></span>
+        <span className='border-t-2 border-t-blue-500 animate-spin h-12 w-12 rounded-full'></span>
       </div>
     );
   }
@@ -247,7 +247,7 @@ export default function UserAccount() {
         <div className='flex flex-col'>
           <Link
             to={'/users'}
-            className='flex items-center text-violet-500 hover:opacity-80 cursor-pointer'
+            className='flex items-center text-blue-500 hover:opacity-80 cursor-pointer'
           >
             <ChevronLeft strokeWidth={1.5} size={18} />
             <span>Users</span>
@@ -266,7 +266,7 @@ export default function UserAccount() {
             setProfile(null);
             setUser(originalUser);
           }}
-          className='flex gap-1 items-center text-gray-400 hover:text-violet-500'
+          className='flex gap-1 items-center text-gray-400 hover:text-blue-500'
         >
           {onlyRead ? (
             <>
@@ -283,8 +283,12 @@ export default function UserAccount() {
       {user && (
         <form className='flex flex-col gap-6 px-5'>
           {/* Personal Information */}
-          <section className={`flex flex-col w-full gap-3 border-b ${border} pb-5`}>
-            <h1 className={`font-medium text-base ${dark ? 'text-gray-200' : 'text-gray-700'}`}>
+          <section
+            className={`flex flex-col w-full gap-3 border-b ${border} pb-5`}
+          >
+            <h1
+              className={`font-medium text-base ${dark ? 'text-gray-200' : 'text-gray-700'}`}
+            >
               Personal Information
             </h1>
             <div className='flex gap-5 w-full'>
@@ -295,7 +299,7 @@ export default function UserAccount() {
                       <img
                         src={user.profileDetails?.url}
                         alt='Profile'
-                        className='w-40 h-40 rounded-full border-4 border-violet-500 object-cover'
+                        className='w-40 h-40 rounded-full border-4 border-blue-500 object-cover'
                       />
                     ) : (
                       <CircleUserRound
@@ -308,7 +312,7 @@ export default function UserAccount() {
                     <img
                       src={preview || user.profileDetails?.url}
                       alt='Profile'
-                      className='w-40 h-40 rounded-full border-4 border-violet-500 object-cover'
+                      className='w-40 h-40 rounded-full border-4 border-blue-500 object-cover'
                     />
                   ) : (
                     <CircleUserRound
@@ -322,7 +326,7 @@ export default function UserAccount() {
                   ></span>
                 </div>
                 {!onlyRead && (
-                  <button className='rounded-md relative text-white hover:bg-violet-400 bg-violet-500 duration-100 py-2 w-full'>
+                  <button className='rounded-md relative text-white hover:bg-blue-400 bg-blue-500 duration-100 py-2 w-full'>
                     <input
                       type='file'
                       name=''
@@ -615,8 +619,12 @@ export default function UserAccount() {
             </div>
           </section>
           {user.role !== 'guard' ? (
-            <section className={`flex flex-col w-full gap-3 border-b ${border} pb-10`}>
-              <h1 className={`font-medium text-base ${dark ? 'text-gray-200' : 'text-gray-700'}`}>
+            <section
+              className={`flex flex-col w-full gap-3 border-b ${border} pb-10`}
+            >
+              <h1
+                className={`font-medium text-base ${dark ? 'text-gray-200' : 'text-gray-700'}`}
+              >
                 Motorcycle Information
               </h1>
               {/* AI Motor Image Generates Section */}
@@ -633,11 +641,13 @@ export default function UserAccount() {
                           height='100'
                           viewBox='0 0 50 50'
                           fill='currentColor'
-                          className='size-5 text-violet-500'
+                          className='size-5 text-blue-500'
                         >
                           <path d='M22.462 11.035l2.88 7.097c1.204 2.968 3.558 5.322 6.526 6.526l7.097 2.88c1.312.533 1.312 2.391 0 2.923l-7.097 2.88c-2.968 1.204-5.322 3.558-6.526 6.526l-2.88 7.097c-.533 1.312-2.391 1.312-2.923 0l-2.88-7.097c-1.204-2.968-3.558-5.322-6.526-6.526l-7.097-2.88c-1.312-.533-1.312-2.391 0-2.923l7.097-2.88c2.968-1.204 5.322-3.558 6.526-6.526l2.88-7.097C20.071 9.723 21.929 9.723 22.462 11.035zM39.945 2.701l.842 2.428c.664 1.915 2.169 3.42 4.084 4.084l2.428.842c.896.311.896 1.578 0 1.889l-2.428.842c-1.915.664-3.42 2.169-4.084 4.084l-.842 2.428c-.311.896-1.578.896-1.889 0l-.842-2.428c-.664-1.915-2.169-3.42-4.084-4.084l-2.428-.842c-.896-.311-.896-1.578 0-1.889l2.428-.842c1.915-.664 3.42-2.169 4.084-4.084l.842-2.428C38.366 1.805 39.634 1.805 39.945 2.701z'></path>
                         </svg>
-                        <h1 className={`font-semibold ${dark ? 'text-gray-200' : 'text-gray-700'}`}>
+                        <h1
+                          className={`font-semibold ${dark ? 'text-gray-200' : 'text-gray-700'}`}
+                        >
                           Image fetched from external website •{' '}
                           {generatedMotorcycle.corrected?.search_query}
                         </h1>
@@ -650,7 +660,9 @@ export default function UserAccount() {
                         />
                         <div className='flex flex-col h-full justify-between flex-1'>
                           <div className='truncate'>
-                            <p className={`indent-7 text-wrap line-clamp-6 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>
+                            <p
+                              className={`indent-7 text-wrap line-clamp-6 ${dark ? 'text-gray-300' : 'text-gray-700'}`}
+                            >
                               {generatedMotorcycle.corrected?.information}
                             </p>
                           </div>
@@ -694,7 +706,7 @@ export default function UserAccount() {
                           height='100'
                           viewBox='0 0 50 50'
                           fill='currentColor'
-                          className='size-5 text-violet-500 animate-pulse'
+                          className='size-5 text-blue-500 animate-pulse'
                         >
                           <path d='M22.462 11.035l2.88 7.097c1.204 2.968 3.558 5.322 6.526 6.526l7.097 2.88c1.312.533 1.312 2.391 0 2.923l-7.097 2.88c-2.968 1.204-5.322 3.558-6.526 6.526l-2.88 7.097c-.533 1.312-2.391 1.312-2.923 0l-2.88-7.097c-1.204-2.968-3.558-5.322-6.526-6.526l-7.097-2.88c-1.312-.533-1.312-2.391 0-2.923l7.097-2.88c2.968-1.204 5.322-3.558 6.526-6.526l2.88-7.097C20.071 9.723 21.929 9.723 22.462 11.035zM39.945 2.701l.842 2.428c.664 1.915 2.169 3.42 4.084 4.084l2.428.842c.896.311.896 1.578 0 1.889l-2.428.842c-1.915.664-3.42 2.169-4.084 4.084l-.842 2.428c-.311.896-1.578.896-1.889 0l-.842-2.428c-.664-1.915-2.169-3.42-4.084-4.084l-2.428-.842c-.896-.311-.896-1.578 0-1.889l2.428-.842c1.915-.664 3.42-2.169 4.084-4.084l.842-2.428C38.366 1.805 39.634 1.805 39.945 2.701z'></path>
                         </svg>
@@ -815,7 +827,7 @@ export default function UserAccount() {
                       user?.motorDetails?.brand &&
                       user?.motorDetails?.color &&
                       user?.motorDetails?.model
-                        ? 'bg-violet-500 text-white hover:bg-violet-600'
+                        ? 'bg-blue-500 text-white hover:bg-blue-600'
                         : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                     }`}
                   >
@@ -825,8 +837,12 @@ export default function UserAccount() {
               </div>
             </section>
           ) : (
-            <section className={`flex flex-col w-full gap-3 border-b ${border} pb-10`}>
-              <h1 className={`font-medium text-base ${dark ? 'text-gray-200' : 'text-gray-700'}`}>
+            <section
+              className={`flex flex-col w-full gap-3 border-b ${border} pb-10`}
+            >
+              <h1
+                className={`font-medium text-base ${dark ? 'text-gray-200' : 'text-gray-700'}`}
+              >
                 Permissions
               </h1>
               <div className='space-y-2'>
@@ -848,7 +864,9 @@ export default function UserAccount() {
                         checked={user.permissions.canScan}
                         className='rounded'
                       />
-                      <span className={`text-sm ${dark ? 'text-gray-300' : 'text-gray-700'}`}>
+                      <span
+                        className={`text-sm ${dark ? 'text-gray-300' : 'text-gray-700'}`}
+                      >
                         Can scan & verify QR codes (entry/exit)
                       </span>
                     </>
@@ -877,7 +895,9 @@ export default function UserAccount() {
                         }
                         checked={user.permissions.canViewAnalytics}
                       />
-                      <span className={`text-sm ${dark ? 'text-gray-300' : 'text-gray-700'}`}>
+                      <span
+                        className={`text-sm ${dark ? 'text-gray-300' : 'text-gray-700'}`}
+                      >
                         Can view parking analytics & reports
                       </span>
                     </>
@@ -911,7 +931,7 @@ export default function UserAccount() {
               <button
                 disabled={loading}
                 onClick={handleUpdateInfo}
-                className={`${loading && 'cursor-not-allowed'} bg-violet-500 hover:opacity-80 text-white rounded-md py-2 px-5`}
+                className={`${loading && 'cursor-not-allowed'} bg-blue-500 hover:opacity-80 text-white rounded-md py-2 px-5`}
               >
                 {loading ? '...Updating' : 'Save'}
               </button>
@@ -921,60 +941,104 @@ export default function UserAccount() {
       )}
 
       {/* Activity Logs Section */}
-      <section className={`mx-5 mb-8 border ${border} rounded-xl overflow-hidden`}>
+      <section
+        className={`mx-5 mb-8 border ${border} rounded-xl overflow-hidden`}
+      >
         <div className={`px-5 py-4 border-b ${border}`}>
-          <h2 className={`font-semibold text-base ${dark ? 'text-gray-200' : 'text-gray-700'}`}>Activity Logs</h2>
-          <p className='text-xs text-gray-400'>Recent parking and account activity for this user</p>
+          <h2
+            className={`font-semibold text-base ${dark ? 'text-gray-200' : 'text-gray-700'}`}
+          >
+            Activity Logs
+          </h2>
+          <p className='text-xs text-gray-400'>
+            Recent parking and account activity for this user
+          </p>
         </div>
         {logsLoading ? (
           <div className='flex items-center justify-center py-10'>
-            <div className='border-2 border-t-violet-500 border-violet-100 h-8 w-8 rounded-full animate-spin'></div>
+            <div className='border-2 border-t-blue-500 border-blue-100 h-8 w-8 rounded-full animate-spin'></div>
           </div>
         ) : userLogs.length === 0 ? (
-          <p className='text-center py-10 text-gray-400 text-sm'>No activity found</p>
+          <p className='text-center py-10 text-gray-400 text-sm'>
+            No activity found
+          </p>
         ) : (
-          <div className={`divide-y ${border} max-h-[400px] overflow-y-auto [scrollbar-width:none]`}>
-            {userLogs.filter((log) => {
-              // Exclude old logs where guardId was incorrectly stored as userId
-              if (log.metadata?.guardId && log.userId?._id?.toString() !== id) return false;
-              return true;
-            }).map((log) => {
-              const isPark = log.action === 'PARKED';
-              const isUnpark = log.action === 'UNPARKED';
-              const isEntry = log.action === 'ENTRY_TIME';
-              const isExit = log.action === 'OUT_TIME';
-              const badgeColor =
-                isEntry ? 'bg-green-100 text-green-600' :
-                isExit ? 'bg-orange-100 text-orange-600' :
-                isPark ? 'bg-blue-100 text-blue-600' :
-                isUnpark ? 'bg-rose-100 text-rose-600' :
-                log.actionType === 'users' ? 'bg-violet-100 text-violet-600' :
-                'bg-gray-100 text-gray-500';
-              const badgeLabel =
-                isEntry ? 'Entry' :
-                isExit ? 'Exit' :
-                isPark ? 'Parked' :
-                isUnpark ? 'Unparked' :
-                log.actionType;
-              return (
-                <div key={log._id} className={`px-5 py-3 flex items-start justify-between gap-4 ${hover}`}>
-                  <div className='flex items-start gap-3 flex-1 min-w-0'>
-                    <span className={`mt-0.5 text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase flex-shrink-0 ${badgeColor}`}>{badgeLabel}</span>
-                    <div className='flex flex-col gap-0.5 min-w-0'>
-                      <p className={`text-sm truncate ${dark ? 'text-gray-300' : 'text-gray-600'}`}>{log.description}</p>
-                      {(isPark || isUnpark) && log.metadata?.slotLabel && (
-                        <p className='text-xs text-gray-400'>
-                          Slot: <span className={`font-medium ${dark ? 'text-gray-300' : 'text-gray-600'}`}>{log.metadata.slotLabel}</span>
-                          {log.metadata.mapName && <> · {log.metadata.mapName}</>}
-                          {isUnpark && log.metadata.duration > 0 && <> · {log.metadata.duration} min</>}
+          <div
+            className={`divide-y max-h-[400px] overflow-y-auto [scrollbar-width:none] ${dark ? 'divide-[#3a3a3a]' : 'divide-gray-200'}`}
+          >
+            {userLogs
+              .filter((log) => {
+                // Exclude old logs where guardId was incorrectly stored as userId
+                if (log.metadata?.guardId && log.userId?._id?.toString() !== id)
+                  return false;
+                return true;
+              })
+              .map((log) => {
+                const isPark = log.action === 'PARKED';
+                const isUnpark = log.action === 'UNPARKED';
+                const isEntry = log.action === 'ENTRY_TIME';
+                const isExit = log.action === 'OUT_TIME';
+                const badgeColor = isEntry
+                  ? 'bg-green-100 text-green-600'
+                  : isExit
+                    ? 'bg-orange-100 text-orange-600'
+                    : isPark
+                      ? 'bg-blue-100 text-blue-600'
+                      : isUnpark
+                        ? 'bg-rose-100 text-rose-600'
+                        : log.actionType === 'users'
+                          ? 'bg-blue-100 text-blue-600'
+                          : 'bg-gray-100 text-gray-500';
+                const badgeLabel = isEntry
+                  ? 'Entry'
+                  : isExit
+                    ? 'Exit'
+                    : isPark
+                      ? 'Parked'
+                      : isUnpark
+                        ? 'Unparked'
+                        : log.actionType;
+                return (
+                  <div
+                    key={log._id}
+                    className={`px-5 py-3 flex items-start justify-between gap-4 ${hover}`}
+                  >
+                    <div className='flex items-start gap-3 flex-1 min-w-0'>
+                      <span
+                        className={`mt-0.5 text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase flex-shrink-0 ${badgeColor}`}
+                      >
+                        {badgeLabel}
+                      </span>
+                      <div className='flex flex-col gap-0.5 min-w-0'>
+                        <p
+                          className={`text-sm truncate ${dark ? 'text-gray-300' : 'text-gray-600'}`}
+                        >
+                          {log.description}
                         </p>
-                      )}
+                        {(isPark || isUnpark) && log.metadata?.slotLabel && (
+                          <p className='text-xs text-gray-400'>
+                            Slot:{' '}
+                            <span
+                              className={`font-medium ${dark ? 'text-gray-300' : 'text-gray-600'}`}
+                            >
+                              {log.metadata.slotLabel}
+                            </span>
+                            {log.metadata.mapName && (
+                              <> · {log.metadata.mapName}</>
+                            )}
+                            {isUnpark && log.metadata.duration > 0 && (
+                              <> · {log.metadata.duration} min</>
+                            )}
+                          </p>
+                        )}
+                      </div>
                     </div>
+                    <p className='text-xs text-gray-400 text-nowrap flex-shrink-0'>
+                      {new Date(log.createdAt).toLocaleString()}
+                    </p>
                   </div>
-                  <p className='text-xs text-gray-400 text-nowrap flex-shrink-0'>{new Date(log.createdAt).toLocaleString()}</p>
-                </div>
-              );
-            })}
+                );
+              })}
           </div>
         )}
       </section>

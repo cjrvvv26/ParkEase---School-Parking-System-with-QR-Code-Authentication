@@ -72,8 +72,8 @@ function BuildingModal({ building, onChange, onSave, onClose, dark, border, inpu
           }}
           className={`relative w-full h-44 rounded-2xl border-2 border-dashed cursor-pointer overflow-hidden flex items-center justify-center transition group ${
             dragOver
-              ? "border-violet-400 bg-violet-50"
-              : dark ? "border-[#4a4a4a] bg-[#3a3a3a] hover:border-violet-400" : "border-gray-200 bg-gray-50 hover:border-violet-300 hover:bg-violet-50/30"
+              ? "border-blue-400 bg-blue-50"
+              : dark ? "border-[#4a4a4a] bg-[#3a3a3a] hover:border-blue-400" : "border-gray-200 bg-gray-50 hover:border-blue-300 hover:bg-blue-50/30"
           }`}
         >
           {previewUrl ? (
@@ -85,7 +85,7 @@ function BuildingModal({ building, onChange, onSave, onClose, dark, border, inpu
               </div>
             </>
           ) : (
-            <div className="flex flex-col items-center gap-2 text-gray-300 group-hover:text-violet-400 transition">
+            <div className="flex flex-col items-center gap-2 text-gray-300 group-hover:text-blue-400 transition">
               <ImagePlus size={28} strokeWidth={1.3} />
               <div className="text-center">
                 <p className="text-xs font-medium">Click or drag to upload</p>
@@ -107,7 +107,7 @@ function BuildingModal({ building, onChange, onSave, onClose, dark, border, inpu
             value={info.name || ""}
             onChange={(e) => setField("name", e.target.value)}
             placeholder="e.g. Main Building"
-            className={`w-full border text-xs rounded-xl px-3 py-2 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 transition ${input}`}
+            className={`w-full border text-xs rounded-xl px-3 py-2 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition ${input}`}
           />
         </div>
 
@@ -122,7 +122,7 @@ function BuildingModal({ building, onChange, onSave, onClose, dark, border, inpu
             onChange={(e) => setField("description", e.target.value)}
             placeholder="Brief description of this building..."
             rows={3}
-            className={`w-full border text-xs rounded-xl px-3 py-2 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 transition resize-none ${input}`}
+            className={`w-full border text-xs rounded-xl px-3 py-2 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition resize-none ${input}`}
           />
         </div>
       </div>
@@ -130,7 +130,7 @@ function BuildingModal({ building, onChange, onSave, onClose, dark, border, inpu
       {/* Footer */}
       <div className="px-5 pb-5 flex gap-3">
         <button onClick={onClose} className={`flex-1 py-2.5 rounded-xl border text-xs transition ${dark ? 'border-[#4a4a4a] text-gray-400 hover:bg-[#3a3a3a]' : 'border-gray-200 text-gray-500 hover:bg-gray-50'}`}>Cancel</button>
-        <button onClick={onSave} className="flex-1 py-2.5 rounded-xl bg-violet-500 hover:bg-violet-600 text-xs text-white font-medium transition">Save Changes</button>
+        <button onClick={onSave} className="flex-1 py-2.5 rounded-xl bg-blue-500 hover:bg-blue-600 text-xs text-white font-medium transition">Save Changes</button>
       </div>
     </div>
   );
@@ -152,7 +152,7 @@ function SlotShape({
   const renderShape = () => {
     const cursorClass = isDragging ? 'cursor-grabbing' : isHovering ? 'cursor-grab' : 'cursor-default';
     const active = isSelected || isDragging;
-    const stroke = active ? '#8e51ff' : 'none';
+    const stroke = active ? '#3b82f6' : 'none';
     const strokeWidth = active ? '2' : '0';
     const strokeDasharray = isDragging ? '5,3' : 'none';
     if (shape.geometry.shape === 'rect') {
@@ -218,7 +218,7 @@ function SlotShape({
         <text
           x={labelPos.x}
           y={labelPos.y}
-          fill="#8e51ff"
+          fill="#3b82f6"
           fontSize="12"
         >
           {typeof shape.metadata?.label === 'string' ? shape.metadata.label : 'No Label'}
@@ -833,7 +833,7 @@ const handleNewSubmit = (e) => {
               {errorMessage && <p className='text-xs text-red-500'>{errorMessage}</p>}
               <div className='flex items-center gap-5 w-full'>
                 <button type='button' onClick={() => setIsOpen(false)} className={`border w-full py-2 px-4 rounded ${dark ? 'border-[#4a4a4a] text-gray-300' : 'border-gray-200 text-gray-700'}`}>Close</button>
-                <button type='submit' className='bg-violet-500 w-full text-white py-2 px-4 rounded'>Create</button>
+                <button type='submit' className='bg-blue-500 w-full text-white py-2 px-4 rounded'>Create</button>
               </div>
             </form>
           </div>
@@ -877,11 +877,11 @@ const handleNewSubmit = (e) => {
           <div className={`flex items-center justify-between px-6 py-3 border-b shrink-0 ${dark ? 'bg-[#242424] border-[#3a3a3a]' : 'bg-white border-gray-200'}`}>
             <div className='flex items-center gap-3'>
               <span className={`font-semibold text-sm ${dark ? 'text-gray-200' : 'text-gray-700'}`}>{currentAreaName || 'Preview'}</span>
-              <span className='text-[11px] px-2 py-0.5 rounded-full bg-violet-100 text-violet-600 border border-violet-200'>Preview</span>
+              <span className='text-[11px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-600 border border-blue-200'>Preview</span>
             </div>
             <div className='flex items-center gap-4'>
               <div className='flex items-center gap-4'>
-                {[['#22c55e', 'Available'], ['#f43f5e', 'Occupied'], ['#f59e0b', 'Exclusive']].map(([color, label]) => (
+                {[['#22c55e', 'Available'], ['#f43f5e', 'Occupied'], ['#3b82f6', 'Exclusive']].map(([color, label]) => (
                   <div key={label} className={`flex items-center gap-1.5 text-xs ${dark ? 'text-gray-400' : 'text-gray-500'}`}>
                     <div className='w-2.5 h-2.5 rounded-full' style={{ background: color }} />
                     <span>{label}</span>

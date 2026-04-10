@@ -12,7 +12,7 @@ import { useState, useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Eye, EyeOff, Mail, Lock, CheckCircle } from 'lucide-react-native';
 import GoogleIcon from '../assets/images/google.webp';
-import Logo from '../assets/images/new-logo.png';
+import Logo from '../assets/images/urs-logo.jpg';
 import { Link, useRouter, useLocalSearchParams } from 'expo-router';
 import { login } from '../services/authService';
 import useApiRequest from '../hooks/useApiRequest';
@@ -145,7 +145,7 @@ export default function SignIn() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#8e51ff' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#3b82f6' }}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -373,7 +373,7 @@ export default function SignIn() {
               disabled={loading}
               onPress={handleRegistration}
               style={{
-                backgroundColor: loading ? '#c4b5fd' : t.primary,
+                backgroundColor: loading ? '#93c5fd' : t.primary,
                 borderRadius: 14,
                 paddingVertical: 16,
                 alignItems: 'center',

@@ -7,7 +7,7 @@ export default function EmailEditor() {
   //   <div className="min-h-screen bg-white flex pt-5 justify-center px-4">
   //     <div className="w-full max-w-md bg-white flex flex-col items-center">
   //       {/* Logo */}
-  //       <header className="flex gap-2 text-violet-500 items-center text-2xl font-bold mb-5">
+  //       <header className="flex gap-2 text-blue-500 items-center text-2xl font-bold mb-5">
   //         <svg
   //           version="1.1"
   //           id="Layer_1"
@@ -63,7 +63,7 @@ export default function EmailEditor() {
   //       {/* Action Button */}
   //       <Link
   //         to="/student/auth/login"
-  //         className="flex justify-center w-full bg-violet-500 hover:bg-violet-600 text-white font-semibold py-3 rounded-xl transition"
+  //         className="flex justify-center w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-xl transition"
   //       >
   //         <p>Back in ParkEase app</p>
   //       </Link>
@@ -82,7 +82,7 @@ export default function EmailEditor() {
   //   <div className="w-full h-full flex justify-center bg-gray-50 py-8 px-4">
   //     <div className="max-w-md w-full bg-white p-6 rounded-lg shadow-sm text-gray-800">
   //       {/* Header */}
-  //       <header className="flex items-center justify-center gap-2 text-violet-500 text-2xl font-bold mb-6">
+  //       <header className="flex items-center justify-center gap-2 text-blue-500 text-2xl font-bold mb-6">
   //         <svg
   //           viewBox="0 0 612 792"
   //           className="h-8 w-8"
@@ -129,7 +129,7 @@ export default function EmailEditor() {
   //       <div className="flex justify-center mb-6">
   //         <a
   //           href="#"
-  //           className="inline-block bg-violet-500 hover:bg-violet-600 text-white font-semibold text-sm px-6 py-3 rounded-lg transition"
+  //           className="inline-block bg-blue-500 hover:bg-blue-600 text-white font-semibold text-sm px-6 py-3 rounded-lg transition"
   //         >
   //           Verify Email Address
   //         </a>
@@ -158,7 +158,7 @@ export default function EmailEditor() {
       <div className='w-full px-4 py-8 box-border'>
         <div className='max-w-[420px] mx-auto bg-white p-6'>
           {/* Header */}
-          <div className='text-center text-[22px] font-bold text-violet-500 mb-6'>
+          <div className='text-center text-[22px] font-bold text-blue-500 mb-6'>
             ParkEase
           </div>
 
@@ -197,7 +197,7 @@ export default function EmailEditor() {
           <div className='text-center mb-6'>
             <a
               href='https://parkease.com/reset-password?token=TOKEN_HERE'
-              className='inline-block bg-violet-500 hover:bg-violet-600 text-white text-sm font-semibold px-6 py-3 rounded-lg transition'
+              className='inline-block bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold px-6 py-3 rounded-lg transition'
             >
               Reset Your Password
             </a>
@@ -208,7 +208,7 @@ export default function EmailEditor() {
             If the button above does not work, copy and paste this link into
             your browser:
             <br />
-            <span className='text-violet-500'>
+            <span className='text-blue-500'>
               https://parkease.com/reset-password?token=TOKEN_HERE
             </span>
           </p>

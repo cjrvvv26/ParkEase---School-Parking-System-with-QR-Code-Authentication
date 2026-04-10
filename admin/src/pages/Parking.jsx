@@ -175,7 +175,7 @@ export default function Parking() {
         <header className={`flex justify-between p-5 border-b w-full ${border}`}>
           <div className='flex gap-3 items-center'>
             <h2 className='font-medium text-base'>Parking Area Overview</h2>
-            <p className='text-xs py-2 px-4 rounded-lg ring ring-violet-500 bg-violet-100 text-violet-500'>
+            <p className='text-xs py-2 px-4 rounded-lg ring ring-blue-500 bg-blue-100 text-blue-500'>
               Beta
             </p>
           </div>
@@ -183,7 +183,7 @@ export default function Parking() {
             {/* Redirect to Map Editor */}
             <button
               onClick={() => toggleIsOpenModal(true)}
-              className='flex items-center gap-1 py-2 px-3 rounded-full bg-violet-500 text-white'
+              className='flex items-center gap-1 py-2 px-3 rounded-full bg-blue-500 text-white'
             >
               <svg
                 xmlns='http://www.w3.org/2000/svg'
@@ -250,7 +250,7 @@ export default function Parking() {
                     {mapError && <p className='text-xs text-red-500'>{mapError}</p>}
                     <div className='flex items-center gap-5 w-full'>
                       <button type='button' onClick={() => toggleIsOpenModal(false)} className={`border w-full py-2 px-4 rounded ${dark ? 'border-[#4a4a4a] text-gray-300' : 'border-gray-200 text-gray-700'}`}>Close</button>
-                      <button type='submit' className='bg-violet-500 w-full text-white py-2 px-4 rounded'>Create</button>
+                      <button type='submit' className='bg-blue-500 w-full text-white py-2 px-4 rounded'>Create</button>
                     </div>
                   </form>
                 </div>
@@ -260,7 +260,7 @@ export default function Parking() {
             {slotQRBtn && (
               <Link
                 to={`/parking/map/${selectedMap?._id}/slots`}
-                className='flex gap-2 items-center text-white p-2 rounded-full bg-violet-500'
+                className='flex gap-2 items-center text-white p-2 rounded-full bg-blue-500'
               >
                 <QrCode strokeWidth={1.5} size={20} />
                 <span>Slots QR Code</span>
@@ -284,7 +284,7 @@ export default function Parking() {
                   });
                 }
               }}
-              className='flex items-center gap-1 py-2 px-3 rounded-full text-violet-500 border-violet-500 border'
+              className='flex items-center gap-1 py-2 px-3 rounded-full text-blue-500 border-blue-500 border'
             >
               <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='size-4'>
                 <path strokeLinecap='round' strokeLinejoin='round' d='M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z' />
@@ -403,16 +403,16 @@ export default function Parking() {
                 </div>
                 <div className={`flex items-center gap-1 text-xs ${dark ? 'text-gray-400' : 'text-gray-400'}`}>
                   <div className='relative flex items-center justify-center w-10 h-10'>
-                    <div className='absolute w-9 h-9 rounded-full bg-amber-100 opacity-50 z-10'></div>
-                    <div className='absolute w-6 h-6 rounded-full bg-amber-300 opacity-[.3] z-0'></div>
-                    <div className='relative w-3 h-3 rounded-full bg-amber-500'></div>
+                    <div className='absolute w-9 h-9 rounded-full bg-blue-100 opacity-50 z-10'></div>
+                    <div className='absolute w-6 h-6 rounded-full bg-blue-300 opacity-[.3] z-0'></div>
+                    <div className='relative w-3 h-3 rounded-full bg-blue-500'></div>
                   </div>
                   <p>Exclusive</p>
                 </div>
               </div>
             </div>
             {/* Area name */}
-            <p className='text-center px-4 py-2 bg-violet-100 text-xs text-violet-500 absolute bottom-5 right-5 rounded-xl ring ring-violet-500'>
+            <p className='text-center px-4 py-2 bg-blue-100 text-xs text-blue-500 absolute bottom-5 right-5 rounded-xl ring ring-blue-500'>
               {(maps && maps[currentIndex]?.name) || 'No Area'}
             </p>
             <div className='h-full min-h-96 flex items-center justify-center'>
@@ -440,12 +440,12 @@ export default function Parking() {
           <div className={`flex items-center justify-between px-6 py-3 border-b shrink-0 ${dark ? 'bg-[#242424] border-[#3a3a3a]' : 'bg-white border-gray-200'}`}>
             <div className='flex items-center gap-3'>
               <span className={`font-semibold text-sm ${dark ? 'text-gray-200' : 'text-gray-700'}`}>{selectedMap.name}</span>
-              <span className='text-[11px] px-2 py-0.5 rounded-full bg-violet-100 text-violet-600 border border-violet-200'>Preview</span>
+              <span className='text-[11px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-600 border border-blue-200'>Preview</span>
             </div>
             <div className='flex items-center gap-4'>
               {/* Legend */}
               <div className='flex items-center gap-4'>
-                {[['#22c55e', 'Available'], ['#f43f5e', 'Occupied'], ['#f59e0b', 'Exclusive']].map(([color, label]) => (
+                {[['#22c55e', 'Available'], ['#f43f5e', 'Occupied'], ['#3b82f6', 'Exclusive']].map(([color, label]) => (
                   <div key={label} className={`flex items-center gap-1.5 text-xs ${dark ? 'text-gray-400' : 'text-gray-500'}`}>
                     <div className='w-2.5 h-2.5 rounded-full' style={{ background: color }} />
                     <span>{label}</span>

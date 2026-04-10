@@ -12,7 +12,7 @@ export default function DefaultLayout() {
   document.body.style.width = "100%";
   return (
     <div className={`min-h-screen w-full flex text-sm p-2 ${dark ? "bg-[#1a1a1a] text-gray-200" : "bg-gray-100 text-gray-700"}`}>
-      <div className="h-screen fixed top-2 left-2 z-50">
+      <div className="h-screen fixed top-2 left-2 z-10">
         <Navbar toggleShow={toggleShow} show={show} />
       </div>
       <div className={`${show ? "ml-[258px]" : "ml-[88px]"} transition-[margin] duration-100 flex flex-col flex-1 min-w-0 overflow-x-hidden`}>

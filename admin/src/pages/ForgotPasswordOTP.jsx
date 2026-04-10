@@ -68,8 +68,8 @@ export default function ForgotPasswordOTP() {
       <div className='w-[420px] flex flex-col gap-6'>
         {/* Header */}
         <div className='flex flex-col items-center gap-1 mb-2'>
-          <div className='h-14 w-14 rounded-full bg-violet-100 flex items-center justify-center mb-2'>
-            <ShieldCheck className='text-violet-500' strokeWidth={1.5} size={26} />
+          <div className='h-14 w-14 rounded-full bg-blue-100 flex items-center justify-center mb-2'>
+            <ShieldCheck className='text-blue-500' strokeWidth={1.5} size={26} />
           </div>
           <h1 className='text-2xl font-bold'>Check Your Email</h1>
           <p className='text-sm text-gray-400 text-center'>
@@ -89,13 +89,13 @@ export default function ForgotPasswordOTP() {
               onKeyDown={(e) => handleKeyDown(e, i)}
               ref={(el) => (inputRef.current[i] = el)}
               disabled={loading}
-              className='text-center text-xl font-semibold ring ring-gray-300 focus:ring-2 focus:ring-violet-500 rounded-xl w-14 h-14 outline-none disabled:opacity-50'
+              className='text-center text-xl font-semibold ring ring-gray-300 focus:ring-2 focus:ring-blue-500 rounded-xl w-14 h-14 outline-none disabled:opacity-50'
             />
           ))}
         </div>
 
         {error && <p className='text-xs text-red-500 text-center'>{error}</p>}
-        {loading && <p className='text-xs text-violet-500 text-center'>Verifying...</p>}
+        {loading && <p className='text-xs text-blue-500 text-center'>Verifying...</p>}
 
         {/* Resend */}
         <button
@@ -103,7 +103,7 @@ export default function ForgotPasswordOTP() {
           onClick={handleResend}
           className={`p-4 rounded-xl text-sm font-medium transition-colors ${
             timer <= 0 && !loading
-              ? 'bg-violet-500 hover:bg-violet-600 text-white'
+              ? 'bg-blue-500 hover:bg-blue-600 text-white'
               : 'bg-gray-100 text-gray-400 cursor-not-allowed'
           }`}
         >

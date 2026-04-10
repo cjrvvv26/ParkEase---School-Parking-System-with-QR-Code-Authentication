@@ -118,7 +118,7 @@ export default function Logs() {
                 setActiveIndex(index);
                 setActionType(header.value);
               }}
-              className={`${activeIndex === index ? "before:content-[''] before:absolute before:w-full before:-bottom-[1.5px] before:rounded-ss-md before:rounded-se-md before:border-b-4 before:border-violet-500 text-violet-500" : ''} flex gap-3 items-center py-2 justify-center w-full rounded-ss-xl rounded-se-xl relative cursor-pointer z-0 ${dark ? 'hover:bg-violet-500/10' : 'hover:bg-violet-100'} hover:text-violet-500`}
+              className={`${activeIndex === index ? "before:content-[''] before:absolute before:w-full before:-bottom-[1.5px] before:rounded-ss-md before:rounded-se-md before:border-b-4 before:border-blue-500 text-blue-500" : ''} flex gap-3 items-center py-2 justify-center w-full rounded-ss-xl rounded-se-xl relative cursor-pointer z-0 ${dark ? 'hover:bg-blue-500/10' : 'hover:bg-blue-100'} hover:text-blue-500`}
             >
               {header.icon}
               <p>{header.label}</p>
@@ -128,7 +128,7 @@ export default function Logs() {
 
         {loading && (
           <div className='flex-1 flex items-center justify-center'>
-            <div className='border-2 border-t-violet-500 border-violet-100 h-12 w-12 rounded-full animate-spin'></div>
+            <div className='border-2 border-t-blue-500 border-blue-100 h-12 w-12 rounded-full animate-spin'></div>
           </div>
         )}
         {error && <p className='text-center mt-36 text-gray-400'>{error}</p>}

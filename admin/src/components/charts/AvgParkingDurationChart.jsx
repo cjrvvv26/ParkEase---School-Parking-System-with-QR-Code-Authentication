@@ -13,8 +13,8 @@ export default function AvgParkingDurationChart({ chartData = null, loading = fa
     datasets: [
       {
         data: values,
-        backgroundColor: "#8e51ff",
-        borderColor: "#6233c1",
+        backgroundColor: "#3b82f6",
+        borderColor: "#2563eb",
         borderWidth: 1,
         borderRadius: 10,
       },

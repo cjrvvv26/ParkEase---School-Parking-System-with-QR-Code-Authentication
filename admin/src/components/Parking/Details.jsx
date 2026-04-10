@@ -23,7 +23,7 @@ export default function Details({ selectedShape, loading }) {
       : 'Available';
 
   const statusColor = {
-    Exclusive: 'bg-violet-100 text-violet-600',
+    Exclusive: 'bg-blue-100 text-blue-600',
     Occupied: 'bg-rose-100 text-rose-600',
     Available: 'bg-green-100 text-green-600',
   };
@@ -167,16 +167,16 @@ export default function Details({ selectedShape, loading }) {
 
                 {/* Assigned user card */}
                 {updatedSlot.assignedStudentId ? (
-                  <div className='flex flex-col gap-3 p-3 bg-violet-50 rounded-xl border border-violet-100'>
+                  <div className='flex flex-col gap-3 p-3 bg-blue-50 rounded-xl border border-blue-100'>
                     <div className='flex gap-3 items-center'>
                       {updatedSlot.profileDetails?.url ? (
                         <img
                           src={updatedSlot.profileDetails.url}
                           alt=''
-                          className='h-12 w-12 rounded-full object-cover ring-2 ring-violet-200'
+                          className='h-12 w-12 rounded-full object-cover ring-2 ring-blue-200'
                         />
                       ) : (
-                        <div className='h-12 w-12 rounded-full bg-violet-100 flex items-center justify-center text-violet-500 font-semibold'>
+                        <div className='h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 font-semibold'>
                           {updatedSlot.name?.firstName?.[0] || '?'}
                         </div>
                       )}
@@ -206,7 +206,7 @@ export default function Details({ selectedShape, loading }) {
                     </div>
                     {/* Motor details */}
                     {updatedSlot.motorDetails && (
-                      <div className='flex flex-col gap-1 border-t border-violet-100 pt-2'>
+                      <div className='flex flex-col gap-1 border-t border-blue-100 pt-2'>
                         <p className='text-xs font-semibold text-gray-500 mb-1'>
                           Motorcycle
                         </p>
@@ -229,7 +229,7 @@ export default function Details({ selectedShape, loading }) {
                     )}
                     <Link
                       to={`/users/${updatedSlot.assignedStudentId}`}
-                      className='text-xs text-violet-500 hover:underline self-start'
+                      className='text-xs text-blue-500 hover:underline self-start'
                     >
                       View full profile →
                     </Link>
@@ -273,7 +273,7 @@ export default function Details({ selectedShape, loading }) {
           {updatedSlot.metadata?.type === 'slot' && (
             <button
               onClick={() => setIsOpen(true)}
-              className='w-full py-2.5 rounded-xl bg-violet-500 hover:bg-violet-600 text-white text-sm font-medium flex items-center justify-center gap-2 transition'
+              className='w-full py-2.5 rounded-xl bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium flex items-center justify-center gap-2 transition'
             >
               <Settings size={16} strokeWidth={1.5} />
               Manage Slot

@@ -48,7 +48,7 @@ export default function Password() {
               type={showPassword[key] ? 'text' : 'password'}
               value={value}
               onChange={(e) => set(e.target.value)}
-              className={`w-full px-3 py-2 rounded-md border outline-none focus:ring-2 focus:ring-violet-500 ${input}`}
+              className={`w-full px-3 py-2 rounded-md border outline-none focus:ring-2 focus:ring-blue-500 ${input}`}
               placeholder={`Enter ${label.toLowerCase()}`}
             />
             {showPassword[key]
@@ -58,7 +58,7 @@ export default function Password() {
           </div>
         ))}
       </div>
-      <button disabled={loading} onClick={handleChangePassword} className='mt-6 w-full px-4 py-2 bg-violet-600 text-white font-medium rounded-md hover:bg-violet-700 transition disabled:opacity-60'>
+      <button disabled={loading} onClick={handleChangePassword} className='mt-6 w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition disabled:opacity-60'>
         {loading ? 'Updating...' : 'Change Password'}
       </button>
     </div>

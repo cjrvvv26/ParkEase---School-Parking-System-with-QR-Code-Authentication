@@ -144,7 +144,7 @@ export default function AddStudent() {
     <div className='p-5 relative'>
       <header className='flex items-center justify-between'>
         <div>
-          <Link to={'/users'} className='flex items-center text-violet-500 hover:opacity-80 cursor-pointer'>
+          <Link to={'/users'} className='flex items-center text-blue-500 hover:opacity-80 cursor-pointer'>
             <ChevronLeft strokeWidth={1.5} size={18} />
             <span>Users</span>
           </Link>
@@ -287,7 +287,7 @@ export default function AddStudent() {
                 </p>
               </label>
             </div>
-            <div className='flex items-center gap-2 p-3 bg-violet-50 border border-violet-200 rounded-lg text-violet-500'>
+            <div className='flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-500'>
               <Info strokeWidth={1.5} size={18} />
               <div className='text-xs '>
                 Student will receive a welcome email with their username.
@@ -312,7 +312,7 @@ export default function AddStudent() {
                         height='100'
                         viewBox='0 0 50 50'
                         fill='currentColor'
-                        className='size-5 text-violet-500'
+                        className='size-5 text-blue-500'
                       >
                         <path d='M22.462 11.035l2.88 7.097c1.204 2.968 3.558 5.322 6.526 6.526l7.097 2.88c1.312.533 1.312 2.391 0 2.923l-7.097 2.88c-2.968 1.204-5.322 3.558-6.526 6.526l-2.88 7.097c-.533 1.312-2.391 1.312-2.923 0l-2.88-7.097c-1.204-2.968-3.558-5.322-6.526-6.526l-7.097-2.88c-1.312-.533-1.312-2.391 0-2.923l7.097-2.88c2.968-1.204 5.322-3.558 6.526-6.526l2.88-7.097C20.071 9.723 21.929 9.723 22.462 11.035zM39.945 2.701l.842 2.428c.664 1.915 2.169 3.42 4.084 4.084l2.428.842c.896.311.896 1.578 0 1.889l-2.428.842c-1.915.664-3.42 2.169-4.084 4.084l-.842 2.428c-.311.896-1.578.896-1.889 0l-.842-2.428c-.664-1.915-2.169-3.42-4.084-4.084l-2.428-.842c-.896-.311-.896-1.578 0-1.889l2.428-.842c1.915-.664 3.42-2.169 4.084-4.084l.842-2.428C38.366 1.805 39.634 1.805 39.945 2.701z'></path>
                       </svg>
@@ -373,7 +373,7 @@ export default function AddStudent() {
                         height='100'
                         viewBox='0 0 50 50'
                         fill='currentColor'
-                        className='size-5 text-violet-500 animate-pulse'
+                        className='size-5 text-blue-500 animate-pulse'
                       >
                         <path d='M22.462 11.035l2.88 7.097c1.204 2.968 3.558 5.322 6.526 6.526l7.097 2.88c1.312.533 1.312 2.391 0 2.923l-7.097 2.88c-2.968 1.204-5.322 3.558-6.526 6.526l-2.88 7.097c-.533 1.312-2.391 1.312-2.923 0l-2.88-7.097c-1.204-2.968-3.558-5.322-6.526-6.526l-7.097-2.88c-1.312-.533-1.312-2.391 0-2.923l7.097-2.88c2.968-1.204 5.322-3.558 6.526-6.526l2.88-7.097C20.071 9.723 21.929 9.723 22.462 11.035zM39.945 2.701l.842 2.428c.664 1.915 2.169 3.42 4.084 4.084l2.428.842c.896.311.896 1.578 0 1.889l-2.428.842c-1.915.664-3.42 2.169-4.084 4.084l-.842 2.428c-.311.896-1.578.896-1.889 0l-.842-2.428c-.664-1.915-2.169-3.42-4.084-4.084l-2.428-.842c-.896-.311-.896-1.578 0-1.889l2.428-.842c1.915-.664 3.42-2.169 4.084-4.084l.842-2.428C38.366 1.805 39.634 1.805 39.945 2.701z'></path>
                       </svg>
@@ -453,7 +453,7 @@ export default function AddStudent() {
                 type='button'
                 className={`py-2 rounded-md ${
                   motor.brand && motor.color && motor.model
-                    ? 'bg-violet-500 text-white hover:bg-violet-600'
+                    ? 'bg-blue-500 text-white hover:bg-blue-600'
                     : 'bg-gray-200 text-gray-400'
                 }`}
               >
@@ -482,7 +482,7 @@ export default function AddStudent() {
               disabled={loading || formError}
               onClick={handleRegistration}
               type='button'
-              className={`${loading || formError ? 'bg-gray-200 text-gray-400 hover:bg-gray-100 cursor-not-allowed' : 'bg-violet-500 hover:bg-violet-500 text-white'} w-full text-white py-2 rounded-lg text-sm`}
+              className={`${loading || formError ? 'bg-gray-200 text-gray-400 hover:bg-gray-100 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-500 text-white'} w-full text-white py-2 rounded-lg text-sm`}
             >
               {loading ? 'Processing...' : 'Register'}
             </button>

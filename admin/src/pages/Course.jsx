@@ -46,7 +46,7 @@ export default function Course() {
           <h1 className='font-bold text-3xl'>Courses</h1>
           <p className='text-gray-400'>Manage student course or program.</p>
         </div>
-        <Link to='/courses/add-course' className='py-2 bg-violet-500 rounded-md cursor-pointer hover:bg-violet-600 text-white px-4 flex gap-3 items-center'>
+        <Link to='/courses/add-course' className='py-2 bg-blue-500 rounded-md cursor-pointer hover:bg-blue-600 text-white px-4 flex gap-3 items-center'>
           <CirclePlus strokeWidth={1.5} />
           <span>Add Course</span>
         </Link>
@@ -58,7 +58,7 @@ export default function Course() {
         <ul className={`flex flex-col mt-1 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>
           {loading ? (
             <div className='flex flex-1 h-full mt-30 items-center justify-center'>
-              <div className='border-2 mb-30 border-t-violet-500 border-violet-100 h-12 w-12 rounded-full animate-spin'></div>
+              <div className='border-2 mb-30 border-t-blue-500 border-blue-100 h-12 w-12 rounded-full animate-spin'></div>
             </div>
           ) : courses.length > 0 ? (
             courses.map((course) => (

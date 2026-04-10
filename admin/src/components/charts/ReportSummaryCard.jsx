@@ -52,7 +52,7 @@ export default function ReportSummaryCard({ reports = [], loading, stats }) {
           <p className="font-medium text-base">{item.title}</p>
           <p className="text-gray-400 text-xs">All semesters</p>
         </div>
-        <div className="flex items-center justify-center rounded-xl p-2 h-20 w-20 bg-violet-500 text-white">
+        <div className="flex items-center justify-center rounded-xl p-2 h-20 w-20 bg-blue-500 text-white">
           {renderIcon(item.title)}
         </div>
       </div>

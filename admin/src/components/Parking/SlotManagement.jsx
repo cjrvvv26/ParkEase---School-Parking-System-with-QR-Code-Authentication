@@ -5,9 +5,9 @@ import { Search, UserCheck, UserX, AlertTriangle, X, ParkingSquare } from "lucid
 
 function Avatar({ src, name }) {
   return src ? (
-    <img src={src} alt={name} className="w-10 h-10 rounded-full object-cover ring-2 ring-violet-100 flex-shrink-0" />
+    <img src={src} alt={name} className="w-10 h-10 rounded-full object-cover ring-2 ring-blue-100 flex-shrink-0" />
   ) : (
-    <div className="w-10 h-10 rounded-full bg-violet-100 flex items-center justify-center text-violet-500 font-semibold text-sm flex-shrink-0">
+    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 font-semibold text-sm flex-shrink-0">
       {name?.[0]?.toUpperCase() || "?"}
     </div>
   );
@@ -87,15 +87,15 @@ export default function SlotManagement({ selectedShape, onUpdateSlot, setIsOpen 
 
   const slotLabel = selectedShape?.metadata?.label || "Slot";
   const slotStatus = selectedShape?.assignedStudentId ? "Exclusive" : selectedShape?.occupiedBy ? "Occupied" : "Available";
-  const statusColor = { Exclusive: "bg-violet-100 text-violet-600", Occupied: "bg-rose-100 text-rose-600", Available: "bg-green-100 text-green-600" };
+  const statusColor = { Exclusive: "bg-blue-100 text-blue-600", Occupied: "bg-rose-100 text-rose-600", Available: "bg-green-100 text-green-600" };
 
   return (
     <div className="flex flex-col w-[620px] gap-0 text-sm select-none">
       {/* Header */}
       <div className={`flex items-center justify-between px-6 pt-6 pb-4 border-b ${border}`}>
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-violet-50">
-            <ParkingSquare size={20} className="text-violet-500" />
+          <div className="p-2 rounded-xl bg-blue-50">
+            <ParkingSquare size={20} className="text-blue-500" />
           </div>
           <div>
             <h1 className={`font-semibold text-base ${dark ? 'text-gray-200' : 'text-gray-800'}`}>Manage Slot</h1>
@@ -114,7 +114,7 @@ export default function SlotManagement({ selectedShape, onUpdateSlot, setIsOpen 
       <div className={`px-6 py-4 border-b ${border}`}>
         <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Assigned User</p>
         {assignedUser ? (
-          <div className={`flex items-center justify-between rounded-xl p-3 border ${dark ? 'bg-[#3a3a3a] border-[#4a4a4a]' : 'bg-violet-50 border-violet-100'}`}>
+          <div className={`flex items-center justify-between rounded-xl p-3 border ${dark ? 'bg-[#3a3a3a] border-[#4a4a4a]' : 'bg-blue-50 border-blue-100'}`}>
             <div className="flex items-center gap-3">
               <Avatar src={assignedUser.profileDetails?.url} name={assignedUser.name?.firstName} />
               <div>
@@ -123,7 +123,7 @@ export default function SlotManagement({ selectedShape, onUpdateSlot, setIsOpen 
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <span className={`text-xs border px-2 py-1 rounded-lg capitalize ${dark ? 'bg-[#2f2f2f] border-[#4a4a4a] text-violet-400' : 'bg-white border-violet-200 text-violet-500'}`}>{assignedUser.role}</span>
+              <span className={`text-xs border px-2 py-1 rounded-lg capitalize ${dark ? 'bg-[#2f2f2f] border-[#4a4a4a] text-blue-400' : 'bg-white border-blue-200 text-blue-500'}`}>{assignedUser.role}</span>
               <button onClick={() => setConfirm({ type: "remove" })} className="flex items-center gap-1.5 text-xs bg-rose-500 hover:bg-rose-600 text-white px-3 py-1.5 rounded-lg transition">
                 <UserX size={13} /> Remove
               </button>
@@ -152,7 +152,7 @@ export default function SlotManagement({ selectedShape, onUpdateSlot, setIsOpen 
             placeholder="Search by name or email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className={`w-full pl-9 pr-4 py-2 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-violet-200 focus:border-violet-300 transition ${input}`}
+            className={`w-full pl-9 pr-4 py-2 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-300 transition ${input}`}
           />
         </div>
         <div className="flex flex-col max-h-[280px] overflow-y-auto gap-1 pr-1">
@@ -175,7 +175,7 @@ export default function SlotManagement({ selectedShape, onUpdateSlot, setIsOpen 
                   <span className={`text-xs px-2 py-1 rounded-lg capitalize ${dark ? 'bg-[#2f2f2f] text-gray-400' : 'bg-gray-100 text-gray-400'}`}>{user.role}</span>
                   <button
                     onClick={() => setConfirm({ type: "assign", user, firstName, lastName })}
-                    className="flex items-center gap-1.5 text-xs bg-violet-500 hover:bg-violet-600 text-white px-3 py-1.5 rounded-lg transition opacity-0 group-hover:opacity-100"
+                    className="flex items-center gap-1.5 text-xs bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-lg transition opacity-0 group-hover:opacity-100"
                   >
                     <UserCheck size={13} /> Assign
                   </button>
@@ -205,7 +205,7 @@ export default function SlotManagement({ selectedShape, onUpdateSlot, setIsOpen 
           title="Assign User"
           message={`Assign ${confirm.firstName} ${confirm.lastName} to Slot ${slotLabel}?`}
           confirmLabel="Yes, Assign"
-          confirmClass="bg-violet-500 hover:bg-violet-600"
+          confirmClass="bg-blue-500 hover:bg-blue-600"
           onConfirm={() => handleAssign(confirm.user)}
           onCancel={() => setConfirm(null)}
           loading={loading}

@@ -21,7 +21,7 @@ export default function DefaultOptions({ label, value, onChange, placeholder, op
     setOpen(false);
   };
 
-  const btnCls = `mt-2 px-3 py-2 relative ring rounded-md text-sm hover:ring-violet-500 focus:ring-violet-500 hover:ring-2 focus:ring-2 flex items-center justify-between ${dark ? 'bg-[#3a3a3a] ring-[#4a4a4a] text-gray-200' : 'bg-white ring-gray-200'}`;
+  const btnCls = `mt-2 px-3 py-2 relative ring rounded-md text-sm hover:ring-blue-500 focus:ring-blue-500 hover:ring-2 focus:ring-2 flex items-center justify-between ${dark ? 'bg-[#3a3a3a] ring-[#4a4a4a] text-gray-200' : 'bg-white ring-gray-200'}`;
   const dropdownCls = `absolute left-0 right-0 z-20 top-[68px] rounded-md shadow-sm overflow-hidden ring ${dark ? 'bg-[#2f2f2f] ring-[#4a4a4a]' : 'bg-white ring-gray-200'}`;
 
   return (
@@ -41,7 +41,7 @@ export default function DefaultOptions({ label, value, onChange, placeholder, op
             {options.length > 0 ? options.map((option, idx) => (
               <li key={idx}>
                 <button type='button' onMouseDown={() => handleSelect(option)}
-                  className={`w-full text-left px-3 py-2 text-sm hover:bg-violet-500 hover:text-white ${dark ? 'text-gray-200' : 'text-gray-700'}`}>
+                  className={`w-full text-left px-3 py-2 text-sm hover:bg-blue-500 hover:text-white ${dark ? 'text-gray-200' : 'text-gray-700'}`}>
                   {option}
                 </button>
               </li>

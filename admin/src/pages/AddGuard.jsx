@@ -112,7 +112,7 @@ export default function AddGuard() {
         <div>
           <Link
             to={'/users'}
-            className='flex items-center text-violet-500 hover:opacity-80 cursor-pointer'
+            className='flex items-center text-blue-500 hover:opacity-80 cursor-pointer'
           >
             <ChevronLeft strokeWidth={1.5} size={18} />
             <span>Users</span>
@@ -259,7 +259,7 @@ export default function AddGuard() {
               </label>
             </div>
 
-            <div className='flex items-center gap-2 p-3 bg-violet-50 border border-violet-200 rounded-lg text-violet-500'>
+            <div className='flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg text-blue-500'>
               <Info strokeWidth={1.5} size={18} />
               <div className='text-xs '>
                 Guard will receive a welcome email with their username.
@@ -305,7 +305,7 @@ export default function AddGuard() {
               disabled={loading || formError}
               onClick={handleRegistration}
               type='button'
-              className={`${loading || formError ? 'bg-gray-200 text-gray-400 hover:bg-gray-100 cursor-not-allowed' : 'bg-violet-500 hover:bg-violet-500 text-white'} w-full text-white py-2 rounded-lg text-sm`}
+              className={`${loading || formError ? 'bg-gray-200 text-gray-400 hover:bg-gray-100 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-500 text-white'} w-full text-white py-2 rounded-lg text-sm`}
             >
               {loading ? 'Processing...' : 'Create Guard Account'}
             </button>

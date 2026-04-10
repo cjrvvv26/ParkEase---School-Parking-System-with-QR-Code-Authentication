@@ -84,7 +84,7 @@ export default function SemesterManagement() {
         </div>
         <div className='flex gap-5'>
           {!currentSemester && (
-            <Link to='/semesters/add' className='flex items-center gap-2 py-2 px-4 rounded-md bg-violet-500 text-white hover:bg-violet-600 transition-colors'>
+            <Link to='/semesters/add' className='flex items-center gap-2 py-2 px-4 rounded-md bg-blue-500 text-white hover:bg-blue-600 transition-colors'>
               <CirclePlus strokeWidth={1.5} />
               <span>Add Semester</span>
             </Link>

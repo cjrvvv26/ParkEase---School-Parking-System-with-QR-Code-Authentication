@@ -33,7 +33,7 @@ export default function AddCourse() {
       <header className='flex flex-col justify-between px-5 pt-5'>
         <Link
           to={'/courses'}
-          className='flex gap-1 text-gray-400 items-center justify-center text-xs hover:text-violet-500 self-start cursor-pointer'
+          className='flex gap-1 text-gray-400 items-center justify-center text-xs hover:text-blue-500 self-start cursor-pointer'
         >
           <ChevronLeft strokeWidth={1.5} size={15} />
           <span>View courses</span>
@@ -65,7 +65,7 @@ export default function AddCourse() {
           disabled={loading}
           type='submit'
           value={loading ? 'Processing...' : 'Add'}
-          className='self-start py-2 px-8 rounded-md hover:opacity-80 text-white bg-violet-500 cursor-pointer'
+          className='self-start py-2 px-8 rounded-md hover:opacity-80 text-white bg-blue-500 cursor-pointer'
         />
       </form>
     </>

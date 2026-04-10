@@ -38,9 +38,9 @@ export default function Notification() {
       </header>
       <section className='flex-1 items-center gap-5 mt-5 flex flex-col'>
         <header className='max-w-3xl w-full flex justify-between items-center'>
-          <div className={`${dark ? 'bg-[#2f2f2f]' : 'bg-gray-100'} *:py-2 *:hover:bg-violet-500 *:hover:text-white text-gray-600 *:rounded-md text-sm *:px-5 rounded-md p-2 flex gap-3`}>
+          <div className={`${dark ? 'bg-[#2f2f2f]' : 'bg-gray-100'} *:py-2 *:hover:bg-blue-500 *:hover:text-white text-gray-600 *:rounded-md text-sm *:px-5 rounded-md p-2 flex gap-3`}>
             {['all', 'read', 'unread'].map((option) => (
-              <button key={option} onClick={() => { setType(option); setPage(1); }} className={`${type === option ? 'bg-violet-500 text-white' : ''}`}>
+              <button key={option} onClick={() => { setType(option); setPage(1); }} className={`${type === option ? 'bg-blue-500 text-white' : ''}`}>
                 {option.charAt(0).toUpperCase() + option.slice(1)}
               </button>
             ))}
@@ -56,7 +56,7 @@ export default function Notification() {
 
         {loading ? (
           <div className='flex-1 flex items-center justify-center'>
-            <div className='border-2 mb-30 border-t-violet-500 border-violet-100 h-12 w-12 rounded-full animate-spin'></div>
+            <div className='border-2 mb-30 border-t-blue-500 border-blue-100 h-12 w-12 rounded-full animate-spin'></div>
           </div>
         ) : notifications.length === 0 && (
           <div className='flex-1 flex items-center justify-center mt-30 text-gray-500'>
@@ -83,7 +83,7 @@ export default function Notification() {
               <p className={`line-clamp-3 ${dark ? 'text-gray-400' : 'text-gray-600'}`}>{notification.message}</p>
             </div>
             <div className='flex items-center gap-3 h-full justify-end'>
-              {!notification.read && <span className='rounded-full h-3 w-3 bg-violet-500'></span>}
+              {!notification.read && <span className='rounded-full h-3 w-3 bg-blue-500'></span>}
               <div
                 onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDelete(notification._id); }}
                 className='flex relative duration-200 h-10 group-hover:w-10 hover:opacity-80 rounded-md items-center justify-center group-hover:left-0 left-20 cursor-pointer bg-red-100 border-red-500 border'

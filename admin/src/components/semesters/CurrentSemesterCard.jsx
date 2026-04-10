@@ -44,17 +44,17 @@ export default function CurrentSemesterCard({ semester, onUpdateName, isLoading 
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               autoFocus
-              className={`text-xl font-bold mt-1 border rounded px-2 py-1 outline-none focus:ring-2 focus:ring-violet-400 ${input}`}
+              className={`text-xl font-bold mt-1 border rounded px-2 py-1 outline-none focus:ring-2 focus:ring-blue-400 ${input}`}
             />
           )}
         </div>
         {!isEditing ? (
-          <button onClick={() => setIsEditing(true)} className="text-gray-400 hover:text-violet-500 transition-colors">
+          <button onClick={() => setIsEditing(true)} className="text-gray-400 hover:text-blue-500 transition-colors">
             <Edit2 size={18} />
           </button>
         ) : (
           <div className="flex gap-2">
-            <button onClick={handleSave} disabled={isLoading} className="bg-violet-500 text-white px-3 py-1 rounded text-sm hover:bg-violet-600 disabled:opacity-50">Save</button>
+            <button onClick={handleSave} disabled={isLoading} className="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600 disabled:opacity-50">Save</button>
             <button onClick={() => { setIsEditing(false); setNewName(semester.name); }} className="text-gray-400 hover:text-red-500"><X size={18} /></button>
           </div>
         )}

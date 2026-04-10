@@ -113,7 +113,7 @@ export default function AddSemester() {
     <div className="min-h-screen py-8 px-4">
       <div className="max-w-2xl mx-auto">
         <div className="mb-8">
-          <button onClick={() => navigate("/semesters")} className="flex items-center gap-2 text-violet-500 hover:text-violet-600 mb-4">
+          <button onClick={() => navigate("/semesters")} className="flex items-center gap-2 text-blue-500 hover:text-blue-600 mb-4">
             <ArrowLeft size={18} />
             <span>Back to Semesters</span>
           </button>
@@ -130,26 +130,26 @@ export default function AddSemester() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label htmlFor="name" className={`block text-sm font-medium mb-2 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>Semester Name <span className="text-red-500">*</span></label>
-              <input type="text" id="name" name="name" value={formData.name} onChange={handleChange} placeholder="e.g., 1st Sem 2026" className={`w-full px-4 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent ${input}`} />
+              <input type="text" id="name" name="name" value={formData.name} onChange={handleChange} placeholder="e.g., 1st Sem 2026" className={`w-full px-4 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${input}`} />
               <p className="text-gray-500 text-xs mt-1">Enter a descriptive name for this semester</p>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label htmlFor="startDate" className={`block text-sm font-medium mb-2 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>Start Date <span className="text-red-500">*</span></label>
-                <input type="date" id="startDate" name="startDate" value={formData.startDate} onChange={handleChange} className={`w-full px-4 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent ${input}`} />
+                <input type="date" id="startDate" name="startDate" value={formData.startDate} onChange={handleChange} className={`w-full px-4 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${input}`} />
               </div>
               <div>
                 <label htmlFor="endDate" className={`block text-sm font-medium mb-2 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>End Date <span className="text-red-500">*</span></label>
-                <input type="date" id="endDate" name="endDate" value={formData.endDate} onChange={handleChange} className={`w-full px-4 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent ${input}`} />
+                <input type="date" id="endDate" name="endDate" value={formData.endDate} onChange={handleChange} className={`w-full px-4 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${input}`} />
               </div>
             </div>
             <div>
               <label htmlFor="slotPrice" className={`block text-sm font-medium mb-2 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>Slot Price (₱) <span className="text-red-500">*</span></label>
-              <input type="number" id="slotPrice" name="slotPrice" value={formData.slotPrice} onChange={handleChange} placeholder="0.00" step="0.01" min="0" className={`w-full px-4 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent ${input}`} />
+              <input type="number" id="slotPrice" name="slotPrice" value={formData.slotPrice} onChange={handleChange} placeholder="0.00" step="0.01" min="0" className={`w-full px-4 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${input}`} />
               <p className="text-gray-500 text-xs mt-1">Price per parking slot for this semester</p>
             </div>
             {formData.name && formData.startDate && formData.endDate && (
-              <div className="p-4 bg-violet-50 rounded-lg border border-violet-200">
+              <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
                 <p className="text-sm text-gray-700">
                   <span className="font-medium">Summary:</span> You are creating a semester named <strong>{formData.name}</strong> from <strong>{new Date(formData.startDate).toLocaleDateString()}</strong> to <strong>{new Date(formData.endDate).toLocaleDateString()}</strong> with a slot price of <strong>₱{formData.slotPrice}</strong>.
                 </p>
@@ -157,7 +157,7 @@ export default function AddSemester() {
             )}
             <div className="flex gap-4 pt-4">
               <button type="button" onClick={() => navigate("/semesters")} className={`flex-1 px-4 py-2 border font-medium rounded-lg transition-colors ${dark ? 'border-[#4a4a4a] text-gray-300 hover:bg-[#3a3a3a]' : 'border-gray-300 text-gray-700 hover:bg-gray-50'}`}>Cancel</button>
-              <button type="submit" disabled={loading} className="flex-1 px-4 py-2 bg-violet-500 text-white font-medium rounded-lg hover:bg-violet-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">{loading ? "Creating..." : "Create Semester"}</button>
+              <button type="submit" disabled={loading} className="flex-1 px-4 py-2 bg-blue-500 text-white font-medium rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">{loading ? "Creating..." : "Create Semester"}</button>
             </div>
           </form>
         </div>

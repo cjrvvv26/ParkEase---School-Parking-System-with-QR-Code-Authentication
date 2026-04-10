@@ -323,7 +323,7 @@ export default function Analytics() {
                   key={i}
                   className={`relative p-4 ${cardInner} rounded-xl pl-12`}
                 >
-                  <span className='absolute left-0 top-0 bottom-0 w-10 flex items-center justify-center bg-violet-500 text-white font-semibold rounded-l-xl'>
+                  <span className='absolute left-0 top-0 bottom-0 w-10 flex items-center justify-center bg-blue-500 text-white font-semibold rounded-l-xl'>
                     {i + 1}
                   </span>
                   <p className={dark ? 'text-gray-300' : 'text-gray-700'}>
@@ -381,7 +381,7 @@ export default function Analytics() {
                         setSelectedCourse(c);
                         setShowCourseList(false);
                       }}
-                      className='p-2 rounded-lg hover:bg-violet-500 hover:text-white text-nowrap text-left text-sm'
+                      className='p-2 rounded-lg hover:bg-blue-500 hover:text-white text-nowrap text-left text-sm'
                     >
                       {c.name}
                     </button>
@@ -424,7 +424,7 @@ export default function Analytics() {
                     className={`rounded-xl overflow-hidden relative ${cardInner} flex-1 h-[24px]`}
                   >
                     <span
-                      className='h-full top-0 left-0 rounded-s-xl absolute bg-violet-500 transition-all duration-500'
+                      className='h-full top-0 left-0 rounded-s-xl absolute bg-blue-500 transition-all duration-500'
                       style={{
                         width: `${Math.round((row.count / maxCourseCount) * 100)}%`,
                       }}
@@ -498,7 +498,7 @@ export default function Analytics() {
               ) : peakData?.peakTime ? (
                 <>
                   <p
-                    className={`text-sm font-semibold ${dark ? 'text-violet-400' : 'text-violet-600'}`}
+                    className={`text-sm font-semibold ${dark ? 'text-blue-400' : 'text-blue-600'}`}
                   >
                     Peak: {peakData.peakTime}
                   </p>

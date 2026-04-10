@@ -44,7 +44,7 @@ export default function PreviousSemestersTable({ semesters, isLoading }) {
               <td className="px-5 py-3"><p className={`text-sm font-medium ${dark ? 'text-gray-200' : 'text-gray-800'}`}>₱{(semester.revenue || 0).toLocaleString()}</p></td>
               <td className="px-5 py-3">
                 <div className="flex justify-center">
-                  <button onClick={() => navigate(`/semesters/${semester._id}`, { state: { semester } })} className="text-violet-500 hover:text-violet-700 transition-colors p-1">
+                  <button onClick={() => navigate(`/semesters/${semester._id}`, { state: { semester } })} className="text-blue-500 hover:text-blue-700 transition-colors p-1">
                     <Eye size={18} />
                   </button>
                 </div>

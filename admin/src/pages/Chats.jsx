@@ -131,7 +131,7 @@ export default function Chats() {
               placeholder='Search...'
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className={`w-full pl-9 pr-4 py-2 rounded-full text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-violet-500 ${dark ? 'bg-[#2f2f2f] text-gray-200' : 'bg-gray-100'}`}
+              className={`w-full pl-9 pr-4 py-2 rounded-full text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 ${dark ? 'bg-[#2f2f2f] text-gray-200' : 'bg-gray-100'}`}
             />
           </div>
         </div>
@@ -152,8 +152,8 @@ export default function Chats() {
                   className={`p-4 border-b cursor-pointer transition ${border} ${
                     selected?._id === u._id
                       ? dark
-                        ? 'bg-violet-500/10'
-                        : 'bg-violet-50'
+                        ? 'bg-blue-500/10'
+                        : 'bg-blue-50'
                       : dark
                         ? 'hover:bg-[#2f2f2f]'
                         : 'hover:bg-gray-50'
@@ -168,7 +168,7 @@ export default function Chats() {
                           className='w-11 h-11 rounded-full object-cover'
                         />
                       ) : (
-                        <div className='w-11 h-11 rounded-full bg-violet-100 flex items-center justify-center text-violet-600 font-semibold text-sm'>
+                        <div className='w-11 h-11 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold text-sm'>
                           {u.name?.firstName?.[0]?.toUpperCase() || '?'}
                         </div>
                       )}
@@ -214,7 +214,7 @@ export default function Chats() {
                   className='w-11 h-11 rounded-full object-cover'
                 />
               ) : (
-                <div className='w-11 h-11 rounded-full bg-violet-100 flex items-center justify-center text-violet-600 font-semibold'>
+                <div className='w-11 h-11 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold'>
                   {selected.name?.firstName?.[0]?.toUpperCase() || '?'}
                 </div>
               )}
@@ -244,7 +244,7 @@ export default function Chats() {
                     <div
                       className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl text-sm ${
                         isOwn
-                          ? 'bg-violet-600 text-white rounded-br-none'
+                          ? 'bg-blue-600 text-white rounded-br-none'
                           : dark
                             ? 'bg-[#2f2f2f] text-gray-200 rounded-bl-none'
                             : 'bg-gray-200 text-gray-900 rounded-bl-none'
@@ -252,7 +252,7 @@ export default function Chats() {
                     >
                       <p>{msg.message}</p>
                       <p
-                        className={`text-xs mt-1 ${isOwn ? 'text-violet-200' : 'text-gray-500'}`}
+                        className={`text-xs mt-1 ${isOwn ? 'text-blue-200' : 'text-gray-500'}`}
                       >
                         {formatTime(msg.createdAt)}
                       </p>
@@ -273,12 +273,12 @@ export default function Chats() {
                   placeholder='Aa'
                   value={text}
                   onChange={(e) => setText(e.target.value)}
-                  className={`flex-1 px-4 py-2 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 ${dark ? 'bg-[#2f2f2f] text-gray-200 placeholder-gray-500' : 'bg-gray-100'}`}
+                  className={`flex-1 px-4 py-2 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${dark ? 'bg-[#2f2f2f] text-gray-200 placeholder-gray-500' : 'bg-gray-100'}`}
                 />
                 <button
                   type='submit'
                   disabled={!text.trim()}
-                  className='px-4 py-2 bg-violet-600 text-white rounded-full hover:bg-violet-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition'
+                  className='px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition'
                 >
                   <Send className='w-4 h-4' />
                 </button>
