@@ -9,9 +9,9 @@ import { guardScan, verifyScannedSlot } from '../services/slotService';
 import useApiRequest from '../hooks/useApiRequest';
 
 const PALETTE = {
-  primary: '#8e51ff',
-  primaryLight: '#f0ebff',
-  primaryBorder: '#c4b5fd',
+  primary: '#3b82f6',
+  primaryLight: '#dbeafe',
+  primaryBorder: '#93c5fd',
   dark: '#0e0e11',
   muted: '#71717a',
   border: '#e5e7eb',
@@ -36,7 +36,7 @@ export default function Scan() {
         edges={['top']}
         style={{
           flex: 1,
-          backgroundColor: '#f8f7ff',
+          backgroundColor: '#f0f7ff',
           alignItems: 'center',
           justifyContent: 'center',
           paddingHorizontal: 32,
@@ -127,7 +127,7 @@ export default function Scan() {
   return (
     <SafeAreaView
       edges={['top']}
-      style={{ flex: 1, backgroundColor: '#f8f7ff' }}
+      style={{ flex: 1, backgroundColor: '#f0f7ff' }}
     >
       {/* Header */}
       <View
@@ -372,7 +372,7 @@ export default function Scan() {
         {scanned && (
           <Pressable
             onPress={() => { setScanned(false); setScanResult(''); }}
-            android_ripple={{ color: '#7c3aed' }}
+            android_ripple={{ color: '#2563eb' }}
             style={{
               flexDirection: 'row',
               alignItems: 'center',

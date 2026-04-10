@@ -104,7 +104,7 @@ export default function ForgotOTP() {
     : '•••@•••';
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#8e51ff' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#3b82f6' }}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -220,12 +220,12 @@ export default function ForgotOTP() {
                     borderColor: error
                       ? '#fca5a5'
                       : digit
-                        ? '#8e51ff'
+                        ? '#3b82f6'
                         : '#e5e7eb',
                     backgroundColor: error
                       ? '#fef2f2'
                       : digit
-                        ? '#f0ebff'
+                        ? '#dbeafe'
                         : '#f9fafb',
                     textAlign: 'center',
                     fontFamily: 'Poppins700',
@@ -244,7 +244,7 @@ export default function ForgotOTP() {
                     style={{
                       fontFamily: 'Poppins600',
                       fontSize: 14,
-                      color: '#8e51ff',
+                      color: '#3b82f6',
                       textDecorationLine: 'underline',
                     }}
                   >
@@ -266,7 +266,7 @@ export default function ForgotOTP() {
                   </Text>
                   <View
                     style={{
-                      backgroundColor: '#f0ebff',
+                      backgroundColor: '#dbeafe',
                       paddingHorizontal: 10,
                       paddingVertical: 3,
                       borderRadius: 99,
@@ -276,7 +276,7 @@ export default function ForgotOTP() {
                       style={{
                         fontFamily: 'Poppins600',
                         fontSize: 13,
-                        color: '#8e51ff',
+                        color: '#3b82f6',
                       }}
                     >
                       {countdown}s

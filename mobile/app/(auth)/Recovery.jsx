@@ -83,7 +83,7 @@ export default function Recovery() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#8e51ff' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#3b82f6' }}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -186,7 +186,7 @@ export default function Recovery() {
                 backgroundColor: t.inputBg,
                 borderRadius: 14,
                 borderWidth: 1,
-                borderColor: accountInfo ? '#8e51ff' : t.cardBorder,
+                borderColor: accountInfo ? '#3b82f6' : t.cardBorder,
                 paddingHorizontal: 14,
                 gap: 10,
                 marginBottom: 8,
@@ -212,7 +212,7 @@ export default function Recovery() {
                   paddingVertical: 14,
                 }}
               />
-              {checking && <ActivityIndicator size='small' color='#8e51ff' />}
+              {checking && <ActivityIndicator size='small' color='#3b82f6' />}
             </View>
 
             {error ? (
@@ -238,10 +238,10 @@ export default function Recovery() {
                   alignItems: 'center',
                   gap: 12,
                   padding: 14,
-                  backgroundColor: '#f0ebff',
+                  backgroundColor: '#dbeafe',
                   borderRadius: 16,
                   borderWidth: 1,
-                  borderColor: '#d8b4fe',
+                  borderColor: '#93c5fd',
                   marginBottom: 20,
                 }}
               >
@@ -256,12 +256,12 @@ export default function Recovery() {
                       width: 46,
                       height: 46,
                       borderRadius: 23,
-                      backgroundColor: '#ddd6fe',
+                      backgroundColor: '#bfdbfe',
                       alignItems: 'center',
                       justifyContent: 'center',
                     }}
                   >
-                    <UserCircle color='#8e51ff' size={28} strokeWidth={1.5} />
+                    <UserCircle color='#3b82f6' size={28} strokeWidth={1.5} />
                   </View>
                 )}
                 <View style={{ flex: 1 }}>
@@ -269,7 +269,7 @@ export default function Recovery() {
                     style={{
                       fontFamily: 'Poppins600',
                       fontSize: 14,
-                      color: '#3b0764',
+                      color: '#1e3a5f',
                     }}
                   >
                     {accountInfo.fullName || accountInfo.username}
@@ -278,7 +278,7 @@ export default function Recovery() {
                     style={{
                       fontFamily: 'Poppins400',
                       fontSize: 12,
-                      color: '#7c3aed',
+                      color: '#2563eb',
                     }}
                   >
                     {accountInfo.username}
@@ -286,7 +286,7 @@ export default function Recovery() {
                 </View>
                 <View
                   style={{
-                    backgroundColor: '#ddd6fe',
+                    backgroundColor: '#bfdbfe',
                     paddingHorizontal: 8,
                     paddingVertical: 3,
                     borderRadius: 99,
@@ -296,7 +296,7 @@ export default function Recovery() {
                     style={{
                       fontFamily: 'Poppins600',
                       fontSize: 10,
-                      color: '#6d28d9',
+                      color: '#1d4ed8',
                       textTransform: 'capitalize',
                     }}
                   >
@@ -312,12 +312,12 @@ export default function Recovery() {
               disabled={!accountInfo || loading}
               style={{
                 backgroundColor:
-                  accountInfo && !loading ? '#8e51ff' : '#e5e7eb',
+                  accountInfo && !loading ? '#3b82f6' : '#e5e7eb',
                 borderRadius: 14,
                 paddingVertical: 16,
                 alignItems: 'center',
                 marginBottom: 14,
-                shadowColor: '#8e51ff',
+                shadowColor: '#3b82f6',
                 shadowOffset: { width: 0, height: 4 },
                 shadowOpacity: accountInfo && !loading ? 0.3 : 0,
                 shadowRadius: 8,

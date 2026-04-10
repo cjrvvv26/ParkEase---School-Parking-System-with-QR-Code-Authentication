@@ -50,7 +50,7 @@ export default function Index() {
 
   return (
     <View className='flex h-full items-center justify-center'>
-      <View className='border-2 border-t-2 border-t-violet-500 animate-spin h-14 w-14 rounded-full border-violet-200'></View>
+      <View className='border-2 border-t-2 border-t-blue-500 animate-spin h-14 w-14 rounded-full border-blue-200'></View>
     </View>
   );
 }

@@ -90,7 +90,7 @@ export default function ResetPassword() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#8e51ff' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#3b82f6' }}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -365,12 +365,12 @@ export default function ResetPassword() {
               onPress={handleReset}
               disabled={!canSubmit}
               style={{
-                backgroundColor: canSubmit ? '#8e51ff' : '#e5e7eb',
+                backgroundColor: canSubmit ? '#3b82f6' : '#e5e7eb',
                 borderRadius: 14,
                 paddingVertical: 16,
                 alignItems: 'center',
                 marginBottom: 14,
-                shadowColor: '#8e51ff',
+                shadowColor: '#3b82f6',
                 shadowOffset: { width: 0, height: 4 },
                 shadowOpacity: canSubmit ? 0.3 : 0,
                 shadowRadius: 8,

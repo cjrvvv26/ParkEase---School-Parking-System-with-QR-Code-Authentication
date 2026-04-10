@@ -105,7 +105,7 @@ export default function OTPVerification() {
   const isFilled = digits.every((d) => d !== '');
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#8e51ff' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#3b82f6' }}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -217,8 +217,8 @@ export default function OTPVerification() {
                     height: 56,
                     borderRadius: 14,
                     borderWidth: 1.5,
-                    borderColor: digit ? '#8e51ff' : '#e5e7eb',
-                    backgroundColor: digit ? '#f0ebff' : '#f9fafb',
+                    borderColor: digit ? '#3b82f6' : '#e5e7eb',
+                    backgroundColor: digit ? '#dbeafe' : '#f9fafb',
                     textAlign: 'center',
                     fontFamily: 'Poppins700',
                     fontSize: 22,
@@ -236,7 +236,7 @@ export default function OTPVerification() {
                     style={{
                       fontFamily: 'Poppins600',
                       fontSize: 14,
-                      color: '#8e51ff',
+                      color: '#3b82f6',
                       textDecorationLine: 'underline',
                     }}
                   >
@@ -258,7 +258,7 @@ export default function OTPVerification() {
                   </Text>
                   <View
                     style={{
-                      backgroundColor: '#f0ebff',
+                      backgroundColor: '#dbeafe',
                       paddingHorizontal: 10,
                       paddingVertical: 3,
                       borderRadius: 99,
@@ -268,7 +268,7 @@ export default function OTPVerification() {
                       style={{
                         fontFamily: 'Poppins600',
                         fontSize: 13,
-                        color: '#8e51ff',
+                        color: '#3b82f6',
                       }}
                     >
                       {countdown}s
@@ -308,12 +308,12 @@ export default function OTPVerification() {
               disabled={loading || !isFilled}
               onPress={handleVerification}
               style={{
-                backgroundColor: loading || !isFilled ? '#c4b5fd' : '#8e51ff',
+                backgroundColor: loading || !isFilled ? '#93c5fd' : '#3b82f6',
                 borderRadius: 14,
                 paddingVertical: 16,
                 alignItems: 'center',
                 marginBottom: 14,
-                shadowColor: '#8e51ff',
+                shadowColor: '#3b82f6',
                 shadowOffset: { width: 0, height: 4 },
                 shadowOpacity: loading || !isFilled ? 0 : 0.3,
                 shadowRadius: 8,

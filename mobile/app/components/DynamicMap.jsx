@@ -64,13 +64,13 @@ export default function MapRenderer({ data }) {
                   <>
                     <Circle
                       r={20}
-                      fill='#ede9fe'
+                      fill='#dbeafe'
                       cx={g.x + g.width / 2}
                       cy={g.y + g.height / 2}
                     />
                     <Circle
                       r={15}
-                      fill='#8e51ff'
+                      fill='#3b82f6'
                       cx={g.x + g.width / 2}
                       cy={g.y + g.height / 2}
                     />
