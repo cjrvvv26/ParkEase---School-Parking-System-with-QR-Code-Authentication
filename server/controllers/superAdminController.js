@@ -157,12 +157,20 @@ exports.updatePassword = async (req, res) => {
 
 exports.identifyAccountByEmail = async (req, res) => {
   try {
-    const { email } = req.body;
+    const { email, excludeRole, requireRole } = req.body;
     const user = await User.findOne({ email }).select(
       'email username role profileDetails _id',
     );
     if (!user) {
-      return res.status(404).json({ exists: false, message: 'No account found' });
+      return res.status(404).json({ exists: false, message: 'No account found with that email.' });
+    }
+
+    if (excludeRole && user.role === excludeRole) {
+      return res.status(404).json({ exists: false, message: 'No account found with that email.' });
+    }
+
+    if (requireRole && user.role !== requireRole) {
+      return res.status(404).json({ exists: false, message: 'No account found with that email.' });
     }
 
     const Guard = require('../models/guardModel');

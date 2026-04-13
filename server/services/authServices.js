@@ -10,16 +10,27 @@ const axios = require('axios');
 exports.signInWithGoogle = async (accessToken) => {
   const googleResponse = await axios.get(
     'https://www.googleapis.com/oauth2/v3/userinfo',
-    { headers: { Authorization: `Bearer ${accessToken}` } }
+    { headers: { Authorization: `Bearer ${accessToken}` } },
   );
-  if (!googleResponse?.data) throw new Error('Error google authentication. Please try again');
+  if (!googleResponse?.data)
+    throw new Error('Error google authentication. Please try again');
   const { email } = googleResponse.data;
-  const user = await User.findOne({ email });
-  if (!user) throw new Error("Email address doesn't exist");
-  return { _id: user._id, email: user.email, role: user.role, username: user.username };
+  const user = await User.findOne({ email, role: 'super admin' });
+  if (!user)
+    throw new Error('No super admin account found with that Google account');
+  return {
+    _id: user._id,
+    email: user.email,
+    role: user.role,
+    username: user.username,
+  };
 };
 
-exports.signInWithGoogleCode = async ({ code, code_verifier, redirect_uri }) => {
+exports.signInWithGoogleCode = async ({
+  code,
+  code_verifier,
+  redirect_uri,
+}) => {
   const tokenRes = await axios.post(
     'https://oauth2.googleapis.com/token',
     new URLSearchParams({
@@ -30,18 +41,25 @@ exports.signInWithGoogleCode = async ({ code, code_verifier, redirect_uri }) => 
       grant_type: 'authorization_code',
       code_verifier,
     }).toString(),
-    { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+    { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } },
   );
   const { access_token } = tokenRes.data;
   const googleResponse = await axios.get(
     'https://www.googleapis.com/oauth2/v3/userinfo',
-    { headers: { Authorization: `Bearer ${access_token}` } }
+    { headers: { Authorization: `Bearer ${access_token}` } },
   );
-  if (!googleResponse?.data) throw new Error('Error google authentication. Please try again');
+  if (!googleResponse?.data)
+    throw new Error('Error google authentication. Please try again');
   const { email } = googleResponse.data;
-  const user = await User.findOne({ email });
-  if (!user) throw new Error("Email address doesn't exist");
-  return { _id: user._id, email: user.email, role: user.role, username: user.username };
+  const user = await User.findOne({ email, role: 'super admin' });
+  if (!user)
+    throw new Error('No super admin account found with that Google account');
+  return {
+    _id: user._id,
+    email: user.email,
+    role: user.role,
+    username: user.username,
+  };
 };
 
 exports.superAdminSignUpWithGoogle = async (accessToken) => {
@@ -92,6 +110,10 @@ exports.localSignIn = async (data) => {
 
   if (platform === 'mobile' && user.role === 'super admin') {
     throw new Error("Email doesn't exist in database");
+  }
+
+  if (platform === 'website' && user.role !== 'super admin') {
+    throw new Error('Only super admin accounts are allowed to sign in here.');
   }
 
   const userData =

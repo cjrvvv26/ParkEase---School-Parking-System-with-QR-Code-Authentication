@@ -117,8 +117,14 @@ export default function AddGuard() {
             <ChevronLeft strokeWidth={1.5} size={18} />
             <span>Users</span>
           </Link>
-          <h1 className={`text-3xl font-bold ${dark ? 'text-gray-100' : 'text-gray-700'}`}>Add Security Guard</h1>
-          <p className={`text-sm ${dark ? 'text-gray-400' : 'text-gray-500'}`}>Register a new security guard to the parking management system</p>
+          <h1
+            className={`text-3xl font-bold ${dark ? 'text-gray-100' : 'text-gray-700'}`}
+          >
+            Add Security Guard
+          </h1>
+          <p className={`text-sm ${dark ? 'text-gray-400' : 'text-gray-500'}`}>
+            Register a new security guard to the parking management system
+          </p>
         </div>
         <div className='text-sm text-gray-500'>Step 1 of 1</div>
       </header>
@@ -131,7 +137,11 @@ export default function AddGuard() {
         {/* Left: form inputs */}
         <section className='lg:col-span-2 rounded-xl pt-5 flex-1'>
           <section className='space-y-4'>
-            <h2 className={`text-lg font-medium ${dark ? 'text-gray-200' : 'text-gray-800'}`}>Personal Information</h2>
+            <h2
+              className={`text-lg font-medium ${dark ? 'text-gray-200' : 'text-gray-800'}`}
+            >
+              Personal Information
+            </h2>
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
               <DefaultInput
                 label='First Name'
@@ -220,7 +230,11 @@ export default function AddGuard() {
           </section>
 
           <section className={`space-y-4 pt-5 border-t mt-5 ${border}`}>
-            <h2 className={`text-lg font-medium ${dark ? 'text-gray-200' : 'text-gray-800'}`}>Assignment & Schedule</h2>
+            <h2
+              className={`text-lg font-medium ${dark ? 'text-gray-200' : 'text-gray-800'}`}
+            >
+              Assignment & Schedule
+            </h2>
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
               <DefaultOptions
                 label='Work Shift'
@@ -236,26 +250,62 @@ export default function AddGuard() {
               />
               <DefaultOptions
                 label='Status'
-                onChange={(e) => setGuard({ ...guard, status: e.target.value })}
+                onChange={(e) =>
+                  setGuard({
+                    ...guard,
+                    status:
+                      e.target.value === 'Inactive' ? 'deactivate' : 'active',
+                  })
+                }
                 placeholder={'Select status'}
                 value={guard.status}
-                options={['active', 'deactivate']}
+                options={['Active', 'Inactive']}
               />
             </div>
           </section>
 
           <section className={`pt-5 border-t mt-5 space-y-5 ${border}`}>
-            <h2 className={`text-lg font-medium ${dark ? 'text-gray-200' : 'text-gray-800'}`}>Login Credentials</h2>
-            <p className={`text-xs ${dark ? 'text-gray-400' : 'text-gray-500'}`}>Username will be auto-generated. Guard can set their password in the mobile app on first login.</p>
+            <h2
+              className={`text-lg font-medium ${dark ? 'text-gray-200' : 'text-gray-800'}`}
+            >
+              Login Credentials
+            </h2>
+            <p
+              className={`text-xs ${dark ? 'text-gray-400' : 'text-gray-500'}`}
+            >
+              Username will be auto-generated. Guard can set their password in
+              the mobile app on first login.
+            </p>
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
               <label className='flex flex-col text-sm'>
-                <span className={dark ? 'text-gray-400' : 'text-gray-600'}>Username</span>
-                <input value={guard.firstName && guard.lastName ? guard.firstName[0].toLowerCase() + guard.lastName.toLowerCase() + Date.now() : ''} disabled placeholder='Auto-generated' className={`mt-2 px-3 py-2 ring rounded-md text-sm placeholder:text-gray-400 outline-none ${input}`} />
-                <p className='text-xs text-gray-400 mt-1'>Format: first initial + last name (e.g., rsantos)</p>
+                <span className={dark ? 'text-gray-400' : 'text-gray-600'}>
+                  Username
+                </span>
+                <input
+                  value={
+                    guard.firstName && guard.lastName
+                      ? guard.firstName[0].toLowerCase() +
+                        guard.lastName.toLowerCase() +
+                        Date.now()
+                      : ''
+                  }
+                  disabled
+                  placeholder='Auto-generated'
+                  className={`mt-2 px-3 py-2 ring rounded-md text-sm placeholder:text-gray-400 outline-none ${input}`}
+                />
+                <p className='text-xs text-gray-400 mt-1'>
+                  Format: first initial + last name (e.g., rsantos)
+                </p>
               </label>
               <label className='flex flex-col text-sm'>
-                <span className={dark ? 'text-gray-400' : 'text-gray-600'}>Email (can be used for login recovery)</span>
-                <input value={guard.email} disabled className={`mt-2 px-3 py-2 ring rounded-md text-sm placeholder:text-gray-400 outline-none ${input}`} />
+                <span className={dark ? 'text-gray-400' : 'text-gray-600'}>
+                  Email (can be used for login recovery)
+                </span>
+                <input
+                  value={guard.email}
+                  disabled
+                  className={`mt-2 px-3 py-2 ring rounded-md text-sm placeholder:text-gray-400 outline-none ${input}`}
+                />
               </label>
             </div>
 
@@ -269,33 +319,122 @@ export default function AddGuard() {
           </section>
 
           <section className={`space-y-4 pt-5 mt-5 border-t ${border}`}>
-            <h2 className={`text-lg font-medium ${dark ? 'text-gray-200' : 'text-gray-800'}`}>Permissions</h2>
+            <h2
+              className={`text-lg font-medium ${dark ? 'text-gray-200' : 'text-gray-800'}`}
+            >
+              Permissions
+            </h2>
             <div className='space-y-2'>
               <label className='flex items-center gap-3'>
-                <input type='checkbox' onChange={(e) => setPermissions({ ...permissions, canScan: e.target.checked })} checked={permissions.canScan} className='rounded' />
-                <span className={`text-sm ${dark ? 'text-gray-300' : 'text-gray-700'}`}>Can scan & verify QR codes (entry/exit)</span>
+                <input
+                  type='checkbox'
+                  onChange={(e) =>
+                    setPermissions({
+                      ...permissions,
+                      canScan: e.target.checked,
+                    })
+                  }
+                  checked={permissions.canScan}
+                  className='rounded'
+                />
+                <span
+                  className={`text-sm ${dark ? 'text-gray-300' : 'text-gray-700'}`}
+                >
+                  Can scan & verify QR codes (entry/exit)
+                </span>
               </label>
               <label className='flex items-center gap-3'>
-                <input type='checkbox' className='rounded' onChange={(e) => setPermissions({ ...permissions, canViewAnalytics: e.target.checked })} checked={permissions.canViewAnalytics} />
-                <span className={`text-sm ${dark ? 'text-gray-300' : 'text-gray-700'}`}>Can view parking analytics & reports</span>
+                <input
+                  type='checkbox'
+                  className='rounded'
+                  onChange={(e) =>
+                    setPermissions({
+                      ...permissions,
+                      canViewAnalytics: e.target.checked,
+                    })
+                  }
+                  checked={permissions.canViewAnalytics}
+                />
+                <span
+                  className={`text-sm ${dark ? 'text-gray-300' : 'text-gray-700'}`}
+                >
+                  Can view parking analytics & reports
+                </span>
               </label>
             </div>
           </section>
         </section>
 
-        <aside className={`rounded-xl shadow-sm p-6 flex flex-col gap-4 self-start border ${dark ? 'bg-[#2f2f2f] border-[#3a3a3a]' : 'bg-white border-gray-200'}`}>
+        <aside
+          className={`rounded-xl shadow-sm p-6 flex flex-col gap-4 self-start border ${dark ? 'bg-[#2f2f2f] border-[#3a3a3a]' : 'bg-white border-gray-200'}`}
+        >
           <div className='space-y-2'>
-            <h3 className={`text-sm font-medium ${dark ? 'text-gray-200' : 'text-gray-800'}`}>Summary</h3>
-            <div className='text-xs text-gray-500'>Review details before saving</div>
-            <div className={`mt-3 rounded-md p-3 text-sm space-y-2 ${dark ? 'bg-[#3a3a3a]' : 'bg-gray-100'}`}>
-              <div><span className={`font-medium ${dark ? 'text-gray-300' : 'text-gray-700'}`}>Name:</span> {guard.firstName || '—'} {guard.lastName || ''}</div>
-              <div><span className={`font-medium ${dark ? 'text-gray-300' : 'text-gray-700'}`}>Email:</span> {guard.email || '—'}</div>
-              <div><span className={`font-medium ${dark ? 'text-gray-300' : 'text-gray-700'}`}>Phone No:</span> {guard.phoneNo || '—'}</div>
-              <div><span className={`font-medium ${dark ? 'text-gray-300' : 'text-gray-700'}`}>Username:</span> {guard.firstName && guard.lastName ? guard.firstName[0].toLowerCase() + guard.lastName.toLowerCase() + Date.now() : '' || '—'}</div>
-              <div><span className={`font-medium ${dark ? 'text-gray-300' : 'text-gray-700'}`}>Shift:</span> {guard.shift || '—'}</div>
+            <h3
+              className={`text-sm font-medium ${dark ? 'text-gray-200' : 'text-gray-800'}`}
+            >
+              Summary
+            </h3>
+            <div className='text-xs text-gray-500'>
+              Review details before saving
+            </div>
+            <div
+              className={`mt-3 rounded-md p-3 text-sm space-y-2 ${dark ? 'bg-[#3a3a3a]' : 'bg-gray-100'}`}
+            >
               <div>
-                <span className={`font-medium ${dark ? 'text-gray-300' : 'text-gray-700'}`}>Status:</span>{' '}
-                <span className={`px-2 py-1 rounded text-xs font-medium ${guard.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>{guard.status}</span>
+                <span
+                  className={`font-medium ${dark ? 'text-gray-300' : 'text-gray-700'}`}
+                >
+                  Name:
+                </span>{' '}
+                {guard.firstName || '—'} {guard.lastName || ''}
+              </div>
+              <div>
+                <span
+                  className={`font-medium ${dark ? 'text-gray-300' : 'text-gray-700'}`}
+                >
+                  Email:
+                </span>{' '}
+                {guard.email || '—'}
+              </div>
+              <div>
+                <span
+                  className={`font-medium ${dark ? 'text-gray-300' : 'text-gray-700'}`}
+                >
+                  Phone No:
+                </span>{' '}
+                {guard.phoneNo || '—'}
+              </div>
+              <div>
+                <span
+                  className={`font-medium ${dark ? 'text-gray-300' : 'text-gray-700'}`}
+                >
+                  Username:
+                </span>{' '}
+                {guard.firstName && guard.lastName
+                  ? guard.firstName[0].toLowerCase() +
+                    guard.lastName.toLowerCase() +
+                    Date.now()
+                  : '' || '—'}
+              </div>
+              <div>
+                <span
+                  className={`font-medium ${dark ? 'text-gray-300' : 'text-gray-700'}`}
+                >
+                  Shift:
+                </span>{' '}
+                {guard.shift || '—'}
+              </div>
+              <div>
+                <span
+                  className={`font-medium ${dark ? 'text-gray-300' : 'text-gray-700'}`}
+                >
+                  Status:
+                </span>{' '}
+                <span
+                  className={`px-2 py-1 rounded text-xs font-medium ${guard.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}
+                >
+                  {guard.status}
+                </span>
               </div>
             </div>
           </div>

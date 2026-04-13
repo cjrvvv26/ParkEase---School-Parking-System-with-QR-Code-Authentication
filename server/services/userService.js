@@ -45,6 +45,7 @@ exports.getUserData = async (id) => {
         ...viewModel,
         ...userData.toObject(),
         course,
+        termsAccepted: user.termsAccepted,
       };
       break;
     case 'faculty':
@@ -55,6 +56,7 @@ exports.getUserData = async (id) => {
       viewModel = {
         ...viewModel,
         ...userData.toObject(),
+        termsAccepted: user.termsAccepted,
       };
       break;
     case 'guard':
@@ -62,7 +64,7 @@ exports.getUserData = async (id) => {
         '-_id name workShift phoneNo permissions',
       );
 
-      viewModel = { ...viewModel, ...userData.toObject() };
+      viewModel = { ...viewModel, ...userData.toObject(), termsAccepted: user.termsAccepted };
       break;
 
     default:

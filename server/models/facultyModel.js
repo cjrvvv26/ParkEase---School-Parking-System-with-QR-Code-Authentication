@@ -2,10 +2,10 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const motorDetails = new Schema({
-  plateNo: { type: String, required: true },
-  brand: { type: String, required: true },
-  model: { type: String, required: true },
-  color: { type: String, required: true },
+  plateNo: { type: String },
+  brand: { type: String },
+  model: { type: String },
+  color: { type: String },
 });
 
 const facultySchema = new Schema({
@@ -24,7 +24,7 @@ const facultySchema = new Schema({
   QRCode: { url: String, public_id: String },
   entryTime: Date,
   outTime: Date,
-  motorDetails,
+  motorDetails: { type: motorDetails, default: null },
 });
 
 module.exports = mongoose.model('faculty', facultySchema);

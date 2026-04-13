@@ -52,7 +52,9 @@ export default function Home() {
         const token = await AsyncStorage.getItem('token');
         if (!token) return;
         const res = await execute(getData, token);
-        if (res?.status === 200) dispatch(login({ user: res.data }));
+        if (res?.status === 200) {
+          dispatch(login({ user: { ...res.data, termsAccepted: res.data.termsAccepted ?? true } }));
+        }
       };
       refreshUser();
     }, [])

@@ -198,6 +198,7 @@ exports.verifyOtp = async (email, otp, type) => {
       role: recordUser.role,
       emailVerified: recordUser.emailVerified,
       lastActive: recordUser.lastActive,
+      termsAccepted: recordUser.termsAccepted,
       ...moreData,
     };
 

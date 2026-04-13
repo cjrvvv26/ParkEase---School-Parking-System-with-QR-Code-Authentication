@@ -49,6 +49,7 @@ export default function Recovery() {
       try {
         const res = await api.post('super-admin/check-account', {
           email: debounced,
+          excludeRole: 'super admin',
         });
         if (res.data?.exists) {
           setAccountInfo(res.data.account);

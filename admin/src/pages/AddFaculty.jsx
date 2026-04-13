@@ -70,9 +70,8 @@ export default function AddFaculty() {
 
   const handleRegistration = async (e) => {
     e.preventDefault();
-    const hasEmptyValue = Object.values({ ...faculty, ...motor }).some(
-      (f) => !f,
-    );
+    const { profileDetails, role, ...requiredFields } = faculty;
+    const hasEmptyValue = Object.values(requiredFields).some((f) => !f);
 
     if (hasEmptyValue) {
       return setError('All fields must be filled.');
@@ -86,6 +85,12 @@ export default function AddFaculty() {
       return setError('Phone number must be exactly 11 digits.');
     }
 
+    const hasMotor = motor.plateNo || motor.brand || motor.model || motor.color;
+    if (hasMotor) {
+      const motorIncomplete = Object.values(motor).some((f) => !f);
+      if (motorIncomplete) return setError('Fill all motor details or leave them all empty.');
+    }
+
     const formData = new FormData();
 
     const username =
@@ -97,13 +102,17 @@ export default function AddFaculty() {
 
     formData.append('username', username);
 
-    Object.entries({ ...faculty, ...motor }).forEach(([key, value]) => {
+    Object.entries(faculty).forEach(([key, value]) => {
       if (key === 'profileDetails' && value) {
         formData.append('profileDetails', value);
       } else if (key !== 'profileDetails') {
         formData.append(key, value);
       }
     });
+
+    if (hasMotor) {
+      Object.entries(motor).forEach(([key, value]) => formData.append(key, value));
+    }
 
     const res = await fetchData('/super-admin/add-user/avatars', {
       method: 'POST',

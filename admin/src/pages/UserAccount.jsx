@@ -60,31 +60,35 @@ export default function UserAccount() {
     }
 
     // Validate student-specific fields
-    if (user.role === 'student' || user.role === 'faculty') {
-      if (user.role === 'student') {
-        if (!user.course) {
-          errors.course = 'Course is required';
-        }
-        if (!user.yearLevel) {
-          errors.yearLevel = 'Year level is required';
-        }
+    if (user.role === 'student') {
+      if (!user.course) {
+        errors.course = 'Course is required';
       }
+      if (!user.yearLevel) {
+        errors.yearLevel = 'Year level is required';
+      }
+    }
 
-      // Validate motorcycle details
+    // Validate motorcycle details — only required for students, optional for faculty
+    if (user.role === 'student') {
       if (!user.motorDetails?.plateNo?.trim()) {
         errors.plateNo = 'Plate number is required';
       } else if (!/^[A-Z0-9\s]{3,}$/.test(user.motorDetails.plateNo)) {
         errors.plateNo = 'Invalid plate number format';
       }
+      if (!user.motorDetails?.brand?.trim()) errors.brand = 'Motorcycle brand is required';
+      if (!user.motorDetails?.model?.trim()) errors.model = 'Motorcycle model is required';
+      if (!user.motorDetails?.color?.trim()) errors.color = 'Motorcycle color is required';
+    }
 
-      if (!user.motorDetails?.brand?.trim()) {
-        errors.brand = 'Motorcycle brand is required';
-      }
-      if (!user.motorDetails?.model?.trim()) {
-        errors.model = 'Motorcycle model is required';
-      }
-      if (!user.motorDetails?.color?.trim()) {
-        errors.color = 'Motorcycle color is required';
+    if (user.role === 'faculty') {
+      const m = user.motorDetails;
+      const anyFilled = m?.plateNo || m?.brand || m?.model || m?.color;
+      if (anyFilled) {
+        if (!m?.plateNo?.trim()) errors.plateNo = 'Plate number is required';
+        if (!m?.brand?.trim()) errors.brand = 'Motorcycle brand is required';
+        if (!m?.model?.trim()) errors.model = 'Motorcycle model is required';
+        if (!m?.color?.trim()) errors.color = 'Motorcycle color is required';
       }
     }
 

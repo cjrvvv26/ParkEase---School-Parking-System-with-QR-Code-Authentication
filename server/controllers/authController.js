@@ -133,6 +133,9 @@ exports.verifyUserOtp = async (req, res) => {
 
     if (type === 'login') {
       viewModel = await otpService.verifyOtp(email, inputOtp, type);
+      if (platform === 'website' && viewModel?.role !== 'super admin') {
+        return res.status(403).json({ error: 'Only super admin accounts are allowed to sign in here.' });
+      }
     } else if (type === 'register') {
       const result = await otpService.verifyOtp(email, inputOtp, type);
       viewModel = result.viewModel;

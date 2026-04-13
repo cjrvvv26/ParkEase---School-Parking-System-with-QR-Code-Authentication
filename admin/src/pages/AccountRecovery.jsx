@@ -20,8 +20,11 @@ export default function AccountRecovery() {
       setChecking(true);
       const data = await fetchData('/super-admin/check-account', {
         method: 'POST',
-        data: { email: debounced },
+        data: { email: debounced, requireRole: 'super admin' },
       }).catch(() => null);
+      if (!data?.exists) {
+        setError('No super admin account found with that email');
+      }
       setAccountInfo(data?.exists ? data.account : null);
       setChecking(false);
     };

@@ -119,6 +119,9 @@ exports.registerUserAccount = async (data) => {
   }
 
   if (role === 'faculty') {
+    const motorData = (info.plateNo && info.brand && info.model && info.color)
+      ? { plateNo: info.plateNo, brand: info.brand, model: info.model, color: info.color }
+      : null;
     specificData = await Faculty.create({
       userId: user._id,
       name: {
@@ -127,12 +130,7 @@ exports.registerUserAccount = async (data) => {
         lastName: info.lastName,
       },
       phoneNo: info.phoneNo,
-      motorDetails: {
-        plateNo: info.plateNo,
-        brand: info.brand,
-        model: info.model,
-        color: info.color,
-      },
+      ...(motorData && { motorDetails: motorData }),
     });
   }
 
