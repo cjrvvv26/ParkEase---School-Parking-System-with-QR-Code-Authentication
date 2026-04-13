@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { ChevronLeft, Eye, EyeOff, Lock, CheckCircle, Circle } from 'lucide-react-native';
+import { ChevronLeft, Eye, EyeOff, Lock, CheckCircle, Circle, XCircle, AlertCircle } from 'lucide-react-native';
 import { useState } from 'react';
 import {
   View,
@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { changePassword } from '../services/authService';
+import useApiRequest from '../hooks/useApiRequest';
 import useTheme from '../hooks/useTheme';
 
 function PasswordInput({ label, value, onChangeText, show, onToggle, t }) {
@@ -57,9 +58,9 @@ function PasswordInput({ label, value, onChangeText, show, onToggle, t }) {
         />
         <Pressable onPress={onToggle}>
           {show ? (
-            <EyeOff color={t.textFaint} size={16} />
-          ) : (
             <Eye color={t.textFaint} size={16} />
+          ) : (
+            <EyeOff color={t.textFaint} size={16} />
           )}
         </Pressable>
       </View>
@@ -91,14 +92,14 @@ function Rule({ pass, label, t }) {
 export default function ChangePassword() {
   const router = useRouter();
   const { t } = useTheme();
+  const { loading, error, execute } = useApiRequest();
   const [current, setCurrent] = useState('');
   const [newPass, setNewPass] = useState('');
   const [confirm, setConfirm] = useState('');
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
   const [success, setSuccess] = useState(false);
 
   const rules = {
@@ -111,17 +112,22 @@ export default function ChangePassword() {
   const confirmMatch = confirm.length > 0 && confirm === newPass;
   const canSubmit = current.length > 0 && allRules && confirmMatch;
 
+  const validate = () => {
+    const e = {};
+    if (!current) e.current = 'Current password is required.';
+    if (!newPass) e.new = 'New password is required.';
+    else if (!allRules) e.new = 'Password does not meet all requirements.';
+    if (!confirm) e.confirm = 'Please confirm your new password.';
+    else if (confirm !== newPass) e.confirm = 'Passwords do not match.';
+    setFieldErrors(e);
+    return Object.keys(e).length === 0;
+  };
+
   const handleSubmit = async () => {
-    setSaving(true);
-    setError('');
-    try {
-      await changePassword({ currentPassword: current, newPassword: newPass });
-      setSuccess(true);
-    } catch (err) {
-      setError(err.response?.data?.error || 'Failed to change password');
-    } finally {
-      setSaving(false);
-    }
+    if (!validate()) return;
+    setFieldErrors({});
+    const res = await execute(changePassword, { currentPassword: current, newPassword: newPass });
+    if (res?.status === 200) setSuccess(true);
   };
 
   return (
@@ -202,19 +208,31 @@ export default function ChangePassword() {
               <PasswordInput
                 label='Current Password'
                 value={current}
-                onChangeText={setCurrent}
+                onChangeText={(v) => { setCurrent(v); setFieldErrors((p) => ({ ...p, current: '' })); }}
                 show={showCurrent}
                 onToggle={() => setShowCurrent(!showCurrent)}
                 t={t}
               />
+              {fieldErrors.current ? (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: -10, marginBottom: 12 }}>
+                  <XCircle size={12} color='#ef4444' />
+                  <Text style={{ fontFamily: 'Poppins400', fontSize: 12, color: '#ef4444' }}>{fieldErrors.current}</Text>
+                </View>
+              ) : null}
               <PasswordInput
                 label='New Password'
                 value={newPass}
-                onChangeText={setNewPass}
+                onChangeText={(v) => { setNewPass(v); setFieldErrors((p) => ({ ...p, new: '' })); }}
                 show={showNew}
                 onToggle={() => setShowNew(!showNew)}
                 t={t}
               />
+              {fieldErrors.new ? (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: -10, marginBottom: 12 }}>
+                  <XCircle size={12} color='#ef4444' />
+                  <Text style={{ fontFamily: 'Poppins400', fontSize: 12, color: '#ef4444' }}>{fieldErrors.new}</Text>
+                </View>
+              ) : null}
 
               {/* Rules */}
               {newPass.length > 0 && (
@@ -289,44 +307,37 @@ export default function ChangePassword() {
                   />
                   <Pressable onPress={() => setShowConfirm(!showConfirm)}>
                     {showConfirm ? (
-                      <EyeOff color={t.textFaint} size={16} />
-                    ) : (
                       <Eye color={t.textFaint} size={16} />
+                    ) : (
+                      <EyeOff color={t.textFaint} size={16} />
                     )}
                   </Pressable>
                 </View>
               </View>
 
               {error ? (
-                <Text
-                  style={{
-                    fontFamily: 'Poppins400',
-                    fontSize: 12,
-                    color: '#ef4444',
-                    textAlign: 'center',
-                    marginBottom: 12,
-                  }}
-                >
-                  {error}
-                </Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#fef2f2', borderRadius: 10, padding: 12, marginBottom: 12, borderWidth: 1, borderColor: '#fecaca' }}>
+                  <AlertCircle size={14} color='#ef4444' />
+                  <Text style={{ fontFamily: 'Poppins400', fontSize: 12, color: '#dc2626', flex: 1 }}>{error}</Text>
+                </View>
               ) : null}
 
               <Pressable
                 onPress={handleSubmit}
-                disabled={!canSubmit || saving}
+                disabled={!canSubmit || loading}
                 style={{
-                  backgroundColor: canSubmit && !saving ? t.primary : t.primaryBorder,
+                  backgroundColor: canSubmit && !loading ? t.primary : t.primaryBorder,
                   borderRadius: 16,
                   paddingVertical: 16,
                   alignItems: 'center',
                   shadowColor: t.primary,
                   shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: canSubmit && !saving ? 0.3 : 0,
+                  shadowOpacity: canSubmit && !loading ? 0.3 : 0,
                   shadowRadius: 8,
-                  elevation: canSubmit && !saving ? 6 : 0,
+                  elevation: canSubmit && !loading ? 6 : 0,
                 }}
               >
-                {saving ? (
+                {loading ? (
                   <ActivityIndicator color='#fff' />
                 ) : (
                   <Text style={{ fontFamily: 'Poppins600', fontSize: 15, color: '#fff' }}>

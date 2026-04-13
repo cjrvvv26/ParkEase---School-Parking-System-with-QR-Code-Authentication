@@ -125,8 +125,8 @@ export default function SignIn() {
   const handleRegistration = async () => {
     if (!credentials.email || !credentials.password)
       return setError('All fields must be filled.');
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(credentials.email))
-      return setError('Invalid email address');
+    if (!/^[^\s@]+@gmail\.com$/.test(credentials.email))
+      return setError('Email must be a valid @gmail.com address.');
 
     console.log('[LOGIN] Attempting login with:', {
       email: credentials.email,
@@ -282,7 +282,7 @@ export default function SignIn() {
                   onChangeText={(text) =>
                     setCredentials((prev) => ({ ...prev, email: text }))
                   }
-                  placeholder='you@school.edu'
+                  placeholder='you@gmail.com'
                   placeholderTextColor={t.textFaint}
                   keyboardType='email-address'
                   autoCapitalize='none'

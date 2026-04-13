@@ -439,8 +439,8 @@ export default function UserAccount() {
                       <DefaultInput
                         label={'Status'}
                         value={
-                          user?.status.charAt(0).toUpperCase() +
-                          user?.status.slice(1)
+                          user?.status === 'deactivate' ? 'Inactive' :
+                          user?.status.charAt(0).toUpperCase() + user?.status.slice(1)
                         }
                         onlyRead={true}
                       />
@@ -448,16 +448,13 @@ export default function UserAccount() {
                       <div>
                         <DefaultOptions
                           label={'Status'}
-                          value={
-                            user?.status.charAt(0).toUpperCase() +
-                            user?.status.slice(1)
-                          }
+                          value={user?.status === 'deactivate' ? 'Inactive' : 'Active'}
                           placeholder={'Update Status'}
-                          options={['Active', 'Deactivate']}
+                          options={['Active', 'Inactive']}
                           onChange={(e) =>
                             setUser({
                               ...user,
-                              status: e.target.value.toLowerCase(),
+                              status: e.target.value === 'Inactive' ? 'deactivate' : 'active',
                             })
                           }
                         />
@@ -475,25 +472,19 @@ export default function UserAccount() {
                     (onlyRead ? (
                       <DefaultInput
                         label={'Status'}
-                        value={
-                          user?.status.charAt(0).toUpperCase() +
-                          user?.status.slice(1)
-                        }
+                        value={user?.status === 'deactivate' ? 'Inactive' : 'Active'}
                         onlyRead={true}
                       />
                     ) : (
                       <DefaultOptions
                         label={'Status'}
-                        value={
-                          user?.status.charAt(0).toUpperCase() +
-                          user?.status.slice(1)
-                        }
+                        value={user?.status === 'deactivate' ? 'Inactive' : 'Active'}
                         placeholder={'Update Status'}
-                        options={['Active', 'Deactivate']}
+                        options={['Active', 'Inactive']}
                         onChange={(e) =>
                           setUser({
                             ...user,
-                            status: e.target.value.toLowerCase(),
+                            status: e.target.value === 'Inactive' ? 'deactivate' : 'active',
                           })
                         }
                       />
@@ -519,10 +510,7 @@ export default function UserAccount() {
                       {user.role === 'student' && (
                         <DefaultInput
                           label={'Status'}
-                          value={
-                            user?.status.charAt(0).toUpperCase() +
-                            user?.status.slice(1)
-                          }
+                          value={user?.status === 'deactivate' ? 'Inactive' : 'Active'}
                           onlyRead={true}
                         />
                       )}
@@ -570,16 +558,13 @@ export default function UserAccount() {
                         <div>
                           <DefaultOptions
                             label={'Status'}
-                            value={
-                              user?.status.charAt(0).toUpperCase() +
-                              user?.status.slice(1)
-                            }
+                            value={user?.status === 'deactivate' ? 'Inactive' : 'Active'}
                             placeholder={'Update Status'}
-                            options={['Active', 'Deactivate']}
+                            options={['Active', 'Inactive']}
                             onChange={(e) =>
                               setUser({
                                 ...user,
-                                status: e.target.value.toLowerCase(),
+                                status: e.target.value === 'Inactive' ? 'deactivate' : 'active',
                               })
                             }
                           />

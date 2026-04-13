@@ -1,4 +1,15 @@
-import { SquareDashedBottom, TrendingUp, BookOpenCheck, Banknote, Landmark, Users, ShieldUser, SquaresExclude, Clock, CreditCard } from 'lucide-react';
+import {
+  SquareDashedBottom,
+  TrendingUp,
+  BookOpenCheck,
+  Banknote,
+  Landmark,
+  Users,
+  ShieldUser,
+  SquaresExclude,
+  Clock,
+  CreditCard,
+} from 'lucide-react';
 import useDark from '../../hooks/useDark';
 
 export default function ReportSummaryCard({ reports = [], loading, stats }) {
@@ -6,18 +17,59 @@ export default function ReportSummaryCard({ reports = [], loading, stats }) {
 
   const renderIcon = (title) => {
     switch (title) {
-      case 'Total Revenue': return <Landmark size={30} />;
-      case 'Total Active Users': return <Users size={30} />;
-      case 'Total Paid Students': return <CreditCard size={30} />;
-      case 'Avg Parking (mins)': return <Clock size={30} />;
-      case 'Total Semesters': return <BookOpenCheck size={30} />;
-      case 'Average Revenue': return <Banknote size={30} />;
-      case 'Highest Earning': return <TrendingUp size={30} />;
-      case 'Total Slots': return <SquareDashedBottom size={30} />;
-      case 'Total Exclusive': return <ShieldUser size={30} />;
-      case 'Total Available': return <Users size={30} />;
-      case 'Total Occupied': return <SquaresExclude size={30} />;
-      default: return null;
+      case 'Total Revenue':
+        return <Landmark size={30} />;
+      case 'Total Active Users':
+        return <Users size={30} />;
+      case 'Total Paid Students':
+        return <CreditCard size={30} />;
+      case 'Avg Parking (mins)':
+        return <Clock size={30} />;
+      case 'Total Semesters':
+        return <BookOpenCheck size={30} />;
+      case 'Average Revenue':
+        return <Banknote size={30} />;
+      case 'Highest Earning':
+        return <TrendingUp size={30} />;
+      case 'Total Slots':
+        return <SquareDashedBottom size={30} />;
+      case 'Total Exclusive':
+        return <ShieldUser size={30} />;
+      case 'Total Available':
+        return <Users size={30} />;
+      case 'Total Occupied':
+        return <SquaresExclude size={30} />;
+      default:
+        return null;
+    }
+  };
+
+  const getSubtitle = (title) => {
+    switch (title) {
+      case 'Total Revenue':
+        return 'Across all semesters';
+      case 'Average Revenue':
+        return 'Per semester average';
+      case 'Highest Earning':
+        return 'Best performing semester';
+      case 'Total Active Users':
+        return 'Currently active accounts';
+      case 'Total Paid Students':
+        return 'Exclusive slot payment';
+      case 'Avg Parking (mins)':
+        return 'Average session duration';
+      case 'Total Semesters':
+        return 'Recorded semesters';
+      case 'Total Slots':
+        return 'Total parking slots';
+      case 'Total Exclusive':
+        return 'Assigned exclusive slots';
+      case 'Total Available':
+        return 'Currently unoccupied';
+      case 'Total Occupied':
+        return 'Currently in use';
+      default:
+        return '';
     }
   };
 
@@ -28,31 +80,45 @@ export default function ReportSummaryCard({ reports = [], loading, stats }) {
     return item.data;
   };
 
-  const displayData = stats ? stats.map((item) => ({ ...item, data: formatData(item) })) : reports;
+  const displayData = stats
+    ? stats.map((item) => ({ ...item, data: formatData(item) }))
+    : reports;
 
   if (loading) {
     return Array.from({ length: 4 }, (_, i) => (
-      <div key={i} className={`h-full w-full animate-pulse ${card} rounded-xl p-5 flex gap-3`}>
-        <div className="flex items-center justify-between w-full">
-          <div className="flex flex-col justify-center h-full gap-1">
-            <div className={`w-32 h-3 rounded-md ${dark ? 'bg-[#3a3a3a]' : 'bg-gray-200'}`}></div>
-            <div className={`w-24 mt-2 h-3 rounded-md ${dark ? 'bg-[#3a3a3a]' : 'bg-gray-200'}`}></div>
+      <div
+        key={i}
+        className={`h-full w-full animate-pulse ${card} rounded-xl p-5 flex gap-3`}
+      >
+        <div className='flex items-center justify-between w-full'>
+          <div className='flex flex-col justify-center h-full gap-1'>
+            <div
+              className={`w-32 h-3 rounded-md ${dark ? 'bg-[#3a3a3a]' : 'bg-gray-200'}`}
+            ></div>
+            <div
+              className={`w-24 mt-2 h-3 rounded-md ${dark ? 'bg-[#3a3a3a]' : 'bg-gray-200'}`}
+            ></div>
           </div>
-          <div className={`rounded-xl h-20 w-20 ${dark ? 'bg-[#3a3a3a]' : 'bg-gray-200'}`}></div>
+          <div
+            className={`rounded-xl h-20 w-20 ${dark ? 'bg-[#3a3a3a]' : 'bg-gray-200'}`}
+          ></div>
         </div>
       </div>
     ));
   }
 
   return displayData.map((item, index) => (
-    <div key={index} className={`h-full w-full ${card} rounded-xl p-5 flex gap-3`}>
-      <div className="flex items-center justify-between w-full">
-        <div className="flex flex-col justify-center h-full gap-1">
-          <h1 className="text-4xl font-semibold">{item.data}</h1>
-          <p className="font-medium text-base">{item.title}</p>
-          <p className="text-gray-400 text-xs">All semesters</p>
+    <div
+      key={index}
+      className={`h-full w-full ${card} rounded-xl p-5 flex gap-3`}
+    >
+      <div className='flex items-center justify-between w-full'>
+        <div className='flex flex-col justify-center h-full gap-1'>
+          <h1 className='text-4xl font-semibold'>{item.data}</h1>
+          <p className='font-medium text-base'>{item.title}</p>
+          <p className='text-gray-400 text-xs'>{getSubtitle(item.title)}</p>
         </div>
-        <div className="flex items-center justify-center rounded-xl p-2 h-20 w-20 bg-blue-500 text-white">
+        <div className='flex items-center justify-center rounded-xl p-2 h-20 w-20 bg-blue-500 text-white'>
           {renderIcon(item.title)}
         </div>
       </div>

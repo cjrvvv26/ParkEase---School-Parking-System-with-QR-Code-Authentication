@@ -36,14 +36,20 @@ export default function EmailConfirmation() {
       let newOtp = [...otp];
       newOtp[index] = value;
       setOtp(newOtp);
-      if (value !== '' && index < otp.length - 1) inputRef.current[index + 1].focus();
+      if (value !== '' && index < otp.length - 1)
+        inputRef.current[index + 1].focus();
       if (newOtp.every((d) => d !== '')) {
         const convertedOtp = Number(newOtp.join(''));
         (async () => {
           try {
             const data = await fetchData('auth/verify-otp', {
               method: 'POST',
-              data: { email, inputOtp: convertedOtp, type: otpType, platform: 'website' },
+              data: {
+                email,
+                inputOtp: convertedOtp,
+                type: otpType,
+                platform: 'website',
+              },
             });
             sessionStorage.removeItem('otp_access');
             sessionStorage.removeItem('otp_type');
@@ -75,7 +81,10 @@ export default function EmailConfirmation() {
 
   const handleResendOtp = async () => {
     try {
-      await fetchData('/auth/resend-otp', { method: 'POST', data: { email, type: otpType } });
+      await fetchData('/auth/resend-otp', {
+        method: 'POST',
+        data: { email, type: otpType },
+      });
       setError('');
       setTimer(60);
       setOtp(new Array(6).fill(''));
@@ -86,7 +95,9 @@ export default function EmailConfirmation() {
   const handleCancel = async () => {
     try {
       setCancel(true);
-      await axiosConfig.delete('super-admin/auth/cancel-verification', { data: { email } });
+      await axiosConfig.delete('super-admin/auth/cancel-verification', {
+        data: { email },
+      });
       sessionStorage.removeItem('otp_access');
       sessionStorage.removeItem('otp_type');
       sessionStorage.removeItem('email');
@@ -98,7 +109,10 @@ export default function EmailConfirmation() {
   };
 
   const maskedEmail = email
-    ? email.replace(/(.{2})(.*)(@.*)/, (_, a, b, c) => a + '*'.repeat(Math.min(b.length, 6)) + c)
+    ? email.replace(
+        /(.{2})(.*)(@.*)/,
+        (_, a, b, c) => a + '*'.repeat(Math.min(b.length, 6)) + c,
+      )
     : '';
 
   return (
@@ -108,9 +122,15 @@ export default function EmailConfirmation() {
         <div className='absolute -top-24 -left-24 w-96 h-96 bg-blue-500 rounded-full opacity-40' />
         <div className='absolute -bottom-32 -right-20 w-[28rem] h-[28rem] bg-blue-700 rounded-full opacity-40' />
         <div className='relative z-10 flex flex-col items-center text-center gap-6'>
-          <img src={Logo} alt='Logo' className='h-28 w-28 object-contain rounded-2xl shadow-2xl' />
+          <img
+            src={Logo}
+            alt='Logo'
+            className='h-28 w-28 object-contain rounded-2xl shadow-2xl'
+          />
           <div className='flex flex-col gap-2'>
-            <h1 className='text-white font-bold text-3xl leading-tight'>University of Rizal System</h1>
+            <h1 className='text-white font-bold text-3xl leading-tight'>
+              University of Rizal System
+            </h1>
             <p className='text-blue-100 text-lg font-medium'>Cainta Campus</p>
             <div className='w-12 h-1 bg-white/40 rounded-full mx-auto my-1' />
             <p className='text-blue-100 text-base'>School Parking System</p>
@@ -119,9 +139,12 @@ export default function EmailConfirmation() {
             <div className='p-3 bg-white/20 rounded-full'>
               <ShieldCheck size={28} className='text-white' />
             </div>
-            <p className='text-white font-semibold text-base'>Two-Step Verification</p>
+            <p className='text-white font-semibold text-base'>
+              Two-Step Verification
+            </p>
             <p className='text-blue-100 text-sm leading-relaxed'>
-              We sent a 6-digit code to your email. Enter it to verify your identity and access the system.
+              We sent a 6-digit code to your email. Enter it to verify your
+              identity and access the system.
             </p>
           </div>
         </div>
@@ -132,9 +155,17 @@ export default function EmailConfirmation() {
         <div className='w-full max-w-md'>
           {/* Mobile logo */}
           <div className='flex lg:hidden flex-col items-center gap-2 mb-8'>
-            <img src={Logo} alt='Logo' className='h-16 w-16 object-contain rounded-xl' />
-            <p className='text-blue-600 font-bold text-lg text-center'>University of Rizal System</p>
-            <p className='text-gray-400 text-sm'>Cainta Campus · School Parking System</p>
+            <img
+              src={Logo}
+              alt='Logo'
+              className='h-16 w-16 object-contain rounded-xl'
+            />
+            <p className='text-blue-600 font-bold text-lg text-center'>
+              University of Rizal System
+            </p>
+            <p className='text-gray-400 text-sm'>
+              Cainta Campus · School Parking System
+            </p>
           </div>
 
           <div className='bg-white rounded-2xl shadow-sm border border-gray-200 p-8'>
@@ -144,11 +175,15 @@ export default function EmailConfirmation() {
                 <Mail size={28} className='text-blue-600' />
               </div>
               <div>
-                <h1 className='font-bold text-2xl text-gray-800'>Check your email</h1>
+                <h1 className='font-bold text-2xl text-gray-800'>
+                  Check your email
+                </h1>
                 <p className='text-gray-400 text-sm mt-1'>
                   We sent a 6-digit code to
                 </p>
-                <p className='text-blue-600 font-semibold text-sm mt-0.5'>{maskedEmail}</p>
+                <p className='text-blue-600 font-semibold text-sm mt-0.5'>
+                  {maskedEmail}
+                </p>
               </div>
             </div>
 
@@ -192,9 +227,11 @@ export default function EmailConfirmation() {
               {timer > 0 ? (
                 <div className='flex items-center gap-2 text-sm text-gray-400'>
                   <div className='w-5 h-5 rounded-full border-2 border-gray-200 flex items-center justify-center'>
-                    <span className='text-[10px] font-bold text-gray-500'>{timer}</span>
+                    <span className='text-[10px] font-bold text-gray-500'>
+                      {timer}
+                    </span>
                   </div>
-                  Resend code in {timer}s
+                  Resend code
                 </div>
               ) : (
                 <button

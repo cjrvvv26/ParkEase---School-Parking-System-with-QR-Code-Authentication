@@ -95,20 +95,6 @@ export default function Login() {
     onSuccess: async ({ access_token }) => {
       setGoogleError('');
       try {
-        const profileRes = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
-          headers: { Authorization: `Bearer ${access_token}` },
-        });
-        const googleEmail = profileRes.data?.email;
-        if (googleEmail) {
-          const check = await axios.post('/super-admin/check-account', {
-            email: googleEmail,
-            requireRole: 'super admin',
-          }).catch(() => null);
-          if (!check?.data?.exists) {
-            setGoogleError('No super admin account found with that Google account');
-            return;
-          }
-        }
         const data = await fetchData('auth/google', {
           method: 'POST',
           data: { access_token, type: 'login' },
@@ -117,9 +103,11 @@ export default function Login() {
         sessionStorage.setItem('otp_type', 'login');
         sessionStorage.setItem('email', data.email);
         navigate('/otp-verification');
-      } catch {}
+      } catch (err) {
+        setGoogleError(err.response?.data?.error || 'No super admin account found with that Google account.');
+      }
     },
-    onError: () => {},
+    onError: () => setGoogleError('Google sign in failed. Please try again.'),
   });
 
   return (

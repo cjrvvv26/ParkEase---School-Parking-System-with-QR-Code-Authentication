@@ -147,8 +147,16 @@ exports.deactivateUser = async (req, res) => {
 exports.updatePassword = async (req, res) => {
   try {
     const { id: _id } = req.user;
-    const { password } = req.body;
-    await userService.updatePassword(_id, password);
+    const { password, currentPassword } = req.body;
+    if (!currentPassword || !password)
+      return res.status(400).json({ error: 'All fields are required' });
+    const bcrypt = require('bcrypt');
+    const user = await User.findById(_id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    const match = await bcrypt.compare(currentPassword, user.password);
+    if (!match) return res.status(400).json({ error: 'Current password is incorrect' });
+    user.password = await bcrypt.hash(password, 10);
+    await user.save();
     res.status(200).json({ message: 'Password was successfully updated' });
   } catch (error) {
     res.status(500).json({ error: error.message });

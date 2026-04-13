@@ -19,7 +19,6 @@ export default function AddGuard() {
     email: '',
     phoneNo: '',
     shift: '',
-    status: 'active',
     role: 'guard',
   });
   const [permissions, setPermissions] = useState({
@@ -54,10 +53,12 @@ export default function AddGuard() {
 
   const handleRegistration = async () => {
     const hasEmptyField = Object.values(guard).some(
-      (value) => value === '' || value === undefined,
+      (value) => value === '' || value === undefined || (value !== null && value === ''),
     );
-
-    if (hasEmptyField) {
+    // profileDetails is optional, exclude from required check
+    const { profileDetails, role, ...requiredGuardFields } = guard;
+    const hasEmpty = Object.values(requiredGuardFields).some((v) => v === '' || v === undefined);
+    if (hasEmpty) {
       setFormError('All fields must be filled');
       return;
     }
@@ -248,19 +249,6 @@ export default function AddGuard() {
                   'Flexible',
                 ]}
               />
-              <DefaultOptions
-                label='Status'
-                onChange={(e) =>
-                  setGuard({
-                    ...guard,
-                    status:
-                      e.target.value === 'Inactive' ? 'deactivate' : 'active',
-                  })
-                }
-                placeholder={'Select status'}
-                value={guard.status}
-                options={['Active', 'Inactive']}
-              />
             </div>
           </section>
 
@@ -423,18 +411,6 @@ export default function AddGuard() {
                   Shift:
                 </span>{' '}
                 {guard.shift || '—'}
-              </div>
-              <div>
-                <span
-                  className={`font-medium ${dark ? 'text-gray-300' : 'text-gray-700'}`}
-                >
-                  Status:
-                </span>{' '}
-                <span
-                  className={`px-2 py-1 rounded text-xs font-medium ${guard.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}
-                >
-                  {guard.status}
-                </span>
               </div>
             </div>
           </div>
