@@ -533,12 +533,9 @@ export default function MapEditor() {
       formData.append("shapes", JSON.stringify(cleanedShapes));
 
       shapes.forEach((shape) => {
-        if (
-          shape.metadata?.type === "building" &&
-          shape.imageFile &&
-          shape.tempId
-        ) {
-          formData.append(`building[${shape.tempId}]`, shape.imageFile);
+        const shapeKey = shape.tempId || shape._id;
+        if (shape.metadata?.type === "building" && shape.imageFile && shapeKey) {
+          formData.append(`building[${shapeKey}]`, shape.imageFile);
         }
       });
 

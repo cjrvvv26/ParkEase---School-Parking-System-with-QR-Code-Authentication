@@ -305,7 +305,7 @@ export default function Dashboard() {
                   )}
                   <div className='flex flex-col'>
                     <h2 className='font-medium'>
-                      {guard.data?.name?.firstName} {guard.data?.name?.lastName}
+                      {guard.name?.firstName} {guard.name?.lastName}
                     </h2>
                     <p className='text-green-500 text-xs'>On duty</p>
                   </div>

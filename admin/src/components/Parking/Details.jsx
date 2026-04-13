@@ -41,9 +41,12 @@ export default function Details({ selectedShape, loading }) {
                   <img
                     src={updatedSlot.metadata.information.picture.url}
                     alt='Building'
+                    crossOrigin='anonymous'
+                    onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
                     className={`w-full h-40 object-cover rounded-xl border ${border}`}
                   />
-                ) : (
+                ) : null}
+                {(!updatedSlot.metadata?.information?.picture?.url) && (
                   <div
                     className={`w-full h-40 rounded-xl flex flex-col items-center justify-center gap-2 text-gray-300 ${dark ? 'bg-[#3a3a3a]' : 'bg-gray-100'}`}
                   >
@@ -51,6 +54,13 @@ export default function Details({ selectedShape, loading }) {
                     <p className='text-xs'>No image uploaded</p>
                   </div>
                 )}
+                <div
+                  style={{ display: 'none' }}
+                  className={`w-full h-40 rounded-xl flex flex-col items-center justify-center gap-2 text-gray-300 ${dark ? 'bg-[#3a3a3a]' : 'bg-gray-100'}`}
+                >
+                  <Building2 size={32} strokeWidth={1} />
+                  <p className='text-xs'>Image failed to load</p>
+                </div>
                 {updatedSlot.metadata?.information?.name && (
                   <p
                     className={`font-semibold ${dark ? 'text-gray-200' : 'text-gray-700'}`}

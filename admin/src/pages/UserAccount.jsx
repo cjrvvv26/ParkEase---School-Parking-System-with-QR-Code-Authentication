@@ -312,18 +312,20 @@ export default function UserAccount() {
                         size={160}
                       />
                     )
-                  ) : user.profileDetails?.url ? (
-                    <img
-                      src={preview || user.profileDetails?.url}
-                      alt='Profile'
-                      className='w-40 h-40 rounded-full border-4 border-blue-500 object-cover'
-                    />
                   ) : (
-                    <CircleUserRound
-                      className='text-gray-400'
-                      strokeWidth={1}
-                      size={160}
-                    />
+                    preview || user.profileDetails?.url ? (
+                      <img
+                        src={preview || user.profileDetails?.url}
+                        alt='Profile'
+                        className='w-40 h-40 rounded-full border-4 border-blue-500 object-cover'
+                      />
+                    ) : (
+                      <CircleUserRound
+                        className='text-gray-400'
+                        strokeWidth={1}
+                        size={160}
+                      />
+                    )
                   )}
                   <span
                     className={`${user.status === 'active' ? 'bg-green-500' : 'bg-red-500'} h-3 w-3 rounded-full absolute z-10 bottom-0 right-0`}

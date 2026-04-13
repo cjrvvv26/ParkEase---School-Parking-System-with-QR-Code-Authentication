@@ -287,7 +287,7 @@ export default function Analytics() {
             </div>
           </div>
         </div>
-        <div className='flex flex-col gap-5 w-[400px]'>
+        <div className='flex flex-col gap-5 min-w-[350px]'>
           <div className={`flex-1 self-start w-full rounded-xl ${card}`}>
             <div className='p-3 sm:p-5 h-full flex flex-col'>
               <h1 className='text-base font-medium'>Today's Motor Occupancy</h1>

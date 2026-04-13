@@ -34,6 +34,13 @@ export default function DynamicMap({ shapes, width = 800, height = 600, onShapeC
       const { createdAt, updatedAt, __v, _id, slotId, ...slotData } = data.slot;
       return onShapeClick({ ...shape, ...slotData });
     }
+    if (shape.metadata?.type === 'building' && shape._id) {
+      // Fetch fresh shape data from server to get the latest picture URL
+      const data = await fetchData(`shape/${shape._id}`, { method: 'GET' }).catch(() => null);
+      if (data?.shape) {
+        return onShapeClick({ ...shape, metadata: data.shape.metadata });
+      }
+    }
     onShapeClick({ ...shape });
   };
 

@@ -256,11 +256,24 @@ exports.updateMap = async (req, res) => {
           mapId: id,
         });
 
-        if (shape.metadata?.type === 'building' && imageMap[shape.tempId]) {
-          newShape.metadata.information.picture = {
-            url: imageMap[shape.tempId].path,
-            public_id: imageMap[shape.tempId].filename,
-          };
+        if (shape.metadata?.type === 'building') {
+          const shapeKey = shape.tempId || (shape._id?.toString());
+          if (imageMap[shapeKey]) {
+            // New image uploaded — use Cloudinary URL
+            newShape.metadata.information.picture = {
+              url: imageMap[shapeKey].path,
+              public_id: imageMap[shapeKey].filename,
+            };
+          } else if (
+            shape.metadata?.information?.picture?.url &&
+            !shape.metadata.information.picture.url.startsWith('blob:')
+          ) {
+            // Existing valid URL — preserve it
+            newShape.metadata.information.picture = shape.metadata.information.picture;
+          } else {
+            // No image or blob URL — clear it
+            newShape.metadata.information.picture = { url: null, public_id: null };
+          }
         }
 
         await newShape.save();

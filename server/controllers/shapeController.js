@@ -3,6 +3,16 @@ const Slot = require("../models/slotModel");
 const Shape = require("../models/shapeModel");
 const shapeService = require("../services/shapeService");
 
+exports.getShapeById = async (req, res) => {
+  try {
+    const shape = await Shape.findById(req.params.id);
+    if (!shape) return res.status(404).json({ error: 'Shape not found' });
+    res.status(200).json({ shape });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
 exports.getAllShapes = async (req, res) => {
   try {
     const { area } = req.body;

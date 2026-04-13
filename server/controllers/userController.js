@@ -166,6 +166,20 @@ exports.updateUserDataBySA = async (req, res) => {
   }
 };
 
+exports.getGuards = async (req, res) => {
+  try {
+    const guards = await User.find({ role: 'guard' }).select('profileDetails username status');
+    const result = [];
+    for (const guard of guards) {
+      const guardData = await Guard.findOne({ userId: guard._id }).select('name workShift phoneNo');
+      result.push({ ...guard.toObject(), name: guardData?.name, workShift: guardData?.workShift });
+    }
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 exports.getAllUsers = async (req, res) => {
   try {
     const { allUsers, current, total } =
