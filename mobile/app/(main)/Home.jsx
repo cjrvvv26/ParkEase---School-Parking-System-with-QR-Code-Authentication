@@ -9,7 +9,6 @@ import {
   ParkingSquare,
   Settings,
   User,
-  TrendingUp,
   MapPin,
   Calendar,
   ChevronRight,
@@ -67,7 +66,7 @@ export default function Home() {
     { icon: Settings, label: 'Settings', to: '/Settings' },
     ...(user.role !== 'guard'
       ? [{ icon: ParkingSquare, label: 'Parking', to: '/Parking' }]
-      : [{ icon: TrendingUp, label: 'Analytics', to: '/Analytics' }]),
+      : []),
   ];
 
   return (

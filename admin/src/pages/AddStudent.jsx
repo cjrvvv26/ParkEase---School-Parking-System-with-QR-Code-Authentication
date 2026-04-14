@@ -170,8 +170,8 @@ export default function AddStudent() {
                   setStudent({
                     ...student,
                     firstName:
-                      e.target.value.charAt(0).toUpperCase() +
-                      e.target.value.slice(1),
+                      e.target.value.replace(/[^a-zA-Z\s]/g, '').charAt(0).toUpperCase() +
+                      e.target.value.replace(/[^a-zA-Z\s]/g, '').slice(1),
                   })
                 }
                 value={student.firstName}
@@ -183,8 +183,8 @@ export default function AddStudent() {
                   setStudent({
                     ...student,
                     middleName:
-                      e.target.value.charAt(0).toUpperCase() +
-                      e.target.value.slice(1),
+                      e.target.value.replace(/[^a-zA-Z\s]/g, '').charAt(0).toUpperCase() +
+                      e.target.value.replace(/[^a-zA-Z\s]/g, '').slice(1),
                   })
                 }
                 value={student.middleName}
@@ -197,8 +197,8 @@ export default function AddStudent() {
                   setStudent({
                     ...student,
                     lastName:
-                      e.target.value.charAt(0).toUpperCase() +
-                      e.target.value.slice(1),
+                      e.target.value.replace(/[^a-zA-Z\s]/g, '').charAt(0).toUpperCase() +
+                      e.target.value.replace(/[^a-zA-Z\s]/g, '').slice(1),
                   })
                 }
                 value={student.lastName}

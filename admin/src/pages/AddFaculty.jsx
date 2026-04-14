@@ -160,7 +160,7 @@ export default function AddFaculty() {
               <DefaultInput
                 label='First name'
                 onChange={(e) =>
-                  setFaculty({ ...faculty, firstName: e.target.value })
+                  setFaculty({ ...faculty, firstName: e.target.value.replace(/[^a-zA-Z\s]/g, '') })
                 }
                 value={
                   faculty.firstName.charAt(0).toUpperCase() +
@@ -171,7 +171,7 @@ export default function AddFaculty() {
               <DefaultInput
                 label='Middle name'
                 onChange={(e) =>
-                  setFaculty({ ...faculty, middleName: e.target.value })
+                  setFaculty({ ...faculty, middleName: e.target.value.replace(/[^a-zA-Z\s]/g, '') })
                 }
                 value={
                   faculty.middleName.charAt(0).toUpperCase() +
@@ -183,7 +183,7 @@ export default function AddFaculty() {
               <DefaultInput
                 label='Last name'
                 onChange={(e) =>
-                  setFaculty({ ...faculty, lastName: e.target.value })
+                  setFaculty({ ...faculty, lastName: e.target.value.replace(/[^a-zA-Z\s]/g, '') })
                 }
                 value={
                   faculty.lastName.charAt(0).toUpperCase() +

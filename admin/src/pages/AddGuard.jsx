@@ -150,8 +150,8 @@ export default function AddGuard() {
                   setGuard({
                     ...guard,
                     firstName:
-                      e.target.value.charAt(0).toUpperCase() +
-                      e.target.value.slice(1),
+                      e.target.value.replace(/[^a-zA-Z\s]/g, '').charAt(0).toUpperCase() +
+                      e.target.value.replace(/[^a-zA-Z\s]/g, '').slice(1),
                   })
                 }
                 value={guard.firstName}
@@ -164,8 +164,8 @@ export default function AddGuard() {
                   setGuard({
                     ...guard,
                     lastName:
-                      e.target.value.charAt(0).toUpperCase() +
-                      e.target.value.slice(1),
+                      e.target.value.replace(/[^a-zA-Z\s]/g, '').charAt(0).toUpperCase() +
+                      e.target.value.replace(/[^a-zA-Z\s]/g, '').slice(1),
                   })
                 }
                 value={guard.lastName}

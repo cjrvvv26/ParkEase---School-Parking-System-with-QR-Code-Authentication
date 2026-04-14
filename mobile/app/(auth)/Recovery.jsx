@@ -45,6 +45,11 @@ export default function Recovery() {
     setError('');
     setAccountInfo(null);
     const check = async () => {
+      if (!/^[^\s@]+@gmail\.com$/.test(debounced)) {
+        setError('Email must be a valid @gmail.com address.');
+        setChecking(false);
+        return;
+      }
       setChecking(true);
       try {
         const res = await api.post('super-admin/check-account', {
@@ -201,7 +206,7 @@ export default function Recovery() {
                   setError('');
                   setAccountInfo(null);
                 }}
-                placeholder='Enter your email address'
+                placeholder='Enter your @gmail.com address'
                 placeholderTextColor={t.textFaint}
                 keyboardType='email-address'
                 autoCapitalize='none'
