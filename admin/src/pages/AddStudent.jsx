@@ -100,9 +100,10 @@ export default function AddStudent() {
   };
 
   const handleRegistration = async () => {
-    const hasEmptyField = Object.values({ ...student, ...motor }).some(
-      (value) => value === '' || value === undefined,
-    );
+    const { profileDetails, ...requiredStudentFields } = student;
+    const hasEmptyField =
+      Object.values(requiredStudentFields).some((v) => !v) ||
+      Object.values(motor).some((v) => !v);
 
     if (hasEmptyField) {
       setFormError('All fields must be filled');
@@ -432,14 +433,10 @@ export default function AddStudent() {
 
               <DefaultInput
                 label='Brand'
-                onChange={(e) =>
-                  setMotor({
-                    ...motor,
-                    brand:
-                      e.target.value.charAt(0).toUpperCase() +
-                      e.target.value.slice(1),
-                  })
-                }
+                onChange={(e) => {
+                  const v = e.target.value.replace(/[^a-zA-Z\s]/g, '');
+                  setMotor({ ...motor, brand: v.charAt(0).toUpperCase() + v.slice(1) });
+                }}
                 value={motor.brand}
                 placeholder='Honda'
               />
@@ -458,14 +455,10 @@ export default function AddStudent() {
               />
               <DefaultInput
                 label='Color'
-                onChange={(e) =>
-                  setMotor({
-                    ...motor,
-                    color:
-                      e.target.value.charAt(0).toUpperCase() +
-                      e.target.value.slice(1),
-                  })
-                }
+                onChange={(e) => {
+                  const v = e.target.value.replace(/[^a-zA-Z\s]/g, '');
+                  setMotor({ ...motor, color: v.charAt(0).toUpperCase() + v.slice(1) });
+                }}
                 value={motor.color}
                 placeholder='Black'
               />

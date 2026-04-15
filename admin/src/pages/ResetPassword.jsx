@@ -79,7 +79,7 @@ export default function ResetPassword() {
               />
               <button type='button' onClick={() => setShowPassword((p) => ({ ...p, new: !p.new }))}
                 className='absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600'>
-                {showPassword.new ? <EyeOff size={18} /> : <Eye size={18} />}
+                {showPassword.new ? <Eye size={18} /> : <EyeOff size={18} />}
               </button>
             </div>
           </div>
@@ -120,7 +120,7 @@ export default function ResetPassword() {
               />
               <button type='button' onClick={() => setShowPassword((p) => ({ ...p, confirm: !p.confirm }))}
                 className='absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600'>
-                {showPassword.confirm ? <EyeOff size={18} /> : <Eye size={18} />}
+                {showPassword.confirm ? <Eye size={18} /> : <EyeOff size={18} />}
               </button>
             </div>
             {touched && confirm && !passwordsMatch && (

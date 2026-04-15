@@ -229,18 +229,29 @@ exports.updateMap = async (req, res) => {
     let savedShapes = [];
 
     if (shapes.length) {
-      // --- Step 1: Delete old shapes and their slots ---
+      // --- Step 1: Fetch existing shapes and slots ---
       const oldShapes = await Shape.find({ mapId: id });
-      const oldShapeIds = oldShapes.map((s) => s._id);
+      const oldShapeIds = new Set(oldShapes.map((s) => s._id.toString()));
+      const oldSlots = await Slot.find({ slotId: { $in: [...oldShapeIds].map(i => new mongoose.Types.ObjectId(i)) } });
 
-      await Shape.deleteMany({ mapId: id });
-      const oldSlots = await Slot.find({ slotId: { $in: oldShapeIds } });
-      for (const s of oldSlots) {
-        if (s.QRCode?.public_id) {
-          await cloudinary.uploader.destroy(s.QRCode.public_id).catch(() => {});
-        }
-      }
-      await Slot.deleteMany({ slotId: { $in: oldShapeIds } });
+      console.log('[updateMap] oldShapeIds:', [...oldShapeIds]);
+      console.log('[updateMap] incoming shape _ids:', shapes.map(s => s._id).filter(Boolean));
+      console.log('[updateMap] exclusive slots before update:', oldSlots.filter(s => s.assignedStudentId).map(s => ({ slotId: s.slotId, assignedStudentId: s.assignedStudentId })));
+
+      // Build lookup: old shape _id string → old slot
+      const oldSlotByShapeId = {};
+      oldSlots.forEach((slot) => {
+        oldSlotByShapeId[slot.slotId.toString()] = slot;
+      });
+
+      // Separate incoming shapes into existing (has _id) and new (no _id)
+      const incomingExistingIds = new Set(
+        shapes.filter((s) => s._id).map((s) => s._id.toString())
+      );
+
+      // Check if any incoming _ids actually match DB shapes
+      const matchCount = [...incomingExistingIds].filter(id => oldShapeIds.has(id)).length;
+      console.log('[updateMap] matching shape count:', matchCount, '/', incomingExistingIds.size);
 
       // --- Step 2: Index uploaded Cloudinary files ---
       const imageMap = {};
@@ -249,71 +260,102 @@ exports.updateMap = async (req, res) => {
         if (match) imageMap[match[1]] = file;
       });
 
-      // --- Step 3: Create new shapes ---
-      for (const shape of shapes) {
-        const newShape = new Shape({
-          ...shape,
-          mapId: id,
-        });
-
-        if (shape.metadata?.type === 'building') {
-          const shapeKey = shape.tempId || (shape._id?.toString());
-          if (imageMap[shapeKey]) {
-            // New image uploaded — use Cloudinary URL
-            newShape.metadata.information.picture = {
-              url: imageMap[shapeKey].path,
-              public_id: imageMap[shapeKey].filename,
-            };
-          } else if (
-            shape.metadata?.information?.picture?.url &&
-            !shape.metadata.information.picture.url.startsWith('blob:')
-          ) {
-            // Existing valid URL — preserve it
-            newShape.metadata.information.picture = shape.metadata.information.picture;
-          } else {
-            // No image or blob URL — clear it
-            newShape.metadata.information.picture = { url: null, public_id: null };
+      // --- Step 3: Delete shapes that were removed (not in incoming) ---
+      const removedShapeIds = [...oldShapeIds].filter((sid) => !incomingExistingIds.has(sid));
+      if (removedShapeIds.length) {
+        const removedObjectIds = removedShapeIds.map((sid) => new mongoose.Types.ObjectId(sid));
+        // Delete QR codes for removed slots
+        for (const sid of removedShapeIds) {
+          const oldSlot = oldSlotByShapeId[sid];
+          if (oldSlot?.QRCode?.public_id) {
+            await cloudinary.uploader.destroy(oldSlot.QRCode.public_id).catch(() => {});
           }
         }
-
-        await newShape.save();
-        savedShapes.push(newShape);
+        await Shape.deleteMany({ _id: { $in: removedObjectIds } });
+        await Slot.deleteMany({ slotId: { $in: removedObjectIds } });
       }
 
-      // --- Step 4: Create slots for shapes with type 'slot' ---
-      const slotShapes = savedShapes.filter((s) => s.metadata?.type === 'slot');
+      // --- Step 4: Update existing shapes and create new ones ---
+      for (const shape of shapes) {
+        if (shape._id && oldShapeIds.has(shape._id.toString())) {
+          // Existing shape — update it in place
+          const updateData = {
+            geometry: shape.geometry,
+            metadata: shape.metadata,
+          };
 
-      if (slotShapes.length) {
-        const slots = [];
-        for (const shape of slotShapes) {
-          const slotNumber = shape.metadata.label; // e.g., "A-01"
-          const qrText = `MAP:${id}-SLOT:${shape._id}`; // QR stores ObjectId
-          const qrCode = await generateQRCode(qrText);
+          if (shape.metadata?.type === 'building') {
+            const shapeKey = shape._id.toString();
+            if (imageMap[shapeKey]) {
+              updateData.metadata = {
+                ...shape.metadata,
+                information: {
+                  ...shape.metadata?.information,
+                  picture: { url: imageMap[shapeKey].path, public_id: imageMap[shapeKey].filename },
+                },
+              };
+            } else if (
+              shape.metadata?.information?.picture?.url &&
+              !shape.metadata.information.picture.url.startsWith('blob:')
+            ) {
+              // keep existing picture as-is
+            } else {
+              updateData.metadata = {
+                ...shape.metadata,
+                information: { ...shape.metadata?.information, picture: { url: null, public_id: null } },
+              };
+            }
+          }
 
-          slots.push({
-            slotId: shape._id,
-            mapId: id, // optional but useful for queries
-            slotNumber,
-            QRCode: qrCode,
-            assignedStudentId: null,
-            status: 'available',
-          });
+          const updated = await Shape.findByIdAndUpdate(
+            shape._id,
+            { $set: updateData },
+            { new: true }
+          );
+          if (updated) savedShapes.push(updated);
+        } else {
+          // New shape — create it
+          const newShape = new Shape({ ...shape, mapId: id, _id: undefined });
+
+          if (shape.metadata?.type === 'building') {
+            const shapeKey = shape.tempId || shape._id?.toString();
+            if (imageMap[shapeKey]) {
+              newShape.metadata.information.picture = { url: imageMap[shapeKey].path, public_id: imageMap[shapeKey].filename };
+            } else {
+              newShape.metadata.information.picture = { url: null, public_id: null };
+            }
+          }
+
+          await newShape.save();
+          savedShapes.push(newShape);
+
+          // Create slot for new slot shapes
+          if (shape.metadata?.type === 'slot') {
+            const qrCode = await generateQRCode(`MAP:${id}-SLOT:${newShape._id}`);
+            await Slot.create({
+              slotId: newShape._id,
+              mapId: id,
+              slotNumber: newShape.metadata.label,
+              QRCode: qrCode,
+              assignedStudentId: null,
+              status: 'available',
+            });
+          }
         }
-
-        await Slot.insertMany(slots);
       }
 
       // --- Step 5: Log activity ---
+      const totalSlots = savedShapes.filter((s) => s.metadata?.type === 'slot').length;
       await ActivityLogs.create({
         userId: req.user._id,
         actionType: 'map',
         action: 'UPDATE_MAP',
-        description: `Parking map "${updatedMap.name}" has been updated with ${slotShapes.length} slots.`,
+        description: `Parking map "${updatedMap.name}" has been updated with ${totalSlots} slots.`,
         entityType: 'Map',
         entityId: id,
         metadata: {
           mapName: updatedMap.name,
-          totalSlots: slotShapes.length,
+          totalSlots,
         },
       });
 

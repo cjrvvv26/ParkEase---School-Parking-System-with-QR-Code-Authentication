@@ -99,11 +99,8 @@ export default function AddFaculty() {
       return setError('Phone number must be exactly 11 digits.');
     }
 
-    const hasMotor = motor.plateNo || motor.brand || motor.model || motor.color;
-    if (hasMotor) {
-      const motorIncomplete = Object.values(motor).some((f) => !f);
-      if (motorIncomplete) return setError('Fill all motor details or leave them all empty.');
-    }
+    const motorIncomplete = Object.values(motor).some((f) => !f);
+    if (motorIncomplete) return setError('All fields must be filled.');
 
     const formData = new FormData();
 
@@ -124,9 +121,7 @@ export default function AddFaculty() {
       }
     });
 
-    if (hasMotor) {
-      Object.entries(motor).forEach(([key, value]) => formData.append(key, value));
-    }
+    Object.entries(motor).forEach(([key, value]) => formData.append(key, value));
 
     const res = await fetchData('/super-admin/add-user/avatars', {
       method: 'POST',
@@ -381,10 +376,11 @@ export default function AddFaculty() {
 
               <DefaultInput
                 label='Brand'
-                onChange={(e) => setMotor({ ...motor, brand: e.target.value })}
-                value={
-                  motor.brand.charAt(0).toUpperCase() + motor.brand.slice(1)
-                }
+                onChange={(e) => {
+                  const v = e.target.value.replace(/[^a-zA-Z\s]/g, '');
+                  setMotor({ ...motor, brand: v.charAt(0).toUpperCase() + v.slice(1) });
+                }}
+                value={motor.brand}
                 placeholder='Honda'
               />
               <DefaultInput
@@ -397,10 +393,11 @@ export default function AddFaculty() {
               />
               <DefaultInput
                 label='Color'
-                onChange={(e) => setMotor({ ...motor, color: e.target.value })}
-                value={
-                  motor.color.charAt(0).toUpperCase() + motor.color.slice(1)
-                }
+                onChange={(e) => {
+                  const v = e.target.value.replace(/[^a-zA-Z\s]/g, '');
+                  setMotor({ ...motor, color: v.charAt(0).toUpperCase() + v.slice(1) });
+                }}
+                value={motor.color}
                 placeholder='Black'
               />
               <button

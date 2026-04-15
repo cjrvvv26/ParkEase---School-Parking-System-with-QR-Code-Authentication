@@ -1,6 +1,5 @@
 import { useRef, useState } from 'react';
 import { Tag, Layers, Ruler, RotateCw, Trash2, ImagePlus, AlignLeft, Building2, SquareDashed } from 'lucide-react';
-import axiosConfig from '../../utils/axiosConfig';
 import useDark from '../../hooks/useDark';
 
 function Field({ icon: Icon, label, children }) {
@@ -34,10 +33,7 @@ export default function PropertiesPanel({ selectedShape, onUpdateShape, onDelete
   const fileRef = useRef();
   const { dark } = useDark();
 
-  const handleDelete = async () => {
-    if (selectedShape._id) {
-      try { await axiosConfig.delete(`/map/shape/${selectedShape._id}`); } catch (e) { console.error(e); }
-    }
+  const handleDelete = () => {
     onDeleteShape(selectedShape.tempId || selectedShape._id);
     setConfirmDelete(false);
   };

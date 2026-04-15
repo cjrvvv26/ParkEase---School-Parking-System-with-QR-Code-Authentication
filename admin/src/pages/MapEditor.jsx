@@ -278,7 +278,7 @@ export default function MapEditor() {
   const [zoom, setZoom] = useState(1);
   const [history, setHistory] = useState([[]]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isFromHistory, setIsFromHistory] = useState(false);
+  const isFromHistoryRef = useRef(false);
   const [isOpen, setIsOpen] = useState(false);
   const [newAreaName, setNewAreaName] = useState("");
   const [newWidth, setNewWidth] = useState("");
@@ -304,20 +304,19 @@ export default function MapEditor() {
     if (initialShapes && isUpdate) {
       setShapes(initialShapes);
       setHistory([initialShapes]);
-      setCurrentIndex(1);
+      setCurrentIndex(0);
     }
   }, [initialAreaName, initialSvgSize, initialShapes, isUpdate]);
 
   useEffect(() => {
-    if (!isFromHistory) {
-      setHistory((prev) => {
-        const newHistory = prev.slice(0, currentIndex + 1);
-        newHistory.push(shapes);
-        return newHistory;
-      });
-      setCurrentIndex((prev) => prev + 1);
-    }
-  }, [shapes, isFromHistory]);
+    if (isFromHistoryRef.current) return;
+    setHistory((prev) => {
+      const newHistory = prev.slice(0, currentIndex + 1);
+      newHistory.push(shapes);
+      return newHistory;
+    });
+    setCurrentIndex((prev) => prev + 1);
+  }, [shapes]);
 
   // Auto-dismiss error message after 3 seconds
   useEffect(() => {
@@ -475,19 +474,21 @@ export default function MapEditor() {
     if (isDrawing && points.length > 0) {
       setPoints(points.slice(0, -1));
     } else if (currentIndex > 0) {
-      setIsFromHistory(true);
-      setCurrentIndex(currentIndex - 1);
-      setShapes(history[currentIndex - 1]);
-      setIsFromHistory(false);
+      isFromHistoryRef.current = true;
+      const prevIndex = currentIndex - 1;
+      setCurrentIndex(prevIndex);
+      setShapes(history[prevIndex]);
+      setTimeout(() => { isFromHistoryRef.current = false; }, 0);
     }
   };
 
   const handleRedo = () => {
     if (currentIndex < history.length - 1) {
-      setIsFromHistory(true);
-      setCurrentIndex(currentIndex + 1);
-      setShapes(history[currentIndex + 1]);
-      setIsFromHistory(false);
+      isFromHistoryRef.current = true;
+      const nextIndex = currentIndex + 1;
+      setCurrentIndex(nextIndex);
+      setShapes(history[nextIndex]);
+      setTimeout(() => { isFromHistoryRef.current = false; }, 0);
     }
   };
 
@@ -522,6 +523,22 @@ export default function MapEditor() {
         setErrorMessage("Please enter an area name.");
         setIsSaving(false);
         return;
+      }
+
+      // Detect no changes in update mode
+      if (isUpdateMode) {
+        const nameUnchanged = currentAreaName.trim() === (initialAreaName || '').trim();
+        const shapesUnchanged = JSON.stringify(
+          shapes.map(({ imageFile, slotStatus, assignedStudentId, occupiedBy, isOccupied, entryTime, ...rest }) => rest)
+        ) === JSON.stringify(
+          (initialShapes || []).map(({ imageFile, slotStatus, assignedStudentId, occupiedBy, isOccupied, entryTime, ...rest }) => rest)
+        );
+        const hasNewImages = shapes.some((s) => s.imageFile);
+        if (nameUnchanged && shapesUnchanged && !hasNewImages) {
+          setErrorMessage('No changes detected.');
+          setIsSaving(false);
+          return;
+        }
       }
 
       const formData = new FormData();

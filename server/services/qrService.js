@@ -148,6 +148,11 @@ exports.verifySlotData = async (data) => {
     throw new Error('Slot already occupied');
   }
 
+  // Block user from parking in someone else's exclusive slot
+  if (slot.assignedStudentId && !slot.assignedStudentId.equals(userId)) {
+    throw new Error("This is an exclusive slot assigned to another user. You cannot park here.");
+  }
+
   if (slot.entryTime && slot.occupiedBy?.equals(userId)) {
     message = "You're already in-slot";
   }
@@ -168,27 +173,6 @@ exports.verifySlotData = async (data) => {
       entityType: 'Slot',
       entityId: slot._id,
       metadata: { slotNumber: slot.slotNumber, slotLabel: shape?.metadata?.label || slot.slotNumber, mapName: shape?.mapId?.name || null, exclusive: true },
-    });
-  } else if (
-    !slot.entryTime &&
-    slot.assignedStudentId &&
-    slot.assignedStudentId?.equals(userId)
-  ) {
-    slot.entryTime = Date.now();
-    slot.isOccupied = true;
-    slot.status = 'occupied';
-    slot.occupiedBy = userId;
-    await slot.save();
-    message = "Warning: This is someone's slot";
-    const shape2 = await require('../models/shapeModel').findById(slot.slotId).select('metadata.label mapId').populate('mapId', 'name');
-    await ActivityLog.create({
-      userId,
-      actionType: 'parking',
-      action: 'PARKED',
-      description: `User parked in an assigned slot ${slot.slotNumber} (not their own).`,
-      entityType: 'Slot',
-      entityId: slot._id,
-      metadata: { slotNumber: slot.slotNumber, slotLabel: shape2?.metadata?.label || slot.slotNumber, mapName: shape2?.mapId?.name || null, exclusive: false },
     });
   } else if (!slot.entryTime && !slot.assignedStudentId) {
     slot.entryTime = Date.now();

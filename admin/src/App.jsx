@@ -59,7 +59,9 @@ export default function App() {
       } catch (error) {
         // exists check may have succeeded even if session failed — re-fetch exists separately
         try {
-          const existsData = await fetchData('super-admin/exists', { method: 'GET' });
+          const existsData = await fetchData('super-admin/exists', {
+            method: 'GET',
+          });
           dispatch(setSuperAdminExists(existsData.exists));
         } catch (_) {}
         dispatch(logout());
@@ -67,7 +69,10 @@ export default function App() {
         if (error.code === 'ECONNABORTED') {
           console.error('Session check timed out');
         } else if (error.response) {
-          console.error('Session check error:', error.response.data?.error || 'Unauthorized');
+          console.error(
+            'Session check error:',
+            error.response.data?.error || 'Unauthorized',
+          );
         } else {
           console.error('Network or unknown error:', error.message);
         }
@@ -106,7 +111,8 @@ export default function App() {
         },
         {
           path: 'sign-up',
-          element: superAdminExists ? <Navigate to='/sign-in' replace /> : <Registration />,
+          element: <Registration />,
+          //element: superAdminExists ? <Navigate to='/sign-in' replace /> : <Registration />,
         },
         {
           path: 'email',

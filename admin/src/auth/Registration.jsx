@@ -13,8 +13,17 @@ export default function Registration() {
   const { error, loading, fetchData } = useFetch();
   const navigate = useNavigate();
 
+  const [emailError, setEmailError] = useState('');
+
   const handleRegister = async (e) => {
     e.preventDefault();
+    if (!firstName.trim() || !lastName.trim() || !email.trim()) {
+      return;
+    }
+    if (!/^[^\s@]+@gmail\.com$/.test(email)) {
+      return setEmailError('Email must be a valid @gmail.com address.');
+    }
+    setEmailError('');
     try {
       await fetchData('/auth/sign-up', {
         method: 'POST',
@@ -50,23 +59,36 @@ export default function Registration() {
         <div className='absolute -top-24 -left-24 w-96 h-96 bg-blue-500 rounded-full opacity-40' />
         <div className='absolute -bottom-32 -right-20 w-[28rem] h-[28rem] bg-blue-700 rounded-full opacity-40' />
         <div className='relative z-10 flex flex-col items-center text-center gap-6'>
-          <img src={Logo} alt='Logo' className='h-28 w-28 object-contain rounded-2xl shadow-2xl' />
+          <img
+            src={Logo}
+            alt='Logo'
+            className='h-28 w-28 object-contain rounded-2xl shadow-2xl'
+          />
           <div className='flex flex-col gap-2'>
-            <h1 className='text-white font-bold text-3xl leading-tight'>University of Rizal System</h1>
+            <h1 className='text-white font-bold text-3xl leading-tight'>
+              University of Rizal System
+            </h1>
             <p className='text-blue-100 text-lg font-medium'>Cainta Campus</p>
             <div className='w-12 h-1 bg-white/40 rounded-full mx-auto my-1' />
             <p className='text-blue-100 text-base'>School Parking System</p>
           </div>
           {/* Steps */}
           <div className='mt-4 w-full max-w-xs flex flex-col gap-3'>
-            <p className='text-blue-200 text-xs uppercase tracking-widest font-semibold'>Getting started</p>
+            <p className='text-blue-200 text-xs uppercase tracking-widest font-semibold'>
+              Getting started
+            </p>
             {[
               { step: '01', label: 'Create your account' },
               { step: '02', label: 'Verify your email via OTP' },
               { step: '03', label: 'Access the admin dashboard' },
             ].map(({ step, label }) => (
-              <div key={step} className='flex items-center gap-3 bg-white/10 rounded-xl px-4 py-3'>
-                <span className='text-blue-300 font-bold text-xs w-6 shrink-0'>{step}</span>
+              <div
+                key={step}
+                className='flex items-center gap-3 bg-white/10 rounded-xl px-4 py-3'
+              >
+                <span className='text-blue-300 font-bold text-xs w-6 shrink-0'>
+                  {step}
+                </span>
                 <p className='text-blue-100 text-sm text-left'>{label}</p>
               </div>
             ))}
@@ -79,9 +101,17 @@ export default function Registration() {
         <div className='w-full max-w-md'>
           {/* Mobile logo */}
           <div className='flex lg:hidden flex-col items-center gap-2 mb-8'>
-            <img src={Logo} alt='Logo' className='h-16 w-16 object-contain rounded-xl' />
-            <p className='text-blue-600 font-bold text-lg text-center'>University of Rizal System</p>
-            <p className='text-gray-400 text-sm'>Cainta Campus · School Parking System</p>
+            <img
+              src={Logo}
+              alt='Logo'
+              className='h-16 w-16 object-contain rounded-xl'
+            />
+            <p className='text-blue-600 font-bold text-lg text-center'>
+              University of Rizal System
+            </p>
+            <p className='text-gray-400 text-sm'>
+              Cainta Campus · School Parking System
+            </p>
           </div>
 
           <div className='bg-white rounded-2xl shadow-sm border border-gray-200 p-8'>
@@ -91,8 +121,12 @@ export default function Registration() {
                 <ShieldCheck size={22} className='text-blue-600' />
               </div>
               <div>
-                <h1 className='font-bold text-2xl text-gray-800'>Create account</h1>
-                <p className='text-gray-400 text-sm mt-0.5'>Set up your Super Admin account to get started</p>
+                <h1 className='font-bold text-2xl text-gray-800'>
+                  Create account
+                </h1>
+                <p className='text-gray-400 text-sm mt-0.5'>
+                  Set up your Super Admin account to get started
+                </p>
               </div>
             </div>
 
@@ -100,26 +134,34 @@ export default function Registration() {
               {/* Name row */}
               <div className='flex gap-3 min-w-0'>
                 <div className='flex flex-col gap-1.5 flex-1 min-w-0'>
-                  <label className='text-xs font-semibold text-gray-500 uppercase tracking-wide'>First Name</label>
+                  <label className='text-xs font-semibold text-gray-500 uppercase tracking-wide'>
+                    First Name
+                  </label>
                   <div className='flex items-center gap-2.5 border border-gray-200 rounded-xl px-3.5 py-3 focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 transition bg-gray-50 min-w-0 overflow-hidden'>
                     <User size={14} className='text-gray-400 shrink-0' />
                     <input
                       type='text'
-                      value={firstName.charAt(0).toUpperCase() + firstName.slice(1)}
-                      onChange={(e) => setFirstName(e.target.value)}
+                      value={
+                        firstName.charAt(0).toUpperCase() + firstName.slice(1)
+                      }
+                      onChange={(e) => setFirstName(e.target.value.replace(/[^a-zA-Z\s]/g, ''))}
                       className='w-0 flex-1 bg-transparent outline-none text-sm text-gray-800 placeholder-gray-400'
                       placeholder='Juan'
                     />
                   </div>
                 </div>
                 <div className='flex flex-col gap-1.5 flex-1 min-w-0'>
-                  <label className='text-xs font-semibold text-gray-500 uppercase tracking-wide'>Last Name</label>
+                  <label className='text-xs font-semibold text-gray-500 uppercase tracking-wide'>
+                    Last Name
+                  </label>
                   <div className='flex items-center gap-2.5 border border-gray-200 rounded-xl px-3.5 py-3 focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 transition bg-gray-50 min-w-0 overflow-hidden'>
                     <User size={14} className='text-gray-400 shrink-0' />
                     <input
                       type='text'
-                      value={lastName.charAt(0).toUpperCase() + lastName.slice(1)}
-                      onChange={(e) => setLastName(e.target.value)}
+                      value={
+                        lastName.charAt(0).toUpperCase() + lastName.slice(1)
+                      }
+                      onChange={(e) => setLastName(e.target.value.replace(/[^a-zA-Z\s]/g, ''))}
                       className='w-0 flex-1 bg-transparent outline-none text-sm text-gray-800 placeholder-gray-400'
                       placeholder='Dela Cruz'
                     />
@@ -129,25 +171,35 @@ export default function Registration() {
 
               {/* Email */}
               <div className='flex flex-col gap-1.5'>
-                <label className='text-xs font-semibold text-gray-500 uppercase tracking-wide'>Email Address</label>
+                <label className='text-xs font-semibold text-gray-500 uppercase tracking-wide'>
+                  Email Address
+                </label>
                 <div className='flex items-center gap-2.5 border border-gray-200 rounded-xl px-3.5 py-3 focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-100 transition bg-gray-50'>
                   <Mail size={15} className='text-gray-400 shrink-0' />
                   <input
                     type='text'
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      setEmailError(
+                        e.target.value && !/^[^\s@]+@gmail\.com$/.test(e.target.value)
+                          ? 'Email must be a valid @gmail.com address.'
+                          : ''
+                      );
+                    }}
                     className='flex-1 bg-transparent outline-none text-sm text-gray-800 placeholder-gray-400'
-                    placeholder='admin@urs.edu.ph'
+                    placeholder='admin@gmail.com'
                   />
                 </div>
-                {error && <p className='text-xs text-red-500'>{error}</p>}
+                {(emailError || error) && <p className='text-xs text-red-500'>{emailError || error}</p>}
               </div>
 
               {/* Info note */}
               <div className='flex items-start gap-2.5 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3'>
                 <Mail size={14} className='text-blue-500 shrink-0 mt-0.5' />
                 <p className='text-xs text-blue-600 leading-relaxed'>
-                  A one-time password will be sent to your email to verify your account.
+                  A one-time password will be sent to your email to verify your
+                  account.
                 </p>
               </div>
 
@@ -157,8 +209,12 @@ export default function Registration() {
                 disabled={loading}
                 className='w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white font-semibold py-3 rounded-xl transition text-sm mt-1'
               >
-                {loading ? 'Creating account...' : (
-                  <>Create Account <ArrowRight size={15} /></>
+                {loading ? (
+                  'Creating account...'
+                ) : (
+                  <>
+                    Create Account <ArrowRight size={15} />
+                  </>
                 )}
               </button>
 
@@ -176,14 +232,23 @@ export default function Registration() {
                 disabled={loading}
                 className='w-full flex items-center justify-center gap-3 border border-gray-200 rounded-xl py-3 hover:bg-gray-50 transition text-sm text-gray-600 font-medium disabled:opacity-50'
               >
-                <img src={GoogleIcon} alt='Google' className='h-4 w-4 object-contain' />
+                <img
+                  src={GoogleIcon}
+                  alt='Google'
+                  className='h-4 w-4 object-contain'
+                />
                 Continue with Google
               </button>
             </form>
 
             <p className='mt-6 text-center text-sm text-gray-400'>
               Already have an account?{' '}
-              <Link to='/sign-in' className='text-blue-600 font-semibold hover:underline'>Sign in</Link>
+              <Link
+                to='/sign-in'
+                className='text-blue-600 font-semibold hover:underline'
+              >
+                Sign in
+              </Link>
             </p>
           </div>
         </div>

@@ -55,12 +55,12 @@ export default function AddCourse() {
           label={'Name'}
           placeholder={'BSIT'}
           value={course.toUpperCase()}
-          onChange={(e) => setCourse(e.target.value)}
+          onChange={(e) => setCourse(e.target.value.replace(/[^a-zA-Z\s]/g, ''))}
         />
         <DefaultInput
           label={'Description'}
           value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          onChange={(e) => setDescription(e.target.value.replace(/[^a-zA-Z\s]/g, ''))}
           placeholder={'Bachelor of Science in Information Technology'}
         />
         {error && <p className='text-xs text-red-500'>{error}</p>}

@@ -221,9 +221,9 @@ export default function ResetPassword() {
                 hitSlop={8}
               >
                 {showPassword.new ? (
-                  <Eye color={t.textFaint} size={20} strokeWidth={1.5} />
-                ) : (
                   <EyeOff color={t.textFaint} size={20} strokeWidth={1.5} />
+                ) : (
+                  <Eye color={t.textFaint} size={20} strokeWidth={1.5} />
                 )}
               </Pressable>
             </View>
@@ -316,9 +316,9 @@ export default function ResetPassword() {
                 hitSlop={8}
               >
                 {showPassword.confirm ? (
-                  <Eye color={t.textFaint} size={20} strokeWidth={1.5} />
-                ) : (
                   <EyeOff color={t.textFaint} size={20} strokeWidth={1.5} />
+                ) : (
+                  <Eye color={t.textFaint} size={20} strokeWidth={1.5} />
                 )}
               </Pressable>
             </View>

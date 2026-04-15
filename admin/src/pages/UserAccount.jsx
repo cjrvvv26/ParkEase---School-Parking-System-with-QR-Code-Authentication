@@ -82,14 +82,10 @@ export default function UserAccount() {
     }
 
     if (user.role === 'faculty') {
-      const m = user.motorDetails;
-      const anyFilled = m?.plateNo || m?.brand || m?.model || m?.color;
-      if (anyFilled) {
-        if (!m?.plateNo?.trim()) errors.plateNo = 'Plate number is required';
-        if (!m?.brand?.trim()) errors.brand = 'Motorcycle brand is required';
-        if (!m?.model?.trim()) errors.model = 'Motorcycle model is required';
-        if (!m?.color?.trim()) errors.color = 'Motorcycle color is required';
-      }
+      if (!user.motorDetails?.plateNo?.trim()) errors.plateNo = 'Plate number is required';
+      if (!user.motorDetails?.brand?.trim()) errors.brand = 'Motorcycle brand is required';
+      if (!user.motorDetails?.model?.trim()) errors.model = 'Motorcycle model is required';
+      if (!user.motorDetails?.color?.trim()) errors.color = 'Motorcycle color is required';
     }
 
     setValidationErrors(errors);
@@ -746,17 +742,10 @@ export default function UserAccount() {
                     <div>
                       <DefaultInput
                         label={'Brand'}
-                        onChange={(e) =>
-                          setUser({
-                            ...user,
-                            motorDetails: {
-                              ...user.motorDetails,
-                              brand:
-                                e.target.value.charAt(0).toUpperCase() +
-                                e.target.value.slice(1),
-                            },
-                          })
-                        }
+                        onChange={(e) => {
+                          const v = e.target.value.replace(/[^a-zA-Z\s]/g, '');
+                          setUser({ ...user, motorDetails: { ...user.motorDetails, brand: v.charAt(0).toUpperCase() + v.slice(1) } });
+                        }}
                         value={user?.motorDetails?.brand}
                         onlyRead={onlyRead}
                         placeholder='Honda'
@@ -788,17 +777,10 @@ export default function UserAccount() {
                     <div>
                       <DefaultInput
                         label={'Color'}
-                        onChange={(e) =>
-                          setUser({
-                            ...user,
-                            motorDetails: {
-                              ...user.motorDetails,
-                              color:
-                                e.target.value.charAt(0).toUpperCase() +
-                                e.target.value.slice(1),
-                            },
-                          })
-                        }
+                        onChange={(e) => {
+                          const v = e.target.value.replace(/[^a-zA-Z\s]/g, '');
+                          setUser({ ...user, motorDetails: { ...user.motorDetails, color: v.charAt(0).toUpperCase() + v.slice(1) } });
+                        }}
                         value={user?.motorDetails?.color}
                         onlyRead={onlyRead}
                         placeholder='Black'
