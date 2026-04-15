@@ -21,6 +21,20 @@ export default function AddGuard() {
     shift: '',
     role: 'guard',
   });
+  const [fieldErrors, setFieldErrors] = useState({ email: '', phoneNo: '' });
+
+  const validateEmail = (val) => {
+    if (!val) return '';
+    return /^[^\s@]+@gmail\.com$/.test(val) ? '' : 'Email must be a valid @gmail.com address.';
+  };
+
+  const validatePhone = (val) => {
+    if (!val) return '';
+    if (!val.startsWith('09')) return 'Phone number must start with 09.';
+    if (!/^\d{11}$/.test(val)) return 'Phone number must be exactly 11 digits.';
+    return '';
+  };
+
   const [permissions, setPermissions] = useState({
     canScan: true,
     canViewAnalytics: false,
@@ -172,31 +186,31 @@ export default function AddGuard() {
                 placeholder='Gomez'
               />
 
-              <DefaultInput
-                label='Email Address'
-                onChange={(e) =>
-                  setGuard({
-                    ...guard,
-                    email: e.target.value,
-                  })
-                }
-                value={guard.email}
-                placeholder='william.gomez@gmail.com'
-              />
+              <div className='flex flex-col gap-1'>
+                <DefaultInput
+                  label='Email Address'
+                  onChange={(e) => {
+                    setGuard({ ...guard, email: e.target.value });
+                    setFieldErrors((p) => ({ ...p, email: validateEmail(e.target.value) }));
+                  }}
+                  value={guard.email}
+                  placeholder='example@gmail.com'
+                />
+                {fieldErrors.email && <p className='text-xs text-red-500'>{fieldErrors.email}</p>}
+              </div>
 
-              <DefaultInput
-                label='Phone No.'
-                onChange={(e) =>
-                  setGuard({
-                    ...guard,
-                    phoneNo:
-                      e.target.value.charAt(0).toUpperCase() +
-                      e.target.value.slice(1),
-                  })
-                }
-                value={guard.phoneNo}
-                placeholder='0912 345 8123'
-              />
+              <div className='flex flex-col gap-1'>
+                <DefaultInput
+                  label='Phone No.'
+                  onChange={(e) => {
+                    setGuard({ ...guard, phoneNo: e.target.value });
+                    setFieldErrors((p) => ({ ...p, phoneNo: validatePhone(e.target.value) }));
+                  }}
+                  value={guard.phoneNo}
+                  placeholder='09XX XXX XXXX'
+                />
+                {fieldErrors.phoneNo && <p className='text-xs text-red-500'>{fieldErrors.phoneNo}</p>}
+              </div>
             </div>
 
             <div className='flex items-center gap-4'>

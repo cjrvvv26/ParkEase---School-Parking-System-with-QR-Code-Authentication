@@ -28,6 +28,20 @@ export default function AddStudent() {
     role: 'student',
   });
 
+  const [fieldErrors, setFieldErrors] = useState({ email: '', phoneNo: '' });
+
+  const validateEmail = (val) => {
+    if (!val) return '';
+    return /^[^\s@]+@gmail\.com$/.test(val) ? '' : 'Email must be a valid @gmail.com address.';
+  };
+
+  const validatePhone = (val) => {
+    if (!val) return '';
+    if (!val.startsWith('09')) return 'Phone number must start with 09.';
+    if (!/^\d{11}$/.test(val)) return 'Phone number must be exactly 11 digits.';
+    return '';
+  };
+
   const [motor, setMotor] = useState({
     plateNo: '',
     model: '',
@@ -239,23 +253,31 @@ export default function AddStudent() {
                 options={['1st', '2nd', '3rd', '4th']}
               />
 
-              <DefaultInput
-                label='Email'
-                onChange={(e) =>
-                  setStudent({ ...student, email: e.target.value })
-                }
-                value={student.email}
-                placeholder='example@gmail.com'
-              />
+              <div className='flex flex-col gap-1'>
+                <DefaultInput
+                  label='Email'
+                  onChange={(e) => {
+                    setStudent({ ...student, email: e.target.value });
+                    setFieldErrors((p) => ({ ...p, email: validateEmail(e.target.value) }));
+                  }}
+                  value={student.email}
+                  placeholder='example@gmail.com'
+                />
+                {fieldErrors.email && <p className='text-xs text-red-500'>{fieldErrors.email}</p>}
+              </div>
 
-              <DefaultInput
-                label='Phone No.'
-                onChange={(e) =>
-                  setStudent({ ...student, phoneNo: e.target.value })
-                }
-                value={student.phoneNo}
-                placeholder='0912 345 6789'
-              />
+              <div className='flex flex-col gap-1'>
+                <DefaultInput
+                  label='Phone No.'
+                  onChange={(e) => {
+                    setStudent({ ...student, phoneNo: e.target.value });
+                    setFieldErrors((p) => ({ ...p, phoneNo: validatePhone(e.target.value) }));
+                  }}
+                  value={student.phoneNo}
+                  placeholder='09XX XXX XXXX'
+                />
+                {fieldErrors.phoneNo && <p className='text-xs text-red-500'>{fieldErrors.phoneNo}</p>}
+              </div>
             </div>
 
             <div className='flex items-center gap-4'>

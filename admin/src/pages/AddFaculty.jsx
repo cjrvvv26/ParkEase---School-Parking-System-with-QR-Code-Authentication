@@ -22,6 +22,20 @@ export default function AddFaculty() {
     role: 'faculty',
   });
 
+  const [fieldErrors, setFieldErrors] = useState({ email: '', phoneNo: '' });
+
+  const validateEmail = (val) => {
+    if (!val) return '';
+    return /^[^\s@]+@gmail\.com$/.test(val) ? '' : 'Email must be a valid @gmail.com address.';
+  };
+
+  const validatePhone = (val) => {
+    if (!val) return '';
+    if (!val.startsWith('09')) return 'Phone number must start with 09.';
+    if (!/^\d{11}$/.test(val)) return 'Phone number must be exactly 11 digits.';
+    return '';
+  };
+
   const [motor, setMotor] = useState({
     plateNo: '',
     model: '',
@@ -135,7 +149,7 @@ export default function AddFaculty() {
             <span>Users</span>
           </Link>
           <h1 className={`text-3xl font-bold ${dark ? 'text-gray-100' : 'text-gray-700'}`}>Add Faculty</h1>
-          <p className={`text-sm ${dark ? 'text-gray-400' : 'text-gray-500'}`}>Register Faculty Staff and their motor vehicle for campus parking</p>
+          <p className={`text-sm ${dark ? 'text-gray-400' : 'text-gray-500'}`}>Register Faculty and their motor vehicle for campus parking</p>
         </div>
         <div className='text-sm text-gray-500'>Step 1 of 1</div>
       </header>
@@ -154,7 +168,7 @@ export default function AddFaculty() {
           {/* faculty Basic Information */}
           <section className='space-y-4'>
             <h2 className='text-lg font-medium'>
-              Faculty Staff Basic Information
+              Faculty Basic Information
             </h2>
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
               <DefaultInput
@@ -192,29 +206,37 @@ export default function AddFaculty() {
                 placeholder='Tamayo'
               />
 
-              <DefaultInput
-                label='Phone No.'
-                onChange={(e) =>
-                  setFaculty({ ...faculty, phoneNo: e.target.value })
-                }
-                value={faculty.phoneNo}
-                placeholder='0912 345 6789'
-              />
+              <div className='flex flex-col gap-1'>
+                <DefaultInput
+                  label='Phone No.'
+                  onChange={(e) => {
+                    setFaculty({ ...faculty, phoneNo: e.target.value });
+                    setFieldErrors((p) => ({ ...p, phoneNo: validatePhone(e.target.value) }));
+                  }}
+                  value={faculty.phoneNo}
+                  placeholder='09XX XXX XXXX'
+                />
+                {fieldErrors.phoneNo && <p className='text-xs text-red-500'>{fieldErrors.phoneNo}</p>}
+              </div>
             </div>
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-              <DefaultInput
-                label='Email'
-                onChange={(e) =>
-                  setFaculty({ ...faculty, email: e.target.value })
-                }
-                value={faculty.email.toLowerCase()}
-                placeholder='example@gmail.com'
-              />
+              <div className='flex flex-col gap-1'>
+                <DefaultInput
+                  label='Email'
+                  onChange={(e) => {
+                    setFaculty({ ...faculty, email: e.target.value });
+                    setFieldErrors((p) => ({ ...p, email: validateEmail(e.target.value) }));
+                  }}
+                  value={faculty.email.toLowerCase()}
+                  placeholder='example@gmail.com'
+                />
+                {fieldErrors.email && <p className='text-xs text-red-500'>{fieldErrors.email}</p>}
+              </div>
             </div>
             <div className='flex items-center gap-4'>
               <label className='flex-1'>
                 <div className='text-sm text-gray-700 mb-2'>
-                  Faculty Staff photo (optional)
+                  Faculty photo (optional)
                 </div>
                 <div className='flex items-center gap-3'>
                   <div className='h-20 w-20 bg-gray-100 rounded-md flex items-center justify-center text-gray-400 overflow-hidden'>

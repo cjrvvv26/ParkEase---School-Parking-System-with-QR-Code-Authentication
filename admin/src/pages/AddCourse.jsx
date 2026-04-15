@@ -14,6 +14,9 @@ export default function AddCourse() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!course.trim() || !description.trim()) {
+      return setError('All fields must be filled.');
+    }
     const res = await fetchData('/course/add', {
       method: 'POST',
       data: { name: course, description },
