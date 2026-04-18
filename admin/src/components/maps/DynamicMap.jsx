@@ -52,33 +52,105 @@ export default function DynamicMap({ shapes, width = 800, height = 600, onShapeC
     const strokeWidth = isSelected ? '2' : '1';
 
     if (shape.geometry.shape === 'rect') {
+      const cx = shape.geometry.x + shape.geometry.width / 2;
+      const cy = shape.geometry.y + shape.geometry.height / 2;
+      const label = shape.metadata?.label || shape.slotNumber || '';
+      const minDim = Math.min(shape.geometry.width, shape.geometry.height);
+      const fontSize = Math.max(9, minDim * 0.3);
+      // pick a contrasting text color based on slot status
+      const status = shape.slotStatus || shape.status;
+      const isOccupied = status === 'occupied' || shape.occupiedBy;
+      const isExclusive = status === 'exclusive' || shape.assignedStudentId;
+      const textColor = isOccupied ? '#be123c' : isExclusive ? '#1d4ed8' : '#15803d';
       return (
-        <rect
+        <g
           key={id}
-          x={shape.geometry.x}
-          y={shape.geometry.y}
-          width={shape.geometry.width}
-          height={shape.geometry.height}
-          transform={`rotate(${shape.geometry.rotation}, ${shape.geometry.x + shape.geometry.width / 2}, ${shape.geometry.y + shape.geometry.height / 2})`}
-          fill={fill}
-          stroke={stroke}
-          strokeWidth={strokeWidth}
+          transform={`rotate(${shape.geometry.rotation}, ${cx}, ${cy})`}
           onClick={() => handleSlotDetails(shape)}
           className='cursor-pointer'
-        />
+        >
+          <rect
+            x={shape.geometry.x}
+            y={shape.geometry.y}
+            width={shape.geometry.width}
+            height={shape.geometry.height}
+            fill={fill}
+            stroke={stroke}
+            strokeWidth={strokeWidth}
+            rx={3}
+          />
+          {label && (
+            <text
+              x={cx}
+              y={cy}
+              textAnchor='middle'
+              dominantBaseline='middle'
+              fontSize={fontSize}
+              fontWeight='700'
+              fontFamily='system-ui, sans-serif'
+              fill={textColor}
+              pointerEvents='none'
+              style={{ userSelect: 'none' }}
+            >
+              {label}
+            </text>
+          )}
+        </g>
       );
     } else if (shape.geometry.shape === 'polygon') {
       const pointsStr = shape.geometry.points.map((p) => `${p.x},${p.y}`).join(' ');
+      const xs = shape.geometry.points.map((p) => p.x);
+      const ys = shape.geometry.points.map((p) => p.y);
+      const cx = (Math.min(...xs) + Math.max(...xs)) / 2;
+      const cy = (Math.min(...ys) + Math.max(...ys)) / 2;
+      const bboxW = Math.max(...xs) - Math.min(...xs);
+      const bboxH = Math.max(...ys) - Math.min(...ys);
+      const name = shape.metadata?.information?.name || shape.metadata?.label || '';
+      const buildingFontSize = Math.max(10, Math.min(bboxW, bboxH) * 0.12);
+      // pill background dimensions
+      const pillPad = { x: 8, y: 4 };
+      const pillW = buildingFontSize * name.length * 0.6 + pillPad.x * 2;
+      const pillH = buildingFontSize + pillPad.y * 2;
       return (
-        <polygon
+        <g
           key={id}
-          points={pointsStr}
-          fill={fill}
-          stroke={stroke}
-          strokeWidth={strokeWidth}
           onClick={() => handleSlotDetails(shape)}
           className='cursor-pointer'
-        />
+        >
+          <polygon
+            points={pointsStr}
+            fill={fill}
+            stroke={stroke}
+            strokeWidth={strokeWidth}
+          />
+          {name && (
+            <g pointerEvents='none'>
+              <rect
+                x={cx - pillW / 2}
+                y={cy - pillH / 2}
+                width={pillW}
+                height={pillH}
+                rx={pillH / 2}
+                fill={dark ? 'rgba(30,30,30,0.75)' : 'rgba(255,255,255,0.82)'}
+                stroke={dark ? '#4a4a4a' : '#d1d5db'}
+                strokeWidth={0.8}
+              />
+              <text
+                x={cx}
+                y={cy}
+                textAnchor='middle'
+                dominantBaseline='middle'
+                fontSize={buildingFontSize}
+                fontWeight='700'
+                fontFamily='system-ui, sans-serif'
+                fill={dark ? '#e5e7eb' : '#1f2937'}
+                style={{ userSelect: 'none' }}
+              >
+                {name}
+              </text>
+            </g>
+          )}
+        </g>
       );
     }
     return null;

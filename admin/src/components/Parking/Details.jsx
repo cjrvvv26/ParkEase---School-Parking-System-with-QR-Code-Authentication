@@ -99,79 +99,23 @@ export default function Details({ selectedShape, loading }) {
               <div className='flex flex-col gap-4'>
                 {/* Currently occupying user */}
                 {updatedSlot.occupiedBy && updatedSlot.occupyingUser && (
-                  <div className='flex flex-col gap-3 p-3 bg-rose-50 rounded-xl border border-rose-100'>
+                  <div className='flex flex-col gap-2 p-3 bg-rose-50 rounded-xl border border-rose-100'>
                     <p className='text-xs font-semibold text-rose-500 uppercase tracking-wide'>
                       Currently Occupying
                     </p>
-                    <div className='flex gap-3 items-center'>
-                      {updatedSlot.occupyingUser.profileDetails?.url ? (
-                        <img
-                          src={updatedSlot.occupyingUser.profileDetails.url}
-                          alt=''
-                          className='h-12 w-12 rounded-full object-cover ring-2 ring-rose-200'
-                        />
-                      ) : (
-                        <div className='h-12 w-12 rounded-full bg-rose-100 flex items-center justify-center text-rose-500 font-semibold'>
-                          {updatedSlot.occupyingUser.name?.firstName?.[0] ||
-                            '?'}
-                        </div>
-                      )}
-                      <div className='flex flex-col gap-0.5 overflow-hidden'>
-                        <p className='font-semibold text-gray-700 truncate'>
-                          {updatedSlot.occupyingUser.name?.firstName}{' '}
-                          {updatedSlot.occupyingUser.name?.middleName?.charAt(
-                            0,
-                          )}
-                          . {updatedSlot.occupyingUser.name?.lastName}
-                        </p>
-                        <p className='text-xs text-gray-400'>
-                          {updatedSlot.occupyingUser.studentNo}
-                        </p>
-                        {updatedSlot.entryTime && (
-                          <div className='flex items-center gap-1 mt-1'>
-                            <Clock size={11} className='text-rose-400' />
-                            <span className='text-xs text-rose-500'>
-                              Since{' '}
-                              {new Date(
-                                updatedSlot.entryTime,
-                              ).toLocaleTimeString([], {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                                hour12: true,
-                              })}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    {updatedSlot.occupyingUser.motorDetails && (
-                      <div className='flex flex-col gap-1 border-t border-rose-100 pt-2'>
-                        <p className='text-xs font-semibold text-gray-500 mb-1'>
-                          Motorcycle
-                        </p>
-                        {Object.entries(updatedSlot.occupyingUser.motorDetails)
-                          .slice(0, 4)
-                          .map(([k, v]) => (
-                            <div
-                              key={k}
-                              className='flex justify-between text-xs'
-                            >
-                              <span className='text-gray-400 capitalize'>
-                                {k}
-                              </span>
-                              <span className='text-gray-600 font-medium'>
-                                {v}
-                              </span>
-                            </div>
-                          ))}
+                    {updatedSlot.entryTime && (
+                      <div className='flex items-center gap-1'>
+                        <Clock size={11} className='text-rose-400' />
+                        <span className='text-xs text-rose-500'>
+                          Since{' '}
+                          {new Date(updatedSlot.entryTime).toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: true,
+                          })}
+                        </span>
                       </div>
                     )}
-                    <Link
-                      to={`/users/${updatedSlot.occupyingUser.userId || updatedSlot.occupiedBy}`}
-                      className='text-xs text-rose-500 hover:underline self-start'
-                    >
-                      View full profile →
-                    </Link>
                   </div>
                 )}
 

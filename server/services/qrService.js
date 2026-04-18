@@ -138,6 +138,11 @@ exports.verifySlotData = async (data) => {
     throw new Error("You're not in school. You can't occupy a slot");
   }
 
+  const alreadyOccupying = await Slot.findOne({ occupiedBy: userId });
+  if (alreadyOccupying && !alreadyOccupying.slotId?.equals(slotId)) {
+    throw new Error("You're already occupying another slot. Exit it first before parking here.");
+  }
+
   let message = '';
 
   const slot = await Slot.findOne({ slotId });

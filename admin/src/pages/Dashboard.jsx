@@ -14,7 +14,7 @@ export default function Dashboard() {
   const [loadingStats, setLoadingStats] = useState(true);
   const [semesterRevenue, setSemesterRevenue] = useState(null);
   const [loadingRevenue, setLoadingRevenue] = useState(true);
-  const [monthlyRevenue, setMonthlyRevenue] = useState(null);
+  const [semesterChartData, setSemesterChartData] = useState(null);
   const [loadingMonthly, setLoadingMonthly] = useState(true);
   const [guards, setGuards] = useState([]);
   const [loadingGuards, setLoadingGuards] = useState(true);
@@ -63,10 +63,10 @@ export default function Dashboard() {
     const fetchMonthlyRevenue = async () => {
       try {
         setLoadingMonthly(true);
-        const response = await fetchData('/report/monthly-revenue');
-        if (response?.data) setMonthlyRevenue(response.data);
+        const response = await fetchData('/semester/revenue/chart');
+        if (response?.data) setSemesterChartData(response.data);
       } catch (err) {
-        console.error('Failed to fetch monthly revenue:', err);
+        console.error('Failed to fetch semester revenue chart:', err);
       } finally {
         setLoadingMonthly(false);
       }
@@ -90,8 +90,10 @@ export default function Dashboard() {
         setLoadingOccupancy(true);
         const res = await fetchData('/report/occupancy-by-hour');
         if (res?.data) setOccupancyData(res.data);
-      } catch (err) {}
-      finally { setLoadingOccupancy(false); }
+      } catch (err) {
+      } finally {
+        setLoadingOccupancy(false);
+      }
     };
 
     const fetchAvgParking = async () => {
@@ -99,8 +101,10 @@ export default function Dashboard() {
         setLoadingAvgParking(true);
         const res = await fetchData('/report/avg-parking-by-hour');
         if (res?.data) setAvgParkingData(res.data);
-      } catch (err) {}
-      finally { setLoadingAvgParking(false); }
+      } catch (err) {
+      } finally {
+        setLoadingAvgParking(false);
+      }
     };
 
     fetchSystemSummary();
@@ -110,42 +114,6 @@ export default function Dashboard() {
     fetchOccupancy();
     fetchAvgParking();
   }, []);
-
-  const pctChange = semesterRevenue?.percentageChange;
-
-  const TrendBadge = () => {
-    if (pctChange === undefined || pctChange === null) return null;
-    const up = pctChange >= 0;
-    return (
-      <div
-        className={`flex gap-1 items-center text-xs p-2 absolute top-5 right-5 rounded-lg border ${
-          up
-            ? 'text-green-500 bg-green-100 border-green-500'
-            : 'text-rose-500 bg-rose-100 border-rose-500'
-        }`}
-      >
-        <svg
-          xmlns='http://www.w3.org/2000/svg'
-          fill='none'
-          viewBox='0 0 24 24'
-          strokeWidth={1.5}
-          stroke='currentColor'
-          className='size-4'
-        >
-          <path
-            strokeLinecap='round'
-            strokeLinejoin='round'
-            d={
-              up
-                ? 'M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941'
-                : 'M2.25 6 9 12.75l4.286-4.286a11.948 11.948 0 0 1 4.306 6.43l.776 2.898m0 0 3.182-5.511m-3.182 5.51-5.511-3.181'
-            }
-          />
-        </svg>
-        <p>{Math.abs(pctChange)}%</p>
-      </div>
-    );
-  };
 
   return (
     <>
@@ -157,31 +125,36 @@ export default function Dashboard() {
       </header>
 
       {/* Summary Cards */}
-      <div className='flex gap-5 h-[150px] px-5'>
+      <div className='grid grid-cols-2 lg:grid-cols-4 gap-5 h-[150px] px-5'>
         <ReportSummaryCard stats={stats} loading={loadingStats} />
       </div>
 
       {/* Mid Section */}
       <div className='flex gap-5 px-5'>
         {/* Revenue Chart */}
-        <div className={`rounded-xl flex-3 h-auto ${card}`}>
+        <div className={`rounded-xl flex-1 h-auto ${card}`}>
           <div className='flex flex-col gap-5 h-full p-5'>
-            <h1 className='text-base font-medium'>Revenue Per Month</h1>
-            <div className='w-full flex-1'>
+            <h1 className='text-base font-medium'>Revenue Per Semester</h1>
+            <div className='w-full h-[300px]'>
               <RevenueChart
-                monthlyData={monthlyRevenue}
+                monthlyData={semesterChartData}
                 loading={loadingMonthly}
               />
             </div>
             <div className='flex gap-5 rounded-xl'>
               <div
-                className={`flex flex-col justify-center gap-1 h-full ${cardInner} rounded-xl p-5 flex-1 relative`}
+                className={`flex flex-col gap-1 h-full ${cardInner} rounded-xl p-5 flex-1`}
               >
-                <h2 className={`text-sm ${subText}`}>
+                <p className='text-xs font-semibold text-gray-400 uppercase tracking-wide'>
+                  Previous Semester
+                </p>
+                <p
+                  className={`text-sm font-medium ${dark ? 'text-gray-200' : 'text-gray-700'}`}
+                >
                   {loadingRevenue
                     ? 'Loading...'
-                    : semesterRevenue?.lastSemester?.name || 'Last Semester'}
-                </h2>
+                    : semesterRevenue?.lastSemester?.name || '—'}
+                </p>
                 <p className='font-semibold text-2xl'>
                   &#8369;{' '}
                   {loadingRevenue
@@ -190,17 +163,20 @@ export default function Dashboard() {
                         semesterRevenue?.lastSemester?.revenue || 0
                       ).toLocaleString()}
                 </p>
-                <TrendBadge />
               </div>
               <div
-                className={`flex flex-col justify-center gap-1 h-full ${cardInner} rounded-xl p-5 flex-1 relative`}
+                className={`flex flex-col gap-1 h-full ${cardInner} rounded-xl p-5 flex-1`}
               >
-                <h2 className={`text-sm ${subText}`}>
+                <p className='text-xs font-semibold text-blue-500 uppercase tracking-wide'>
+                  Current Semester
+                </p>
+                <p
+                  className={`text-sm font-medium ${dark ? 'text-gray-200' : 'text-gray-700'}`}
+                >
                   {loadingRevenue
                     ? 'Loading...'
-                    : semesterRevenue?.currentSemester?.name ||
-                      'Current Semester'}
-                </h2>
+                    : semesterRevenue?.currentSemester?.name || '—'}
+                </p>
                 <p className='font-semibold text-2xl'>
                   &#8369;{' '}
                   {loadingRevenue
@@ -209,14 +185,13 @@ export default function Dashboard() {
                         semesterRevenue?.currentSemester?.revenue || 0
                       ).toLocaleString()}
                 </p>
-                <TrendBadge />
               </div>
             </div>
           </div>
         </div>
 
         {/* Right column */}
-        <div className='flex-1 flex flex-col gap-5'>
+        <div className='w-[300px] flex flex-col gap-5'>
           {/* Parking Slots */}
           <div className='flex-1 w-full rounded-xl bg-gradient-to-tl to-blue-500 via-blue-900 from-[#2d2d2d]'>
             <div className='p-5 h-full flex flex-col text-white justify-between'>
@@ -238,7 +213,10 @@ export default function Dashboard() {
             <div className='p-5 h-full flex flex-col'>
               <h1 className='text-base font-medium'>Today's Motor Occupancy</h1>
               <div className='h-full w-full'>
-                <MotorOccupancyChart chartData={occupancyData} loading={loadingOccupancy} />
+                <MotorOccupancyChart
+                  chartData={occupancyData}
+                  loading={loadingOccupancy}
+                />
               </div>
             </div>
           </div>
@@ -249,10 +227,13 @@ export default function Dashboard() {
       <div className='flex gap-5 px-5 pb-5'>
         {/* Avg Parking Duration */}
         <div className={`rounded-xl flex-3 h-auto ${card}`}>
-          <div className='flex flex-col gap-2 p-5 h-full'>
+          <div className='flex flex-col gap-2 p-5'>
             <h1 className='text-base font-medium'>Average Parking Duration</h1>
-            <div className='h-[280px] w-full'>
-              <AvgParkingDurationChart chartData={avgParkingData} loading={loadingAvgParking} />
+            <div style={{ position: 'relative', height: '280px', width: '100%' }}>
+              <AvgParkingDurationChart
+                chartData={avgParkingData}
+                loading={loadingAvgParking}
+              />
             </div>
           </div>
         </div>
@@ -269,7 +250,7 @@ export default function Dashboard() {
               <p>New</p>
             </Link>
           </div>
-          <div className='flex-1 flex flex-col overflow-y-auto [scrollbar-width:none]'>
+          <div className='max-h-[280px] overflow-y-auto [scrollbar-width:none] flex flex-col'>
             {loadingGuards ? (
               Array.from({ length: 4 }, (_, i) => (
                 <div

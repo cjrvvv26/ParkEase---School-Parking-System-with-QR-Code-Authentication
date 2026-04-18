@@ -45,25 +45,33 @@ exports.calculateSystemSummary = async () => {
     totalRevenue += semesterRevenue;
   }
 
-  // Get paid students count
-  const paidStudents = await Student.countDocuments({ 'payment.isPaid': true });
+  // Get paid students count for current active semester
+  const activeSemester = await Semester.findOne({ status: 'active' });
+  const paidStudents = activeSemester
+    ? await Student.countDocuments({ 'payment.isPaid': true, 'payment.semesterId': activeSemester._id })
+    : await Student.countDocuments({ 'payment.isPaid': true });
+  const totalActiveStudents = await Student.countDocuments();
 
-  // Calculate average parking duration (in minutes) for the last 30 days
+  // Calculate average unique users who parked per day (last 30 days)
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-  const parkingActivities = await Activity.find({
+  const parkLogs = await Activity.find({
     actionType: 'parking',
+    action: 'PARKED',
     createdAt: { $gte: thirtyDaysAgo },
-  });
+  }).select('userId createdAt').lean();
 
-  let avgParkingDuration = 0;
-  if (parkingActivities.length > 0) {
-    const totalDuration = parkingActivities.reduce((sum, activity) => {
-      const duration = activity.duration || 0; // duration should be in minutes
-      return sum + duration;
-    }, 0);
-    avgParkingDuration = Math.round(totalDuration / parkingActivities.length);
+  let avgParkPerDay = 0;
+  if (parkLogs.length > 0) {
+    const byDay = {};
+    for (const log of parkLogs) {
+      const day = new Date(log.createdAt).toDateString();
+      if (!byDay[day]) byDay[day] = new Set();
+      byDay[day].add(log.userId.toString());
+    }
+    const days = Object.values(byDay);
+    avgParkPerDay = Math.round(days.reduce((s, d) => s + d.size, 0) / days.length);
   }
 
   // Calculate occupied and available slots
@@ -73,8 +81,8 @@ exports.calculateSystemSummary = async () => {
   const data = [
     { title: 'Total Active Users', data: activeUsers.length },
     { title: 'Total Revenue', data: totalRevenue },
-    { title: 'Total Paid Students', data: paidStudents },
-    { title: 'Avg Parking (mins)', data: avgParkingDuration },
+    { title: 'Total Paid Students', data: paidStudents, total: totalActiveStudents },
+    { title: 'Avg Users Park Per Day', data: avgParkPerDay },
   ];
 
   return { data, occupiedSlots, availableSlots };

@@ -14,6 +14,9 @@ router.post('/', semesterController.createSemester);
 // Get current and last semester revenue data
 router.get('/revenue/dashboard', semesterController.getSemesterRevenueData);
 
+// Get all semesters revenue for chart
+router.get('/revenue/chart', semesterController.getSemesterRevenueChart);
+
 // Get semester statistics for all semesters (Super Admin only)
 router.get('/stats', semesterController.getSemesterStats);
 

@@ -71,7 +71,20 @@ export default function Chats() {
   useEffect(() => {
     if (!adminId) return;
     const s = getSocket();
-    const handler = (msg) => appendMessage(msg);
+    const handler = (msg) => {
+      appendMessage(msg);
+      // Bubble the sender to the top of the user list
+      const senderId = msg.sender?.toString();
+      if (senderId && senderId !== adminId?.toString()) {
+        setUsers((prev) => {
+          const idx = prev.findIndex((u) => u._id?.toString() === senderId);
+          if (idx <= 0) return prev;
+          const updated = [...prev];
+          const [user] = updated.splice(idx, 1);
+          return [user, ...updated];
+        });
+      }
+    };
     s.on('received_message', handler);
     connectSocket();
     return () => s.off('received_message', handler);

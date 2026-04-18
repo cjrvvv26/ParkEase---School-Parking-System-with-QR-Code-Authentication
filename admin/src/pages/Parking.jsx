@@ -172,7 +172,9 @@ export default function Parking() {
       {/* Parking Map and Details */}
       <div className={`flex flex-col mx-5 border rounded-xl mb-5 ${border}`}>
         {/* Header Parking Section */}
-        <header className={`flex justify-between p-5 border-b w-full ${border}`}>
+        <header
+          className={`flex justify-between p-5 border-b w-full ${border}`}
+        >
           <div className='flex gap-3 items-center'>
             <h2 className='font-medium text-base'>Parking Area Overview</h2>
             <p className='text-xs py-2 px-4 rounded-lg ring ring-blue-500 bg-blue-100 text-blue-500'>
@@ -204,10 +206,19 @@ export default function Parking() {
             {isOpen && (
               <Modal onClose={() => toggleIsOpenModal(false)}>
                 <div className='text-xs w-[450px] flex flex-col gap-5'>
-                  <h1 className={`text-base font-semibold ${dark ? 'text-gray-200' : 'text-gray-700'}`}>Create New Area</h1>
+                  <h1
+                    className={`text-base font-semibold ${dark ? 'text-gray-200' : 'text-gray-700'}`}
+                  >
+                    Create New Area
+                  </h1>
                   <form onSubmit={handleSubmit} className='flex flex-col gap-5'>
                     <div className='flex flex-col gap-1'>
-                      <label htmlFor='name' className='self-start text-xs text-gray-400'>Area name</label>
+                      <label
+                        htmlFor='name'
+                        className='self-start text-xs text-gray-400'
+                      >
+                        Area name
+                      </label>
                       <input
                         id='name'
                         type='text'
@@ -219,7 +230,12 @@ export default function Parking() {
                     </div>
                     <div className='flex gap-3 items-center'>
                       <div className='flex flex-1 flex-col gap-1'>
-                        <label htmlFor='height' className='self-start text-xs text-gray-400'>Height</label>
+                        <label
+                          htmlFor='height'
+                          className='self-start text-xs text-gray-400'
+                        >
+                          Height
+                        </label>
                         <div className='flex gap-1 items-end'>
                           <input
                             id='height'
@@ -233,7 +249,12 @@ export default function Parking() {
                         </div>
                       </div>
                       <div className='flex flex-1 flex-col gap-1'>
-                        <label htmlFor='width' className='self-start text-xs text-gray-400'>Width</label>
+                        <label
+                          htmlFor='width'
+                          className='self-start text-xs text-gray-400'
+                        >
+                          Width
+                        </label>
                         <div className='flex gap-1 items-end'>
                           <input
                             id='width'
@@ -247,10 +268,23 @@ export default function Parking() {
                         </div>
                       </div>
                     </div>
-                    {mapError && <p className='text-xs text-red-500'>{mapError}</p>}
+                    {mapError && (
+                      <p className='text-xs text-red-500'>{mapError}</p>
+                    )}
                     <div className='flex items-center gap-5 w-full'>
-                      <button type='button' onClick={() => toggleIsOpenModal(false)} className={`border w-full py-2 px-4 rounded ${dark ? 'border-[#4a4a4a] text-gray-300' : 'border-gray-200 text-gray-700'}`}>Close</button>
-                      <button type='submit' className='bg-blue-500 w-full text-white py-2 px-4 rounded'>Create</button>
+                      <button
+                        type='button'
+                        onClick={() => toggleIsOpenModal(false)}
+                        className={`border w-full py-2 px-4 rounded ${dark ? 'border-[#4a4a4a] text-gray-300' : 'border-gray-200 text-gray-700'}`}
+                      >
+                        Close
+                      </button>
+                      <button
+                        type='submit'
+                        className='bg-blue-500 w-full text-white py-2 px-4 rounded'
+                      >
+                        Create
+                      </button>
                     </div>
                   </form>
                 </div>
@@ -286,9 +320,24 @@ export default function Parking() {
               }}
               className='flex items-center gap-1 py-2 px-3 rounded-full text-blue-500 border-blue-500 border'
             >
-              <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='size-4'>
-                <path strokeLinecap='round' strokeLinejoin='round' d='M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z' />
-                <path strokeLinecap='round' strokeLinejoin='round' d='M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z' />
+              <svg
+                xmlns='http://www.w3.org/2000/svg'
+                fill='none'
+                viewBox='0 0 24 24'
+                strokeWidth={1.5}
+                stroke='currentColor'
+                className='size-4'
+              >
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  d='M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z'
+                />
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  d='M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z'
+                />
               </svg>
               <p>Manage</p>
             </button>
@@ -296,7 +345,7 @@ export default function Parking() {
             {maps && maps.length > 0 && (
               <button
                 onClick={() => setIsPreview(true)}
-                className={`flex items-center gap-1 py-2 px-3 rounded-full border transition ${dark ? 'border-[#3a3a3a] text-gray-300 hover:bg-[#3a3a3a]' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                className={`flex items-center gap-1 py-2 px-3 rounded-full border transition ${dark ? 'border-[#3a3a3a] text-gray-300' : 'border-blue-500 text-blue-500'}`}
               >
                 <Eye size={16} strokeWidth={1.5} />
                 <p>Preview</p>
@@ -308,8 +357,19 @@ export default function Parking() {
                 onClick={() => setConfirmDeleteMap(true)}
                 className='flex items-center gap-1 py-2 px-3 rounded-full text-rose-500 border-rose-400 border hover:bg-rose-50 transition'
               >
-                <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='size-4'>
-                  <path strokeLinecap='round' strokeLinejoin='round' d='m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0' />
+                <svg
+                  xmlns='http://www.w3.org/2000/svg'
+                  fill='none'
+                  viewBox='0 0 24 24'
+                  strokeWidth={1.5}
+                  stroke='currentColor'
+                  className='size-4'
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    d='m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0'
+                  />
                 </svg>
                 <p>Delete Map</p>
               </button>
@@ -319,16 +379,40 @@ export default function Parking() {
                 <div className='flex flex-col gap-4 w-[360px]'>
                   <div className='flex items-center gap-3'>
                     <div className='p-2 rounded-full bg-rose-50'>
-                      <svg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' strokeWidth={1.5} stroke='currentColor' className='size-5 text-rose-500'>
-                        <path strokeLinecap='round' strokeLinejoin='round' d='M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z' />
+                      <svg
+                        xmlns='http://www.w3.org/2000/svg'
+                        fill='none'
+                        viewBox='0 0 24 24'
+                        strokeWidth={1.5}
+                        stroke='currentColor'
+                        className='size-5 text-rose-500'
+                      >
+                        <path
+                          strokeLinecap='round'
+                          strokeLinejoin='round'
+                          d='M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z'
+                        />
                       </svg>
                     </div>
                     <h2 className='font-semibold text-gray-800'>Delete Map</h2>
                   </div>
-                  <p className='text-sm text-gray-500'>Are you sure you want to delete <strong>{selectedMap?.name}</strong>? All shapes, slots, and user assignments will be permanently removed.</p>
+                  <p className='text-sm text-gray-500'>
+                    Are you sure you want to delete{' '}
+                    <strong>{selectedMap?.name}</strong>? All shapes, slots, and
+                    user assignments will be permanently removed.
+                  </p>
                   <div className='flex gap-3'>
-                    <button onClick={() => setConfirmDeleteMap(false)} className={`flex-1 py-2 rounded-xl border text-sm transition ${dark ? 'border-[#4a4a4a] text-gray-400 hover:bg-[#3a3a3a]' : 'border-gray-200 text-gray-500 hover:bg-gray-50'}`}>Cancel</button>
-                    <button onClick={handleDeleteMap} disabled={loading} className='flex-1 py-2 rounded-xl bg-rose-500 hover:bg-rose-600 text-sm text-white transition disabled:opacity-60'>
+                    <button
+                      onClick={() => setConfirmDeleteMap(false)}
+                      className={`flex-1 py-2 rounded-xl border text-sm transition ${dark ? 'border-[#4a4a4a] text-gray-400 hover:bg-[#3a3a3a]' : 'border-gray-200 text-gray-500 hover:bg-gray-50'}`}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleDeleteMap}
+                      disabled={loading}
+                      className='flex-1 py-2 rounded-xl bg-rose-500 hover:bg-rose-600 text-sm text-white transition disabled:opacity-60'
+                    >
                       {loading ? 'Deleting...' : 'Yes, Delete'}
                     </button>
                   </div>
@@ -385,7 +469,9 @@ export default function Parking() {
             {/* Legends */}
             <div className='flex items-center justify-between absolute top-5 right-5'>
               <div className='flex gap-3'>
-                <div className={`flex items-center gap-1 text-xs ${dark ? 'text-gray-400' : 'text-gray-400'}`}>
+                <div
+                  className={`flex items-center gap-1 text-xs ${dark ? 'text-gray-400' : 'text-gray-400'}`}
+                >
                   <div className='relative flex items-center justify-center w-10 h-10'>
                     <div className='absolute w-9 h-9 rounded-full bg-green-100 opacity-50 z-10'></div>
                     <div className='absolute w-6 h-6 rounded-full bg-green-300 opacity-[.3] z-0'></div>
@@ -393,7 +479,9 @@ export default function Parking() {
                   </div>
                   <p>Available</p>
                 </div>
-                <div className={`flex items-center gap-1 text-xs ${dark ? 'text-gray-400' : 'text-gray-400'}`}>
+                <div
+                  className={`flex items-center gap-1 text-xs ${dark ? 'text-gray-400' : 'text-gray-400'}`}
+                >
                   <div className='relative flex items-center justify-center w-10 h-10'>
                     <div className='absolute w-9 h-9 rounded-full bg-rose-100 opacity-50 z-10'></div>
                     <div className='absolute w-6 h-6 rounded-full bg-rose-300 opacity-[.3] z-0'></div>
@@ -401,7 +489,9 @@ export default function Parking() {
                   </div>
                   <p>Occupied</p>
                 </div>
-                <div className={`flex items-center gap-1 text-xs ${dark ? 'text-gray-400' : 'text-gray-400'}`}>
+                <div
+                  className={`flex items-center gap-1 text-xs ${dark ? 'text-gray-400' : 'text-gray-400'}`}
+                >
                   <div className='relative flex items-center justify-center w-10 h-10'>
                     <div className='absolute w-9 h-9 rounded-full bg-blue-100 opacity-50 z-10'></div>
                     <div className='absolute w-6 h-6 rounded-full bg-blue-300 opacity-[.3] z-0'></div>
@@ -435,19 +525,40 @@ export default function Parking() {
         </main>
       </div>
       {isPreview && selectedMap && (
-        <div className='fixed inset-0 z-50 flex flex-col' style={{ background: dark ? '#1a1a1a' : '#f3f4f6' }}>
+        <div
+          className='fixed inset-0 z-50 flex flex-col'
+          style={{ background: dark ? '#1a1a1a' : '#f3f4f6' }}
+        >
           {/* Top bar */}
-          <div className={`flex items-center justify-between px-6 py-3 border-b shrink-0 ${dark ? 'bg-[#242424] border-[#3a3a3a]' : 'bg-white border-gray-200'}`}>
+          <div
+            className={`flex items-center justify-between px-6 py-3 border-b shrink-0 ${dark ? 'bg-[#242424] border-[#3a3a3a]' : 'bg-white border-gray-200'}`}
+          >
             <div className='flex items-center gap-3'>
-              <span className={`font-semibold text-sm ${dark ? 'text-gray-200' : 'text-gray-700'}`}>{selectedMap.name}</span>
-              <span className='text-[11px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-600 border border-blue-200'>Preview</span>
+              <span
+                className={`font-semibold text-sm ${dark ? 'text-gray-200' : 'text-gray-700'}`}
+              >
+                {selectedMap.name}
+              </span>
+              <span className='text-[11px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-600 border border-blue-200'>
+                Preview
+              </span>
             </div>
             <div className='flex items-center gap-4'>
               {/* Legend */}
               <div className='flex items-center gap-4'>
-                {[['#22c55e', 'Available'], ['#f43f5e', 'Occupied'], ['#3b82f6', 'Exclusive']].map(([color, label]) => (
-                  <div key={label} className={`flex items-center gap-1.5 text-xs ${dark ? 'text-gray-400' : 'text-gray-500'}`}>
-                    <div className='w-2.5 h-2.5 rounded-full' style={{ background: color }} />
+                {[
+                  ['#22c55e', 'Available'],
+                  ['#f43f5e', 'Occupied'],
+                  ['#3b82f6', 'Exclusive'],
+                ].map(([color, label]) => (
+                  <div
+                    key={label}
+                    className={`flex items-center gap-1.5 text-xs ${dark ? 'text-gray-400' : 'text-gray-500'}`}
+                  >
+                    <div
+                      className='w-2.5 h-2.5 rounded-full'
+                      style={{ background: color }}
+                    />
                     <span>{label}</span>
                   </div>
                 ))}

@@ -319,6 +319,31 @@ exports.getSemesterStats = async (req, res) => {
   }
 };
 
+// Get all semesters revenue for chart
+exports.getSemesterRevenueChart = async (req, res) => {
+  try {
+    const semesters = await Semester.find().sort({ createdAt: 1 }).lean();
+    const labels = [];
+    const values = [];
+    const meta = [];
+
+    for (const sem of semesters) {
+      let revenue = sem.revenue || 0;
+      if (sem.status === 'active') {
+        const paid = await Student.countDocuments({ 'payment.isPaid': true, 'payment.semesterId': sem._id });
+        revenue = paid * sem.slotPrice;
+      }
+      labels.push(sem.name);
+      values.push(revenue);
+      meta.push({ name: sem.name, startDate: sem.startDate, endDate: sem.endDate });
+    }
+
+    res.status(200).json({ success: true, data: { labels, values, meta } });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
 // Get current and last semester revenue
 exports.getSemesterRevenueData = async (req, res) => {
   try {

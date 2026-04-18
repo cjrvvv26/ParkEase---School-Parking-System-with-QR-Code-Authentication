@@ -23,7 +23,7 @@ export default function ReportSummaryCard({ reports = [], loading, stats }) {
         return <Users size={30} />;
       case 'Total Paid Students':
         return <CreditCard size={30} />;
-      case 'Avg Parking (mins)':
+      case 'Avg Users Park Per Day':
         return <Clock size={30} />;
       case 'Total Semesters':
         return <BookOpenCheck size={30} />;
@@ -55,9 +55,9 @@ export default function ReportSummaryCard({ reports = [], loading, stats }) {
       case 'Total Active Users':
         return 'Currently active accounts';
       case 'Total Paid Students':
-        return 'Exclusive slot payment';
-      case 'Avg Parking (mins)':
-        return 'Average session duration';
+        return 'Current semester payments';
+      case 'Avg Users Park Per Day':
+        return 'Avg unique parkers daily';
       case 'Total Semesters':
         return 'Recorded semesters';
       case 'Total Slots':
@@ -76,6 +76,9 @@ export default function ReportSummaryCard({ reports = [], loading, stats }) {
   const formatData = (item) => {
     if (item.title === 'Total Revenue' || item.title === 'Average Revenue') {
       return `₱${item.data.toLocaleString()}`;
+    }
+    if (item.title === 'Total Paid Students') {
+      return item.total !== undefined ? `${item.data}/${item.total}` : item.data;
     }
     return item.data;
   };
