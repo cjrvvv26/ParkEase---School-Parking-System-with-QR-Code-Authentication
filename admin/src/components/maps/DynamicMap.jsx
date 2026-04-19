@@ -4,7 +4,7 @@ import useDark from '../../hooks/useDark';
 
 const SLOT_COLORS = {
   exclusive: { light: '#dbeafe', dark: '#1e3a5f' },
-  occupied:  { light: '#ffe4e6', dark: '#7f1d1d' },
+  occupied: { light: '#ffe4e6', dark: '#7f1d1d' },
   available: { light: '#dcfce7', dark: '#14532d' },
   structure: { light: '#E5E7EB', dark: '#3a3a3a' },
 };
@@ -15,12 +15,19 @@ function getSlotFill(shape, dark) {
   }
   const mode = dark ? 'dark' : 'light';
   const status = shape.slotStatus || shape.status;
-  if (status === 'occupied' || shape.occupiedBy) return SLOT_COLORS.occupied[mode];
-  if (status === 'exclusive' || shape.assignedStudentId) return SLOT_COLORS.exclusive[mode];
+  if (status === 'occupied' || shape.occupiedBy)
+    return SLOT_COLORS.occupied[mode];
+  if (status === 'exclusive' || shape.assignedStudentId)
+    return SLOT_COLORS.exclusive[mode];
   return SLOT_COLORS.available[mode];
 }
 
-export default function DynamicMap({ shapes, width = 800, height = 600, onShapeClick }) {
+export default function DynamicMap({
+  shapes,
+  width = 800,
+  height = 600,
+  onShapeClick,
+}) {
   const { fetchData } = useFetch();
   const { dark, canvasBg } = useDark();
   const [selectedId, setSelectedId] = useState(null);
@@ -30,13 +37,18 @@ export default function DynamicMap({ shapes, width = 800, height = 600, onShapeC
     setSelectedId((prev) => (prev === id ? null : id));
     if (!onShapeClick) return;
     if (shape.metadata?.type === 'slot') {
-      const data = await fetchData('slot', { method: 'POST', data: { _id: shape._id } });
+      const data = await fetchData('slot', {
+        method: 'POST',
+        data: { _id: shape._id },
+      });
       const { createdAt, updatedAt, __v, _id, slotId, ...slotData } = data.slot;
       return onShapeClick({ ...shape, ...slotData });
     }
     if (shape.metadata?.type === 'building' && shape._id) {
       // Fetch fresh shape data from server to get the latest picture URL
-      const data = await fetchData(`shape/${shape._id}`, { method: 'GET' }).catch(() => null);
+      const data = await fetchData(`shape/${shape._id}`, {
+        method: 'GET',
+      }).catch(() => null);
       if (data?.shape) {
         return onShapeClick({ ...shape, metadata: data.shape.metadata });
       }
@@ -57,28 +69,34 @@ export default function DynamicMap({ shapes, width = 800, height = 600, onShapeC
       const label = shape.metadata?.label || shape.slotNumber || '';
       const minDim = Math.min(shape.geometry.width, shape.geometry.height);
       const fontSize = Math.max(9, minDim * 0.3);
+      const rotation = shape.geometry.rotation || 0;
       // pick a contrasting text color based on slot status
       const status = shape.slotStatus || shape.status;
       const isOccupied = status === 'occupied' || shape.occupiedBy;
       const isExclusive = status === 'exclusive' || shape.assignedStudentId;
-      const textColor = isOccupied ? '#be123c' : isExclusive ? '#1d4ed8' : '#15803d';
+      const textColor = isOccupied
+        ? '#be123c'
+        : isExclusive
+          ? '#1d4ed8'
+          : '#15803d';
       return (
         <g
           key={id}
-          transform={`rotate(${shape.geometry.rotation}, ${cx}, ${cy})`}
           onClick={() => handleSlotDetails(shape)}
           className='cursor-pointer'
         >
-          <rect
-            x={shape.geometry.x}
-            y={shape.geometry.y}
-            width={shape.geometry.width}
-            height={shape.geometry.height}
-            fill={fill}
-            stroke={stroke}
-            strokeWidth={strokeWidth}
-            rx={3}
-          />
+          <g transform={`rotate(${rotation}, ${cx}, ${cy})`}>
+            <rect
+              x={shape.geometry.x}
+              y={shape.geometry.y}
+              width={shape.geometry.width}
+              height={shape.geometry.height}
+              fill={fill}
+              stroke={stroke}
+              strokeWidth={strokeWidth}
+              rx={3}
+            />
+          </g>
           {label && (
             <text
               x={cx}
@@ -91,6 +109,7 @@ export default function DynamicMap({ shapes, width = 800, height = 600, onShapeC
               fill={textColor}
               pointerEvents='none'
               style={{ userSelect: 'none' }}
+              transform={`rotate(${-rotation}, ${cx}, ${cy})`}
             >
               {label}
             </text>
@@ -98,14 +117,17 @@ export default function DynamicMap({ shapes, width = 800, height = 600, onShapeC
         </g>
       );
     } else if (shape.geometry.shape === 'polygon') {
-      const pointsStr = shape.geometry.points.map((p) => `${p.x},${p.y}`).join(' ');
+      const pointsStr = shape.geometry.points
+        .map((p) => `${p.x},${p.y}`)
+        .join(' ');
       const xs = shape.geometry.points.map((p) => p.x);
       const ys = shape.geometry.points.map((p) => p.y);
       const cx = (Math.min(...xs) + Math.max(...xs)) / 2;
       const cy = (Math.min(...ys) + Math.max(...ys)) / 2;
       const bboxW = Math.max(...xs) - Math.min(...xs);
       const bboxH = Math.max(...ys) - Math.min(...ys);
-      const name = shape.metadata?.information?.name || shape.metadata?.label || '';
+      const name =
+        shape.metadata?.information?.name || shape.metadata?.label || '';
       const buildingFontSize = Math.max(10, Math.min(bboxW, bboxH) * 0.12);
       // pill background dimensions
       const pillPad = { x: 8, y: 4 };
@@ -161,7 +183,12 @@ export default function DynamicMap({ shapes, width = 800, height = 600, onShapeC
   return (
     <svg
       viewBox={`0 0 ${width} ${height}`}
-      style={{ width: '100%', height: '100%', background: canvasBg, borderRadius: 12 }}
+      style={{
+        width: '100%',
+        height: '100%',
+        background: canvasBg,
+        borderRadius: 12,
+      }}
     >
       {shapes.map(renderShape)}
     </svg>

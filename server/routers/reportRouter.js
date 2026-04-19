@@ -1,9 +1,9 @@
 const router = require('express').Router();
 const reportController = require('../controllers/reportController');
 const verifyUser = require('../middlewares/verifyUser');
-const requiredSuperAdmin = require('../middlewares/requiredSuperAdmin');
+const requiredAnalyticsAccess = require('../middlewares/requiredAnalyticsAccess');
 
-router.use(verifyUser(), requiredSuperAdmin);
+router.use(verifyUser(), requiredAnalyticsAccess);
 
 router.get('/parking-summary', reportController.getParkingSummary);
 router.get('/system-summary', reportController.getSystemSummary);
@@ -13,6 +13,7 @@ router.get('/avg-parking-by-hour', reportController.getAvgParkingByHour);
 router.get('/preferred-areas', reportController.getPreferredAreas);
 router.get('/top-parking-duration', reportController.getTopParkingDuration);
 router.get('/weekly-scans', reportController.getWeeklyScans);
+router.get('/recent-activity', reportController.getRecentActivity);
 
 router.get('/users-by-course', reportController.getUsersByCourse);
 

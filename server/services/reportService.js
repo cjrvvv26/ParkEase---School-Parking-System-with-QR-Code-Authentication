@@ -123,6 +123,13 @@ exports.calculateSystemSummary = async () => {
 // Weekly Scans - Current week only (resets Monday)
 exports.calculateWeeklyScans = async () => {
   const ActivityLog = require('../models/activityModel');
+  const User = require('../models/userModel');
+
+  // Get total active users who can park (students + faculty)
+  const activeStudentFaculty = await User.countDocuments({
+    role: { $in: ['student', 'faculty'] },
+    status: 'active',
+  });
 
   // Current week: Monday to Sunday
   const now = new Date();
@@ -143,14 +150,23 @@ exports.calculateWeeklyScans = async () => {
 
   for (const log of logs) {
     const date = new Date(log.createdAt);
-    const dayOfWeek = date.getDay(); // 1=Mon, 2=Tue, ..., 7=Sun
-    const index = dayOfWeek - 1; // Mon=0, Sun=6
+    const dayOfWeek = date.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+    const index = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Mon=0, Sun=6
     dayCounts[index]++;
   }
 
+  // Calculate percentages based on active users
+  const percentages = dayCounts.map((count) =>
+    activeStudentFaculty > 0
+      ? Math.round((count / activeStudentFaculty) * 100)
+      : 0,
+  );
+
   return {
     labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-    values: dayCounts,
+    values: percentages,
+    rawCounts: dayCounts, // For tooltip
+    totalActiveUsers: activeStudentFaculty,
   };
 };
 
@@ -382,6 +398,65 @@ exports.calculatePeakEntryTime = async () => {
   }
 
   return { peakTime, peakArea, peakPct };
+};
+
+exports.calculateRecentActivity = async ({ limit = 5 } = {}) => {
+  const ActivityLog = require('../models/activityModel');
+  const User = require('../models/userModel');
+  const Student = require('../models/studentModel');
+  const Faculty = require('../models/facultyModel');
+
+  const logs = await ActivityLog.find({ actionType: 'parking' })
+    .sort({ createdAt: -1 })
+    .limit(limit)
+    .lean();
+
+  const formatTimeAgo = (date) => {
+    if (!date) return 'unknown';
+    const diff = Date.now() - new Date(date).getTime();
+    const minutes = Math.floor(diff / 60000);
+    if (minutes < 1) return 'just now';
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    return `${days}d ago`;
+  };
+
+  const results = [];
+
+  for (const log of logs) {
+    const user = await User.findById(log.userId).select('role').lean();
+    let roleLabel = user?.role || 'User';
+    let name = '';
+    if (user?.role === 'student') {
+      const student = await Student.findOne({ userId: user._id })
+        .select('name')
+        .lean();
+      name = student?.name
+        ? `${student.name.firstName} ${student.name.lastName}`
+        : 'Student';
+    } else if (user?.role === 'faculty') {
+      const faculty = await Faculty.findOne({ userId: user._id })
+        .select('name')
+        .lean();
+      name = faculty?.name
+        ? `${faculty.name.firstName} ${faculty.name.lastName}`
+        : 'Faculty';
+    }
+
+    const actionLabel = log.action === 'PARKED' ? 'Occupied' : 'Released';
+
+    results.push({
+      label:
+        log.metadata?.slotLabel || `Slot ${log.metadata?.slotNumber || ''}`,
+      sub: `${actionLabel} by ${name || roleLabel}`.trim(),
+      time: formatTimeAgo(log.createdAt),
+      status: log.action === 'PARKED' ? 'occupied' : 'released',
+    });
+  }
+
+  return results;
 };
 
 exports.calculateUsersByCourse = async ({ courseId } = {}) => {

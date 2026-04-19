@@ -83,6 +83,15 @@ exports.getWeeklyScans = async (req, res) => {
   }
 };
 
+exports.getRecentActivity = async (req, res) => {
+  try {
+    const data = await reportService.calculateRecentActivity();
+    res.status(200).json({ success: true, data });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 exports.getPeakEntryTime = async (req, res) => {
   try {
     const data = await reportService.calculatePeakEntryTime();

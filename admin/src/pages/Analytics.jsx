@@ -8,6 +8,19 @@ import useFetch from '../hooks/useFetch';
 import { Printer } from 'lucide-react';
 import useDark from '../hooks/useDark';
 
+function formatDuration(minutes) {
+  const days = Math.floor(minutes / 1440);
+  const hours = Math.floor((minutes % 1440) / 60);
+  const mins = minutes % 60;
+
+  const parts = [];
+  if (days > 0) parts.push(`${days}d`);
+  if (hours > 0) parts.push(`${hours}h`);
+  if (mins > 0 || parts.length === 0) parts.push(`${mins}m`);
+
+  return parts.join(' ');
+}
+
 function LiveClock() {
   const [clock, setClock] = useState(new Date());
   useEffect(() => {
@@ -46,6 +59,10 @@ export default function Analytics() {
   // Motor occupancy chart
   const [occupancyData, setOccupancyData] = useState(null);
   const [loadingOccupancy, setLoadingOccupancy] = useState(true);
+
+  // Weekly scans
+  const [weeklyScansData, setWeeklyScansData] = useState(null);
+  const [loadingWeeklyScans, setLoadingWeeklyScans] = useState(true);
 
   // Preferred areas
   const [preferredAreas, setPreferredAreas] = useState([]);
@@ -114,6 +131,13 @@ export default function Analytics() {
       const r = await fetchData('/report/preferred-areas');
       if (r?.data) setPreferredAreas(r.data);
       setLoadingAreas(false);
+    });
+
+    run(async () => {
+      setLoadingWeeklyScans(true);
+      const r = await fetchData('/report/weekly-scans');
+      if (r?.data) setWeeklyScansData(r.data);
+      setLoadingWeeklyScans(false);
     });
 
     run(async () => {
@@ -484,7 +508,7 @@ export default function Analytics() {
                       />
                     </div>
                     <p className='w-12 sm:w-[60px] text-right text-sm'>
-                      {u.duration}m
+                      {formatDuration(u.duration)}
                     </p>
                   </div>
                 ))
@@ -500,7 +524,10 @@ export default function Analytics() {
           >
             <h1 className='text-base font-medium'>Weekly Scans</h1>
             <div className='h-[400px]'>
-              <WeeklyScansChart />
+              <WeeklyScansChart
+                chartData={weeklyScansData}
+                loading={loadingWeeklyScans}
+              />
             </div>
           </div>
         </div>

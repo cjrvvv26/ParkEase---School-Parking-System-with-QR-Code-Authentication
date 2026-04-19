@@ -8,14 +8,17 @@ export default function WeeklyScansChart({
 }) {
   Chart.register();
 
-  // Mock data for Weekly Scans (Mon-Sun) - matches "same design in mobile app"
-  // Real data would come from /report/weekly-scans API
-  const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  const rawValues = chartData?.values || [12, 15, 18, 22, 30, 8, 5]; // Sample scan counts
-  const total = rawValues.reduce((s, v) => s + v, 0);
-  const values = rawValues.map((v) =>
-    total > 0 ? Math.round((v / total) * 100) : 0,
-  );
+  const labels = chartData?.labels || [
+    'Mon',
+    'Tue',
+    'Wed',
+    'Thu',
+    'Fri',
+    'Sat',
+    'Sun',
+  ];
+  const values = chartData?.values || [];
+  const rawCounts = chartData?.rawCounts || [];
 
   const data = {
     labels,
@@ -37,8 +40,10 @@ export default function WeeklyScansChart({
       legend: { display: false },
       tooltip: {
         callbacks: {
-          label: (ctx) =>
-            ` ${ctx.parsed.y}% of weekly scans (${rawValues[ctx.dataIndex]} scans)`,
+          label: (ctx) => {
+            const scans = rawCounts[ctx.dataIndex] ?? 0;
+            return ` ${ctx.parsed.y}% of active users (${scans} scans)`;
+          },
         },
       },
     },

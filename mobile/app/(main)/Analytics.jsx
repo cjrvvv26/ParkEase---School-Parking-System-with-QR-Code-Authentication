@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { View, Text, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
@@ -11,9 +12,10 @@ import {
 } from 'lucide-react-native';
 import Svg, { Rect, Text as SvgText, Line } from 'react-native-svg';
 import { useSelector } from 'react-redux';
+import api from '../services/api';
 import useTheme from '../hooks/useTheme';
 
-const BAR_DATA = [
+const DEFAULT_BAR_DATA = [
   { label: 'Mon', value: 18 },
   { label: 'Tue', value: 25 },
   { label: 'Wed', value: 30 },
@@ -23,7 +25,7 @@ const BAR_DATA = [
   { label: 'Sun', value: 8 },
 ];
 
-const RECENT = [
+const DEFAULT_RECENT = [
   {
     label: 'Slot A-01',
     sub: 'Occupied by student',
@@ -107,12 +109,13 @@ function StatCard({
   );
 }
 
-function BarChart({ t }) {
+function BarChart({ t, data = [] }) {
   const chartW = 320,
     chartH = 140,
     barW = 28;
-  const gap = (chartW - BAR_DATA.length * barW) / (BAR_DATA.length + 1);
-  const maxVal = Math.max(...BAR_DATA.map((d) => d.value));
+  const chartData = data.length ? data : DEFAULT_BAR_DATA;
+  const gap = (chartW - chartData.length * barW) / (chartData.length + 1);
+  const maxVal = Math.max(...chartData.map((d) => d.value));
   return (
     <Svg width={chartW} height={chartH + 24}>
       {[0, 0.5, 1].map((pct, i) => (
@@ -126,7 +129,7 @@ function BarChart({ t }) {
           strokeWidth={1}
         />
       ))}
-      {BAR_DATA.map((d, i) => {
+      {chartData.map((d, i) => {
         const barH = (d.value / maxVal) * (chartH - 16);
         const x = gap + i * (barW + gap);
         const y = chartH - barH;

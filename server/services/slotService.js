@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const User = require('../models/userModel');
 const Student = require('../models/studentModel');
+const Faculty = require('../models/facultyModel');
+const Semester = require('../models/semesterModel');
 const Slot = require('../models/slotModel');
 const Map = require('../models/mapModel');
 const Shape = require('../models/shapeModel');
@@ -48,27 +50,44 @@ exports.verifyStudentInfo = async (data, reassign = false) => {
     throw new Error('Invalid Id');
   }
 
-  const student = await User.findById(_id);
-  if (!student) {
-    throw new Error('Student not found');
+  const user = await User.findById(_id);
+  if (!user) {
+    throw new Error('User not found');
   }
 
-  if (!student.emailVerified) {
-    throw new Error('Student account must be verified');
+  if (!user.emailVerified) {
+    throw new Error('User account must be verified');
   }
 
-  const studentRecord = await Student.findOne({ userId: student._id });
+  if (user.role === 'student') {
+    const studentRecord = await Student.findOne({ userId: user._id });
+    const activeSemester = await Semester.findOne({ status: 'active' });
 
-  if (!studentRecord || !studentRecord.payment?.isPaid) {
-    throw new Error('Student must pay for exclusive slot');
+    if (!studentRecord || !studentRecord.payment?.isPaid) {
+      throw new Error('Student must pay for an exclusive slot');
+    }
+
+    if (!activeSemester) {
+      throw new Error('Student assignment requires an active semester');
+    }
+
+    if (!studentRecord.payment.semesterId?.equals(activeSemester._id)) {
+      throw new Error('Student payment is not valid for the active semester');
+    }
+  } else if (user.role === 'faculty') {
+    const facultyRecord = await Faculty.findOne({ userId: user._id });
+    if (!facultyRecord) {
+      throw new Error('Faculty record not found');
+    }
+  } else {
+    throw new Error('User role is not eligible for slot assignment');
   }
 
   if (reassign) {
     const alreadyAssigned = await Slot.findOne({
-      assignedStudentId: student._id,
+      assignedStudentId: user._id,
     });
-    if (alreadyAssigned)
-      throw new Error('Student already have an exclusive slot');
+    if (alreadyAssigned) throw new Error('User already has an exclusive slot');
   }
 };
 
@@ -77,9 +96,12 @@ exports.assignStudent = async (data, session, reassign = false) => {
 
   if (!slot || !student) throw new Error('Information error. Please try again');
 
-  const isExclusive = await Slot.findOne({ slotId: slot._id }).session(session);
+  const assignee = await User.findById(student._id).select('name').lean();
+  const label = `${assignee?.name?.lastName || 'User'}'s slot`;
 
-  if (isExclusive.assignedStudentId) {
+  const currentSlot = await Slot.findOne({ slotId: slot._id }).session(session);
+  if (!currentSlot) throw new Error('Slot not found');
+  if (currentSlot.assignedStudentId) {
     throw new Error('This slot is already exclusive');
   }
 
@@ -95,8 +117,14 @@ exports.assignStudent = async (data, session, reassign = false) => {
   });
 
   if (!register) {
-    throw new Error('Something went wrong while assigning student');
+    throw new Error('Something went wrong while assigning user');
   }
+
+  await Shape.findByIdAndUpdate(
+    slot._id,
+    { 'metadata.label': label },
+    { new: true, session },
+  );
 
   if (reassign) {
     await Slot.findOneAndUpdate(
@@ -122,31 +150,33 @@ exports.assignStudent = async (data, session, reassign = false) => {
 };
 
 exports.removeAssignment = async (id, session) => {
-  // Find the slot first
   const slotRecord = await Slot.findOne({ slotId: id }).session(session);
   if (!slotRecord) throw new Error('Slot not found');
 
-  // Update the slot
+  const resetLabel = slotRecord.slotNumber || 'Slot';
+  await Shape.findByIdAndUpdate(
+    id,
+    { 'metadata.label': resetLabel },
+    { new: true, session },
+  );
+
   const slot = await Slot.findOneAndUpdate(
     { slotId: id },
     { $set: { assignedStudentId: null, status: 'available' } },
     { new: true, session },
   ).populate({
     path: 'slotId',
-    select: 'metadata -_id', // only take metadata
+    select: 'metadata -_id',
   });
 
-  if (!slot) throw new Error('Failed to remove student from slot');
+  if (!slot) throw new Error('Failed to remove user from slot');
 
-  // Build a plain object with only the fields you need
-  const result = {
+  return {
     _id: slot._id,
     assignedStudentId: slot.assignedStudentId,
     status: slot.status,
     metadata: slot.slotId?.metadata || {},
   };
-
-  return result; // safe, plain object
 };
 
 // SLOT REPORTS

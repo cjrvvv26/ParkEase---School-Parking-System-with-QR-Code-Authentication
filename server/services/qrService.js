@@ -1,4 +1,5 @@
 const Slot = require('../models/slotModel');
+const Semester = require('../models/semesterModel');
 const Student = require('../models/studentModel');
 const Faculty = require('../models/facultyModel');
 const User = require('../models/userModel');
@@ -50,7 +51,9 @@ exports.guardScan = async (qrData, guardId) => {
     if (occupiedSlot) {
       const wasExclusive = occupiedSlot.assignedStudentId?.equals(user._id);
       const exitTime = new Date();
-      const durationMs = occupiedSlot.entryTime ? exitTime - new Date(occupiedSlot.entryTime) : 0;
+      const durationMs = occupiedSlot.entryTime
+        ? exitTime - new Date(occupiedSlot.entryTime)
+        : 0;
       const durationMins = Math.round(durationMs / 60000);
 
       occupiedSlot.isOccupied = false;
@@ -61,7 +64,10 @@ exports.guardScan = async (qrData, guardId) => {
       await occupiedSlot.save();
 
       // Log the unpark with duration and slot info
-      const shape = await require('../models/shapeModel').findById(occupiedSlot.slotId).select('metadata.label mapId').populate('mapId', 'name');
+      const shape = await require('../models/shapeModel')
+        .findById(occupiedSlot.slotId)
+        .select('metadata.label mapId')
+        .populate('mapId', 'name');
       await ActivityLog.create({
         userId: user._id,
         actionType: 'parking',
@@ -111,22 +117,36 @@ exports.verifySlotData = async (data) => {
   const { userId, slotId } = data;
 
   const user = await User.findById(userId);
-
   if (!user) {
     throw new Error('User not found');
   }
 
   let entryTime;
+  const activeSemester = await Semester.findOne({ status: 'active' });
 
   if (user.role === 'guard') {
     throw new Error('Not authorized for this action');
   }
 
   if (user.role === 'student') {
+    if (!activeSemester) {
+      throw new Error(
+        'No active semester. Students cannot park until a semester is active.',
+      );
+    }
+
     const student = await Student.findOne({ userId: user._id }).select(
-      'entryTime',
+      'entryTime payment',
     );
-    entryTime = student?.entryTime;
+    if (!student || !student.payment?.isPaid) {
+      throw new Error('Student payment is not valid for the active semester.');
+    }
+
+    if (!student.payment.semesterId?.equals(activeSemester._id)) {
+      throw new Error('Student payment is not valid for the active semester.');
+    }
+
+    entryTime = student.entryTime;
   } else if (user.role === 'faculty') {
     const faculty = await Faculty.findOne({ userId: user._id }).select(
       'entryTime',
@@ -140,22 +160,34 @@ exports.verifySlotData = async (data) => {
 
   const alreadyOccupying = await Slot.findOne({ occupiedBy: userId });
   if (alreadyOccupying && !alreadyOccupying.slotId?.equals(slotId)) {
-    throw new Error("You're already occupying another slot. Exit it first before parking here.");
+    throw new Error(
+      "You're already occupying another slot. Exit it first before parking here.",
+    );
   }
 
   let message = '';
 
   const slot = await Slot.findOne({ slotId });
   if (!slot) throw new Error('Slot not found');
-  console.log(slot.occupiedBy?.equals(user._id));
 
   if (slot.isOccupied && !slot.occupiedBy?.equals(userId)) {
     throw new Error('Slot already occupied');
   }
 
-  // Block user from parking in someone else's exclusive slot
   if (slot.assignedStudentId && !slot.assignedStudentId.equals(userId)) {
-    throw new Error("This is an exclusive slot assigned to another user. You cannot park here.");
+    throw new Error(
+      'This is an exclusive slot assigned to another user. You cannot park here.',
+    );
+  }
+
+  if (
+    !activeSemester &&
+    user.role === 'faculty' &&
+    !slot.assignedStudentId?.equals(userId)
+  ) {
+    throw new Error(
+      'Faculty may only park in their designated slot when there is no active semester.',
+    );
   }
 
   if (slot.entryTime && slot.occupiedBy?.equals(userId)) {
@@ -169,7 +201,10 @@ exports.verifySlotData = async (data) => {
     slot.status = 'occupied';
     await slot.save();
     message = "You're now in your exclusive slot";
-    const shape = await require('../models/shapeModel').findById(slot.slotId).select('metadata.label mapId').populate('mapId', 'name');
+    const shape = await require('../models/shapeModel')
+      .findById(slot.slotId)
+      .select('metadata.label mapId')
+      .populate('mapId', 'name');
     await ActivityLog.create({
       userId,
       actionType: 'parking',
@@ -177,7 +212,12 @@ exports.verifySlotData = async (data) => {
       description: `User parked in exclusive slot ${slot.slotNumber}.`,
       entityType: 'Slot',
       entityId: slot._id,
-      metadata: { slotNumber: slot.slotNumber, slotLabel: shape?.metadata?.label || slot.slotNumber, mapName: shape?.mapId?.name || null, exclusive: true },
+      metadata: {
+        slotNumber: slot.slotNumber,
+        slotLabel: shape?.metadata?.label || slot.slotNumber,
+        mapName: shape?.mapId?.name || null,
+        exclusive: true,
+      },
     });
   } else if (!slot.entryTime && !slot.assignedStudentId) {
     slot.entryTime = Date.now();
@@ -186,7 +226,10 @@ exports.verifySlotData = async (data) => {
     slot.status = 'occupied';
     await slot.save();
     message = 'Thanks for parking!';
-    const shape3 = await require('../models/shapeModel').findById(slot.slotId).select('metadata.label mapId').populate('mapId', 'name');
+    const shape3 = await require('../models/shapeModel')
+      .findById(slot.slotId)
+      .select('metadata.label mapId')
+      .populate('mapId', 'name');
     await ActivityLog.create({
       userId,
       actionType: 'parking',
@@ -194,7 +237,12 @@ exports.verifySlotData = async (data) => {
       description: `User parked in available slot ${slot.slotNumber}.`,
       entityType: 'Slot',
       entityId: slot._id,
-      metadata: { slotNumber: slot.slotNumber, slotLabel: shape3?.metadata?.label || slot.slotNumber, mapName: shape3?.mapId?.name || null, exclusive: false },
+      metadata: {
+        slotNumber: slot.slotNumber,
+        slotLabel: shape3?.metadata?.label || slot.slotNumber,
+        mapName: shape3?.mapId?.name || null,
+        exclusive: false,
+      },
     });
   }
 
