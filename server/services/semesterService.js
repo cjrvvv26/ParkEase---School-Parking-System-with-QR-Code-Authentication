@@ -68,12 +68,10 @@ const getDaysRemaining = (endDate) => {
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   return Math.max(0, diffDays);
 };
-
 const getSemesterStats = async () => {
   // Get all semesters
   const allSemesters = await Semester.find();
 
-  // Calculate total revenue - use stored revenue for expired semesters, calculate for active
   let totalRevenue = 0;
   let highestEarningSemester = null;
   let highestRevenue = 0;
@@ -81,17 +79,19 @@ const getSemesterStats = async () => {
   for (const semester of allSemesters) {
     let semesterRevenue = semester.revenue || 0;
 
-    // If semester is active, calculate revenue in real-time since stored revenue might be stale
+    // If semester is active, calculate real-time revenue
     if (semester.status === 'active') {
       const paidStudentsCount = await Student.countDocuments({
         'payment.isPaid': true,
         'payment.semesterId': semester._id,
       });
+
       semesterRevenue = paidStudentsCount * semester.slotPrice;
     }
 
     totalRevenue += semesterRevenue;
 
+    // Track highest earning semester
     if (semesterRevenue > highestRevenue) {
       highestRevenue = semesterRevenue;
       highestEarningSemester = {
@@ -103,19 +103,49 @@ const getSemesterStats = async () => {
   }
 
   const totalSemesters = allSemesters.length;
+
   const averageRevenue =
-    totalSemesters > 0 ? (totalRevenue / totalSemesters).toFixed(2) : 0;
+    totalSemesters > 0
+      ? parseFloat((totalRevenue / totalSemesters).toFixed(2))
+      : 0;
+
+  // ✅ FIXED PROJECTED REVENUE (data-driven)
+  const activeSemester = await Semester.findOne({ status: 'active' });
+
+  let projectedRevenue = 0;
+
+  if (activeSemester) {
+    const paidStudentsCount = await Student.countDocuments({
+      'payment.isPaid': true,
+      'payment.semesterId': activeSemester._id,
+    });
+
+    const totalSlots = activeSemester.totalSlots || 0;
+
+    const currentRevenue = paidStudentsCount * activeSemester.slotPrice;
+
+    const remainingStudents = Math.max(totalSlots - paidStudentsCount, 0);
+
+    // You can tweak this (based on your system behavior)
+    const expectedPaymentRate = 0.7; // 70% of remaining students will likely pay
+
+    const expectedFutureRevenue =
+      remainingStudents * expectedPaymentRate * activeSemester.slotPrice;
+
+    projectedRevenue = Math.round(currentRevenue + expectedFutureRevenue);
+  }
 
   const stats = [
     { title: 'Total Revenue', data: totalRevenue },
     { title: 'Total Semesters', data: totalSemesters },
-    { title: 'Average Revenue', data: parseFloat(averageRevenue) },
-    {
-      title: 'Highest Earning',
-      data: highestEarningSemester?.revenue || 'N/A',
-    },
+    { title: 'Average Revenue', data: averageRevenue },
+    { title: 'Projected Revenue', data: projectedRevenue },
   ];
-  return stats;
+
+  return {
+    stats,
+    highestEarningSemester, // optional but useful for dashboard
+  };
 };
 
 module.exports = {

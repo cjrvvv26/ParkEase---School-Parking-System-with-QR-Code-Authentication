@@ -74,6 +74,15 @@ exports.getTopParkingDuration = async (req, res) => {
   }
 };
 
+exports.getWeeklyScans = async (req, res) => {
+  try {
+    const data = await reportService.calculateWeeklyScans();
+    res.status(200).json({ success: true, data });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 exports.getPeakEntryTime = async (req, res) => {
   try {
     const data = await reportService.calculatePeakEntryTime();

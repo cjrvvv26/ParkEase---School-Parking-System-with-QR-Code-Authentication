@@ -10,12 +10,14 @@ const https = require('https');
 
 const fetchImageBuffer = (url) =>
   new Promise((resolve, reject) => {
-    https.get(url, (res) => {
-      const chunks = [];
-      res.on('data', (chunk) => chunks.push(chunk));
-      res.on('end', () => resolve(Buffer.concat(chunks)));
-      res.on('error', reject);
-    }).on('error', reject);
+    https
+      .get(url, (res) => {
+        const chunks = [];
+        res.on('data', (chunk) => chunks.push(chunk));
+        res.on('end', () => resolve(Buffer.concat(chunks)));
+        res.on('error', reject);
+      })
+      .on('error', reject);
   });
 
 exports.calculateSystemSummary = async () => {
@@ -48,9 +50,18 @@ exports.calculateSystemSummary = async () => {
   // Get paid students count for current active semester
   const activeSemester = await Semester.findOne({ status: 'active' });
   const paidStudents = activeSemester
-    ? await Student.countDocuments({ 'payment.isPaid': true, 'payment.semesterId': activeSemester._id })
+    ? await Student.countDocuments({
+        'payment.isPaid': true,
+        'payment.semesterId': activeSemester._id,
+      })
     : await Student.countDocuments({ 'payment.isPaid': true });
   const totalActiveStudents = await Student.countDocuments();
+
+  // Active students + faculty count for KPI denominator
+  const activeStudentFaculty = await User.countDocuments({
+    role: { $in: ['student', 'faculty'] },
+    status: 'active',
+  });
 
   // Calculate average unique users who parked per day (last 30 days)
   const thirtyDaysAgo = new Date();
@@ -60,7 +71,9 @@ exports.calculateSystemSummary = async () => {
     actionType: 'parking',
     action: 'PARKED',
     createdAt: { $gte: thirtyDaysAgo },
-  }).select('userId createdAt').lean();
+  })
+    .select('userId createdAt')
+    .lean();
 
   let avgParkPerDay = 0;
   if (parkLogs.length > 0) {
@@ -71,21 +84,74 @@ exports.calculateSystemSummary = async () => {
       byDay[day].add(log.userId.toString());
     }
     const days = Object.values(byDay);
-    avgParkPerDay = Math.round(days.reduce((s, d) => s + d.size, 0) / days.length);
+    avgParkPerDay = Math.round(
+      days.reduce((s, d) => s + d.size, 0) / days.length,
+    );
   }
 
-  // Calculate occupied and available slots
+  // Calculate total created slots
+  const totalCreatedSlots = slots.length;
   const occupiedSlots = slots.filter((slot) => slot.isOccupied).length;
-  const availableSlots = slots.length - occupiedSlots;
+  const availableSlots = totalCreatedSlots - occupiedSlots;
 
   const data = [
     { title: 'Total Active Users', data: activeUsers.length },
     { title: 'Total Revenue', data: totalRevenue },
-    { title: 'Total Paid Students', data: paidStudents, total: totalActiveStudents },
-    { title: 'Avg Users Park Per Day', data: avgParkPerDay },
+    {
+      title: 'Total Paid Students',
+      data: paidStudents,
+      total: totalActiveStudents,
+    },
+    {
+      title: 'Avg Users Park Per Day',
+      data: avgParkPerDay,
+      totalActive: activeStudentFaculty,
+    },
+    {
+      title: 'Total Slots',
+      data: totalCreatedSlots,
+    },
+    {
+      title: 'Total Occupied',
+      data: occupiedSlots,
+    },
   ];
 
-  return { data, occupiedSlots, availableSlots };
+  return { data, occupiedSlots, availableSlots, totalCreatedSlots };
+};
+
+// Weekly Scans - Current week only (resets Monday)
+exports.calculateWeeklyScans = async () => {
+  const ActivityLog = require('../models/activityModel');
+
+  // Current week: Monday to Sunday
+  const now = new Date();
+  const startOfWeek = new Date(now);
+  startOfWeek.setDate(now.getDate() - now.getDay() + 1); // Monday
+  startOfWeek.setHours(0, 0, 0, 0);
+
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 6); // Sunday
+  endOfWeek.setHours(23, 59, 59, 999);
+
+  const logs = await ActivityLog.find({
+    actionType: { $in: ['parking', 'scan'] },
+    createdAt: { $gte: startOfWeek, $lte: endOfWeek },
+  }).lean();
+
+  const dayCounts = [0, 0, 0, 0, 0, 0, 0]; // Mon, Tue, Wed, Thu, Fri, Sat, Sun
+
+  for (const log of logs) {
+    const date = new Date(log.createdAt);
+    const dayOfWeek = date.getDay(); // 1=Mon, 2=Tue, ..., 7=Sun
+    const index = dayOfWeek - 1; // Mon=0, Sun=6
+    dayCounts[index]++;
+  }
+
+  return {
+    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    values: dayCounts,
+  };
 };
 
 // Calculate monthly revenue for the year based on activity logs
@@ -176,7 +242,9 @@ exports.calculateAvgParkingByHour = async () => {
       return h >= start && h < end;
     });
     if (!slotLogs.length) return 0;
-    return Math.round(slotLogs.reduce((s, l) => s + (l.duration || 0), 0) / slotLogs.length);
+    return Math.round(
+      slotLogs.reduce((s, l) => s + (l.duration || 0), 0) / slotLogs.length,
+    );
   });
 
   return { labels: slots.map((s) => s.label), values };
@@ -191,14 +259,18 @@ exports.calculatePreferredAreas = async () => {
   const results = [];
 
   for (const map of maps) {
-    const shapes = await Shape.find({ mapId: map._id, 'metadata.type': 'slot' }).select('_id').lean();
+    const shapes = await Shape.find({ mapId: map._id, 'metadata.type': 'slot' })
+      .select('_id')
+      .lean();
     const shapeIds = shapes.map((s) => s._id);
-    const occupied = await Slot.countDocuments({ slotId: { $in: shapeIds }, isOccupied: true });
+    const occupied = await Slot.countDocuments({
+      slotId: { $in: shapeIds },
+      isOccupied: true,
+    });
     const total = shapes.length;
     results.push({ name: map.name, occupied, total });
   }
-
-  return results.sort((a, b) => b.occupied - a.occupied).slice(0, 3);
+  return results.sort((a, b) => b.occupied - a.occupied);
 };
 
 exports.calculateTopParkingDuration = async () => {
@@ -210,8 +282,21 @@ exports.calculateTopParkingDuration = async () => {
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
   const logs = await ActivityLog.aggregate([
-    { $match: { actionType: 'parking', action: 'UNPARKED', createdAt: { $gte: thirtyDaysAgo }, 'metadata.duration': { $gt: 0 } } },
-    { $group: { _id: '$userId', totalDuration: { $sum: '$metadata.duration' }, count: { $sum: 1 } } },
+    {
+      $match: {
+        actionType: 'parking',
+        action: 'UNPARKED',
+        createdAt: { $gte: thirtyDaysAgo },
+        'metadata.duration': { $gt: 0 },
+      },
+    },
+    {
+      $group: {
+        _id: '$userId',
+        totalDuration: { $sum: '$metadata.duration' },
+        count: { $sum: 1 },
+      },
+    },
     { $sort: { totalDuration: -1 } },
     { $limit: 5 },
   ]);
@@ -224,10 +309,16 @@ exports.calculateTopParkingDuration = async () => {
     if (!user) continue;
     let name = 'Unknown';
     if (user.role === 'student') {
-      const s = await Student.findOne({ userId: log._id }).select('name').lean();
+      const s = await Student.findOne({ userId: log._id })
+        .select('name')
+        .lean();
       if (s?.name) name = `${s.name.firstName.charAt(0)}. ${s.name.lastName}`;
     }
-    results.push({ name, duration: log.totalDuration, pct: Math.round((log.totalDuration / maxDuration) * 100) });
+    results.push({
+      name,
+      duration: log.totalDuration,
+      pct: Math.round((log.totalDuration / maxDuration) * 100),
+    });
   }
 
   return results;
@@ -266,11 +357,15 @@ exports.calculatePeakEntryTime = async () => {
   const peakTime = `${h12}:00 ${ampm}`;
 
   // Find most common area (map name) from peak hour logs
-  const peakLogs = logs.filter((l) => new Date(l.createdAt).getHours() === peakHourNum);
+  const peakLogs = logs.filter(
+    (l) => new Date(l.createdAt).getHours() === peakHourNum,
+  );
   const areaCounts = {};
   for (const log of peakLogs) {
     if (log.metadata?.slotId) {
-      const shape = await Shape.findById(log.metadata.slotId).select('mapId').lean();
+      const shape = await Shape.findById(log.metadata.slotId)
+        .select('mapId')
+        .lean();
       if (shape?.mapId) {
         const key = shape.mapId.toString();
         areaCounts[key] = (areaCounts[key] || 0) + 1;
@@ -279,7 +374,9 @@ exports.calculatePeakEntryTime = async () => {
   }
   let peakArea = null;
   if (Object.keys(areaCounts).length) {
-    const topMapId = Object.entries(areaCounts).sort((a, b) => b[1] - a[1])[0][0];
+    const topMapId = Object.entries(areaCounts).sort(
+      (a, b) => b[1] - a[1],
+    )[0][0];
     const map = await Map.findById(topMapId).select('name').lean();
     peakArea = map?.name || null;
   }
@@ -305,9 +402,12 @@ exports.calculateUsersByCourse = async ({ courseId } = {}) => {
 
   const results = await Promise.all(
     yearLevels.map(async (yl) => {
-      const count = await Student.countDocuments({ course: course._id, yearLevel: yl });
+      const count = await Student.countDocuments({
+        course: course._id,
+        yearLevel: yl,
+      });
       return { yearLevel: yl, count };
-    })
+    }),
   );
 
   const total = results.reduce((s, r) => s + r.count, 0);

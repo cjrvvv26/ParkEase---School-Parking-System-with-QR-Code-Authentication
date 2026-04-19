@@ -12,8 +12,10 @@ router.get('/occupancy-by-hour', reportController.getOccupancyByHour);
 router.get('/avg-parking-by-hour', reportController.getAvgParkingByHour);
 router.get('/preferred-areas', reportController.getPreferredAreas);
 router.get('/top-parking-duration', reportController.getTopParkingDuration);
-router.get('/peak-entry-time', reportController.getPeakEntryTime);
+router.get('/weekly-scans', reportController.getWeeklyScans);
+
 router.get('/users-by-course', reportController.getUsersByCourse);
+
 router.get('/generate', reportController.generateReport);
 router.get(
   '/generate/map/:mapId/slots/qr-code',

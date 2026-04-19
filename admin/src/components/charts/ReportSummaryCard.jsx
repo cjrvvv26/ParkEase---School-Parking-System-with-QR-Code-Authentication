@@ -29,8 +29,9 @@ export default function ReportSummaryCard({ reports = [], loading, stats }) {
         return <BookOpenCheck size={30} />;
       case 'Average Revenue':
         return <Banknote size={30} />;
-      case 'Highest Earning':
+      case 'Projected Revenue':
         return <TrendingUp size={30} />;
+
       case 'Total Slots':
         return <SquareDashedBottom size={30} />;
       case 'Total Exclusive':
@@ -50,14 +51,15 @@ export default function ReportSummaryCard({ reports = [], loading, stats }) {
         return 'Across all semesters';
       case 'Average Revenue':
         return 'Per semester average';
-      case 'Highest Earning':
-        return 'Best performing semester';
+      case 'Projected Revenue':
+        return 'Current semester estimate';
+
       case 'Total Active Users':
         return 'Currently active accounts';
       case 'Total Paid Students':
-        return 'Current semester payments';
+        return 'semester payments';
       case 'Avg Users Park Per Day':
-        return 'Avg unique parkers daily';
+        return 'Avg daily active users';
       case 'Total Semesters':
         return 'Recorded semesters';
       case 'Total Slots':
@@ -77,10 +79,15 @@ export default function ReportSummaryCard({ reports = [], loading, stats }) {
     if (item.title === 'Total Revenue' || item.title === 'Average Revenue') {
       return `₱${item.data.toLocaleString()}`;
     }
-    if (item.title === 'Total Paid Students') {
-      return item.total !== undefined ? `${item.data}/${item.total}` : item.data;
+    if (
+      item.title === 'Total Paid Students' ||
+      item.title === 'Avg Users Park Per Day'
+    ) {
+      return item.total !== undefined || item.totalActive !== undefined
+        ? `${item.data}/${item.total || item.totalActive}`
+        : item.data;
     }
-    return item.data;
+    return item.data.toLocaleString();
   };
 
   const displayData = stats

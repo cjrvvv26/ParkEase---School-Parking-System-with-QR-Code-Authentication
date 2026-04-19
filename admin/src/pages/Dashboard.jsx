@@ -39,7 +39,9 @@ export default function Dashboard() {
         const response = await fetchData('/report/system-summary');
         if (response?.data) {
           setStats(response.data);
-          setAvailableSlots(response.availableSlots || 0);
+          console.log(response.data);
+
+          setAvailableSlots(response.data || 0);
         }
       } catch (err) {
         console.error('Failed to fetch system summary:', err);
@@ -114,6 +116,11 @@ export default function Dashboard() {
     fetchOccupancy();
     fetchAvgParking();
   }, []);
+
+  if (!stats) return;
+  console.log(stats[5]);
+
+  const totalSlots = stats[4].data || 50;
 
   return (
     <>
@@ -197,8 +204,10 @@ export default function Dashboard() {
             <div className='p-5 h-full flex flex-col text-white justify-between'>
               <h1 className='font-medium text-base'>Parking Slots</h1>
               <h2 className='text-center mt-5'>
-                <span className='text-6xl font-medium'>{availableSlots}</span>
-                <br /> slots available
+                <span className='text-6xl font-medium'>
+                  {stats[5].data || 0}/{totalSlots}
+                </span>
+                <br /> slots occupied
               </h2>
               <Link
                 to='/parking'
@@ -208,10 +217,12 @@ export default function Dashboard() {
               </Link>
             </div>
           </div>
-          {/* Motor Occupancy */}
+          {/* Occupancy Rate */}
           <div className={`flex-1 w-full rounded-xl ${card}`}>
             <div className='p-5 h-full flex flex-col'>
-              <h1 className='text-base font-medium'>Today's Motor Occupancy</h1>
+              <h1 className='text-base font-medium'>
+                Today's Motorcycle Occupancy{' '}
+              </h1>
               <div className='h-full w-full'>
                 <MotorOccupancyChart
                   chartData={occupancyData}
@@ -229,7 +240,9 @@ export default function Dashboard() {
         <div className={`rounded-xl flex-3 h-auto ${card}`}>
           <div className='flex flex-col gap-2 p-5'>
             <h1 className='text-base font-medium'>Average Parking Duration</h1>
-            <div style={{ position: 'relative', height: '280px', width: '100%' }}>
+            <div
+              style={{ position: 'relative', height: '280px', width: '100%' }}
+            >
               <AvgParkingDurationChart
                 chartData={avgParkingData}
                 loading={loadingAvgParking}

@@ -3,6 +3,7 @@ import ReportSummaryCard from '../components/charts/ReportSummaryCard';
 import RevenueChart from '../components/charts/RevenueChart';
 import AvgParkingDurationChart from '../components/charts/AvgParkingDurationChart';
 import MotorOccupancyChart from '../components/charts/MotorOccupancyChart';
+import WeeklyScansChart from '../components/charts/WeeklyScansChart';
 import useFetch from '../hooks/useFetch';
 import { Printer } from 'lucide-react';
 import useDark from '../hooks/useDark';
@@ -186,7 +187,7 @@ export default function Analytics() {
       </header>
 
       {/* Summary Cards */}
-      <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 h-[150px] px-2 sm:px-5 overflow-x-auto'>
+      <div className='grid overflow-hidden grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5 h-[150px] px-2 sm:px-5 overflow-x-auto'>
         <ReportSummaryCard stats={stats} loading={loadingStats} />
       </div>
 
@@ -265,7 +266,9 @@ export default function Analytics() {
         <div className='flex flex-col gap-5 min-w-[350px]'>
           <div className={`flex-1 self-start w-full rounded-xl ${card}`}>
             <div className='p-3 sm:p-5 h-full flex flex-col'>
-              <h1 className='text-base font-medium'>Today's Motor Occupancy</h1>
+              <h1 className='text-base font-medium'>
+                Today's Motorcycle Occupancy
+              </h1>
               <div className='flex-1'>
                 <MotorOccupancyChart
                   chartData={occupancyData}
@@ -282,41 +285,61 @@ export default function Analytics() {
           <div className={`${card} rounded-xl p-3 sm:p-5 flex flex-col gap-4`}>
             <h1 className='font-medium text-base'>Preferred Parking Area</h1>
             {loadingAreas ? (
-              Array.from({ length: 3 }, (_, i) => (
-                <div
-                  key={i}
-                  className={`h-12 rounded-xl animate-pulse ${cardInner}`}
-                />
-              ))
+              <div className={`h-24 rounded-xl animate-pulse ${cardInner}`} />
             ) : preferredAreas.length === 0 ? (
-              <p className='text-xs text-gray-400 text-center py-2'>
+              <p className='text-xs text-gray-400 text-center py-8'>
                 No area data yet
               </p>
             ) : (
-              preferredAreas.map((area, i) => (
-                <div
-                  key={i}
-                  className={`relative p-4 ${cardInner} rounded-xl pl-12`}
-                >
-                  <span className='absolute left-0 top-0 bottom-0 w-10 flex items-center justify-center bg-blue-500 text-white font-semibold rounded-l-xl'>
-                    {i + 1}
-                  </span>
-                  <p className={dark ? 'text-gray-300' : 'text-gray-700'}>
-                    {area.name}
-                  </p>
-                  <p className='text-xs text-gray-400'>
-                    {area.occupied} / {area.total} slots occupied
-                  </p>
-                </div>
-              ))
+              (() => {
+                const totalOccupied = preferredAreas.reduce(
+                  (sum, area) => sum + area.occupied,
+                  0,
+                );
+                const totalSlots = preferredAreas.reduce(
+                  (sum, area) => sum + area.total,
+                  0,
+                );
+                const pct =
+                  totalSlots > 0
+                    ? Math.round((totalOccupied / totalSlots) * 100)
+                    : 0;
+                return (
+                  <div className='space-y-4'>
+                    <div className='space-y-1'>
+                      <div className='flex justify-between text-sm'>
+                        <span
+                          className={dark ? 'text-gray-300' : 'text-gray-700'}
+                        >
+                          Overall Areas
+                        </span>
+                        <span>
+                          {totalOccupied}/{totalSlots} occupied
+                        </span>
+                      </div>
+                      <div
+                        className={`h-3 rounded-full overflow-hidden bg-gray-200 dark:bg-white`}
+                      >
+                        <div
+                          className='h-full bg-blue-500 rounded-full transition-all duration-500'
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                      <div className='text-right text-sm font-medium text-blue-600 dark:text-blue-400'>
+                        {pct}%
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()
             )}
           </div>
         </div>
       </div>
 
-      {/* Users per Course + Peak Entry + Parking Duration */}
+      {/* Users per Course + Weekly Scans + Parking Duration */}
       <div className='grid grid-cols-1 xl:grid-cols-2 gap-3 sm:gap-5 mx-2 sm:mx-5 mb-3 sm:mb-5'>
-        {/* Users per Course — dropdown = course, rows = year levels */}
+        {/* Users per Course */}
         <div className='flex flex-col gap-5'>
           <div
             className={`${card} rounded-xl p-3 sm:p-5 flex flex-col flex-1 gap-5`}
@@ -470,51 +493,14 @@ export default function Analytics() {
           </div>
         </div>
 
+        {/* Weekly Scans */}
         <div className='flex flex-col gap-5 flex-1 min-w-[300px]'>
-          {/* Peak Entry Time */}
           <div
-            className={`${card} flex flex-col gap-3 relative p-3 sm:p-5 rounded-xl flex-1`}
+            className={`${card} flex flex-col gap-3 p-3 sm:p-5 rounded-xl flex-1`}
           >
-            <header className='flex flex-col'>
-              <h1 className='text-base font-medium'>Peak User Entry Time</h1>
-              <p className='text-xs text-gray-400'>
-                Most users enter at this time
-              </p>
-            </header>
-            <div className='text-right flex flex-col absolute top-5 right-5'>
-              <LiveClock />
-              {loadingPeak ? (
-                <p className='text-xs text-gray-400'>Loading...</p>
-              ) : peakData?.peakTime ? (
-                <>
-                  <p
-                    className={`text-sm font-semibold ${dark ? 'text-blue-400' : 'text-blue-600'}`}
-                  >
-                    Peak: {peakData.peakTime}
-                  </p>
-                  <p className='text-xs text-gray-400'>
-                    {peakData.peakPct}% of daily entries
-                  </p>
-                </>
-              ) : (
-                <p className='text-xs text-gray-400'>No entry data yet</p>
-              )}
-            </div>
-            <div className='flex gap-3 items-center flex-1'>
-              <div className='flex flex-col gap-1'>
-                <p
-                  className={`text-sm ${dark ? 'text-gray-300' : 'text-gray-700'}`}
-                >
-                  {loadingPeak ? '—' : peakData?.peakArea || 'No area data'}
-                </p>
-                <p className='text-xs text-gray-400'>Most active area</p>
-              </div>
-              <div className='flex-1 h-full flex items-center justify-center'>
-                <MotorOccupancyChart
-                  chartData={occupancyData}
-                  loading={loadingOccupancy}
-                />
-              </div>
+            <h1 className='text-base font-medium'>Weekly Scans</h1>
+            <div className='h-[400px]'>
+              <WeeklyScansChart />
             </div>
           </div>
         </div>

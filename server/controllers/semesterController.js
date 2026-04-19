@@ -1,6 +1,6 @@
-const Semester = require("../models/semesterModel");
-const Student = require("../models/studentModel");
-const Slot = require("../models/slotModel");
+const Semester = require('../models/semesterModel');
+const Student = require('../models/studentModel');
+const Slot = require('../models/slotModel');
 
 // Get all semesters with pagination
 exports.getAllSemesters = async (req, res) => {
@@ -35,12 +35,12 @@ exports.getAllSemesters = async (req, res) => {
 // Get current active semester
 exports.getCurrentSemester = async (req, res) => {
   try {
-    const semester = await Semester.findOne({ status: "active" });
+    const semester = await Semester.findOne({ status: 'active' });
 
     if (!semester) {
       return res.status(404).json({
         success: false,
-        error: "No active semester found",
+        error: 'No active semester found',
       });
     }
 
@@ -66,7 +66,7 @@ exports.getSemesterById = async (req, res) => {
     if (!semester) {
       return res.status(404).json({
         success: false,
-        error: "Semester not found",
+        error: 'Semester not found',
       });
     }
 
@@ -85,12 +85,12 @@ exports.getSemesterById = async (req, res) => {
 // Create new semester
 exports.createSemester = async (req, res) => {
   try {
-    console.log("Create semester request received:", req.body);
+    console.log('Create semester request received:', req.body);
     const { name, startDate, endDate, slotPrice } = req.body;
 
     // Validate input
     if (!name || !startDate || !endDate || slotPrice === undefined) {
-      console.log("Validation failed:", {
+      console.log('Validation failed:', {
         name,
         startDate,
         endDate,
@@ -98,17 +98,17 @@ exports.createSemester = async (req, res) => {
       });
       return res.status(400).json({
         success: false,
-        error: "All fields are required: name, startDate, endDate, slotPrice",
+        error: 'All fields are required: name, startDate, endDate, slotPrice',
       });
     }
 
     // Check if there's already an active semester
-    const activeSemester = await Semester.findOne({ status: "active" });
+    const activeSemester = await Semester.findOne({ status: 'active' });
     if (activeSemester) {
-      console.log("Active semester already exists:", activeSemester._id);
+      console.log('Active semester already exists:', activeSemester._id);
       return res.status(400).json({
         success: false,
-        error: "An active semester already exists. Please expire it first.",
+        error: 'An active semester already exists. Please expire it first.',
       });
     }
 
@@ -117,20 +117,20 @@ exports.createSemester = async (req, res) => {
       startDate,
       endDate,
       slotPrice,
-      status: "active",
+      status: 'active',
       revenue: 0,
     });
 
     await semester.save();
-    console.log("Semester created successfully:", semester._id);
+    console.log('Semester created successfully:', semester._id);
 
     res.status(201).json({
       success: true,
-      message: "Semester created successfully",
+      message: 'Semester created successfully',
       data: semester,
     });
   } catch (error) {
-    console.error("Error creating semester:", error);
+    console.error('Error creating semester:', error);
     res.status(500).json({
       success: false,
       error: error.message,
@@ -145,7 +145,7 @@ exports.updateSemester = async (req, res) => {
     const updates = req.body;
 
     // Only allow updating specific fields
-    const allowedUpdates = ["name", "slotPrice"];
+    const allowedUpdates = ['name', 'slotPrice'];
     const providedUpdates = Object.keys(updates);
     const isValidUpdate = providedUpdates.every((update) =>
       allowedUpdates.includes(update),
@@ -167,13 +167,13 @@ exports.updateSemester = async (req, res) => {
     if (!semester) {
       return res.status(404).json({
         success: false,
-        error: "Semester not found",
+        error: 'Semester not found',
       });
     }
 
     res.status(200).json({
       success: true,
-      message: "Semester updated successfully",
+      message: 'Semester updated successfully',
       data: semester,
     });
   } catch (error) {
@@ -194,46 +194,46 @@ exports.expireSemester = async (req, res) => {
     if (!semester) {
       return res.status(404).json({
         success: false,
-        error: "Semester not found",
+        error: 'Semester not found',
       });
     }
 
-    if (semester.status === "expired") {
+    if (semester.status === 'expired') {
       return res.status(400).json({
         success: false,
-        error: "Semester is already expired",
+        error: 'Semester is already expired',
       });
     }
 
     // Calculate final revenue before expiring
     const paidStudentsCount = await Student.countDocuments({
-      "payment.isPaid": true,
-      "payment.semesterId": semester._id,
+      'payment.isPaid': true,
+      'payment.semesterId': semester._id,
     });
     const finalRevenue = paidStudentsCount * semester.slotPrice;
 
     // Update semester status to expired and save final revenue
-    semester.status = "expired";
+    semester.status = 'expired';
     semester.revenue = finalRevenue;
     await semester.save();
 
     // Get all students from this semester to unassign from slots
     const studentsToUnassign = await Student.find({
-      "payment.semesterId": semester._id,
-    }).select("userId");
+      'payment.semesterId': semester._id,
+    }).select('userId');
 
     const studentUserIds = studentsToUnassign.map((s) => s.userId);
 
     // Reset all students' paid status, payment amount, and semesterId for this semester
     await Student.updateMany(
       {
-        "payment.isPaid": true,
-        "payment.semesterId": semester._id,
+        'payment.isPaid': true,
+        'payment.semesterId': semester._id,
       },
       {
-        "payment.isPaid": false,
-        "payment.amount": 0,
-        "payment.semesterId": null,
+        'payment.isPaid': false,
+        'payment.amount': 0,
+        'payment.semesterId': null,
         hasPaidCurrentSemester: false,
         assignedSlot: null,
       },
@@ -242,12 +242,12 @@ exports.expireSemester = async (req, res) => {
     // Remove these students from their assigned slots
     await Slot.updateMany(
       { assignedStudentId: { $in: studentUserIds } },
-      { $set: { assignedStudentId: null, status: "available" } },
+      { $set: { assignedStudentId: null, status: 'available' } },
     );
 
     res.status(200).json({
       success: true,
-      message: "Semester expired and students reset for new semester",
+      message: 'Semester expired and students reset for new semester',
       data: semester,
     });
   } catch (error) {
@@ -273,10 +273,10 @@ exports.getSemesterStats = async (req, res) => {
       let semesterRevenue = semester.revenue || 0;
 
       // If semester is active, calculate revenue in real-time since stored revenue might be stale
-      if (semester.status === "active") {
+      if (semester.status === 'active') {
         const paidStudentsCount = await Student.countDocuments({
-          "payment.isPaid": true,
-          "payment.semesterId": semester._id,
+          'payment.isPaid': true,
+          'payment.semesterId': semester._id,
         });
         semesterRevenue = paidStudentsCount * semester.slotPrice;
       }
@@ -298,12 +298,13 @@ exports.getSemesterStats = async (req, res) => {
       totalSemesters > 0 ? (totalRevenue / totalSemesters).toFixed(2) : 0;
 
     const stats = [
-      { title: "Total Revenue", data: totalRevenue },
-      { title: "Total Semesters", data: totalSemesters },
-      { title: "Average Revenue", data: parseFloat(averageRevenue) },
+      { title: 'Total Revenue', data: totalRevenue },
+      { title: 'Total Semesters', data: totalSemesters },
+      { title: 'Average Revenue', data: parseFloat(averageRevenue) },
+
       {
-        title: "Highest Earning",
-        data: highestEarningSemester?.revenue || "N/A",
+        title: 'Projected Revenue',
+        data: highestEarningSemester?.revenue || 'N/A',
       },
     ];
 
@@ -330,12 +331,19 @@ exports.getSemesterRevenueChart = async (req, res) => {
     for (const sem of semesters) {
       let revenue = sem.revenue || 0;
       if (sem.status === 'active') {
-        const paid = await Student.countDocuments({ 'payment.isPaid': true, 'payment.semesterId': sem._id });
+        const paid = await Student.countDocuments({
+          'payment.isPaid': true,
+          'payment.semesterId': sem._id,
+        });
         revenue = paid * sem.slotPrice;
       }
       labels.push(sem.name);
       values.push(revenue);
-      meta.push({ name: sem.name, startDate: sem.startDate, endDate: sem.endDate });
+      meta.push({
+        name: sem.name,
+        startDate: sem.startDate,
+        endDate: sem.endDate,
+      });
     }
 
     res.status(200).json({ success: true, data: { labels, values, meta } });
@@ -348,10 +356,10 @@ exports.getSemesterRevenueChart = async (req, res) => {
 exports.getSemesterRevenueData = async (req, res) => {
   try {
     // Get current active semester
-    const currentSemester = await Semester.findOne({ status: "active" });
+    const currentSemester = await Semester.findOne({ status: 'active' });
 
     // Get last (most recent expired) semester
-    const lastSemester = await Semester.findOne({ status: "expired" }).sort({
+    const lastSemester = await Semester.findOne({ status: 'expired' }).sort({
       createdAt: -1,
     });
 
@@ -359,8 +367,8 @@ exports.getSemesterRevenueData = async (req, res) => {
     let currentRevenue = 0;
     if (currentSemester) {
       const currentPaidStudents = await Student.countDocuments({
-        "payment.isPaid": true,
-        "payment.semesterId": currentSemester._id,
+        'payment.isPaid': true,
+        'payment.semesterId': currentSemester._id,
       });
       currentRevenue = currentPaidStudents * currentSemester.slotPrice;
     }
@@ -383,11 +391,11 @@ exports.getSemesterRevenueData = async (req, res) => {
       success: true,
       data: {
         currentSemester: {
-          name: currentSemester?.name || "No active semester",
+          name: currentSemester?.name || 'No active semester',
           revenue: currentRevenue,
         },
         lastSemester: {
-          name: lastSemester?.name || "No previous semester",
+          name: lastSemester?.name || 'No previous semester',
           revenue: lastRevenue,
         },
         percentageChange,
