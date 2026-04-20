@@ -21,6 +21,8 @@ export default function SlotsQRCode() {
       });
       if (map?.slots.length > 0) {
         setMapData(map.metadata);
+        console.log(map);
+
         return setMapSlots(map?.slots);
       }
       setError(map.error);
@@ -47,7 +49,7 @@ export default function SlotsQRCode() {
             <span>Parking</span>
           </Link>
           <h1 className='font-bold text-3xl'>({mapData.name}) Slot Details</h1>
-          <p className='text-gray-400'>View and print the slots qr code.</p>
+          <p className='text-gray-400'>View and print the slots QR code.</p>
         </div>
         <button
           onClick={handleGeneratePDF}
@@ -73,7 +75,7 @@ export default function SlotsQRCode() {
                 alt={slot.slotId?.metadata?.label}
                 className='w-full h-auto object-contain'
               />
-              <span>{slot.slotId?.metadata?.label}</span>
+              <span>{slot.assignedName || slot.slotId?.metadata?.label}</span>
             </li>
           ))
         ) : (

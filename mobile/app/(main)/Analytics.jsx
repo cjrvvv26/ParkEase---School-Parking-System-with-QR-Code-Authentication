@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { View, Text, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
@@ -11,42 +11,27 @@ import {
   Lock,
 } from 'lucide-react-native';
 import Svg, { Rect, Text as SvgText, Line } from 'react-native-svg';
+import { useFocusEffect } from 'expo-router';
 import { useSelector } from 'react-redux';
-import api from '../services/api';
+import {
+  getSystemSummary,
+  getWeeklyScans,
+  getRecentActivity,
+  getAvgParkingByHour,
+} from '../services/reportService';
 import useTheme from '../hooks/useTheme';
 
-const DEFAULT_BAR_DATA = [
-  { label: 'Mon', value: 18 },
-  { label: 'Tue', value: 25 },
-  { label: 'Wed', value: 30 },
-  { label: 'Thu', value: 22 },
-  { label: 'Fri', value: 35 },
-  { label: 'Sat', value: 12 },
-  { label: 'Sun', value: 8 },
+const EMPTY_BAR_DATA = [
+  { label: 'Mon', value: 0 },
+  { label: 'Tue', value: 0 },
+  { label: 'Wed', value: 0 },
+  { label: 'Thu', value: 0 },
+  { label: 'Fri', value: 0 },
+  { label: 'Sat', value: 0 },
+  { label: 'Sun', value: 0 },
 ];
 
-const DEFAULT_RECENT = [
-  {
-    label: 'Slot A-01',
-    sub: 'Occupied by student',
-    time: '2m ago',
-    status: 'occupied',
-  },
-  { label: 'Slot B-03', sub: 'Released', time: '15m ago', status: 'released' },
-  {
-    label: 'Slot A-05',
-    sub: 'Occupied by faculty',
-    time: '32m ago',
-    status: 'occupied',
-  },
-  { label: 'Slot C-02', sub: 'Released', time: '1h ago', status: 'released' },
-  {
-    label: 'Slot B-07',
-    sub: 'Occupied by student',
-    time: '1h ago',
-    status: 'occupied',
-  },
-];
+const PLACEHOLDER_RECENT = [];
 
 function StatCard({
   icon: Icon,
@@ -113,9 +98,9 @@ function BarChart({ t, data = [] }) {
   const chartW = 320,
     chartH = 140,
     barW = 28;
-  const chartData = data.length ? data : DEFAULT_BAR_DATA;
+  const chartData = data.length ? data : EMPTY_BAR_DATA;
   const gap = (chartW - chartData.length * barW) / (chartData.length + 1);
-  const maxVal = Math.max(...chartData.map((d) => d.value));
+  const maxVal = Math.max(...chartData.map((d) => d.value), 1);
   return (
     <Svg width={chartW} height={chartH + 24}>
       {[0, 0.5, 1].map((pct, i) => (
@@ -163,6 +148,122 @@ function BarChart({ t, data = [] }) {
 export default function Analytics() {
   const { t } = useTheme();
   const { user } = useSelector((s) => s.auth);
+  const [stats, setStats] = useState({
+    totalSlots: 0,
+    available: 0,
+    occupied: 0,
+    avgDuration: '0.0h',
+  });
+  const [barData, setBarData] = useState(EMPTY_BAR_DATA);
+  const [recentActivity, setRecentActivity] = useState(PLACEHOLDER_RECENT);
+  const [loadingAnalytics, setLoadingAnalytics] = useState(true);
+
+  const loadAnalytics = async () => {
+    setLoadingAnalytics(true);
+
+    const [summaryRes, weeklyRes, recentRes, avgRes] = await Promise.all(
+      [
+        getSystemSummary(),
+        getWeeklyScans(),
+        getRecentActivity(),
+        getAvgParkingByHour(),
+      ].map((p) => p.catch((err) => undefined)),
+    );
+
+    console.log('[Analytics] API payloads', {
+      summary:
+        summaryRes?.status === 200 ? summaryRes.data : summaryRes?.status,
+      weekly: weeklyRes?.status === 200 ? weeklyRes.data : weeklyRes?.status,
+      recent: recentRes?.status === 200 ? recentRes.data : recentRes?.status,
+      avg: avgRes?.status === 200 ? avgRes.data : avgRes?.status,
+    });
+
+    if (summaryRes?.status === 200 && summaryRes.data) {
+      const { data, occupiedSlots, availableSlots, totalCreatedSlots } =
+        summaryRes.data;
+      const totalFromData = data?.find(
+        (item) => item.title === 'Total Slots',
+      )?.data;
+      const availableFromData = data?.find(
+        (item) => item.title === 'Total Available',
+      )?.data;
+      const occupiedFromData = data?.find(
+        (item) => item.title === 'Total Occupied',
+      )?.data;
+
+      setStats((current) => ({
+        ...current,
+        totalSlots: totalCreatedSlots ?? totalFromData ?? 0,
+        available: availableSlots ?? availableFromData ?? 0,
+        occupied: occupiedSlots ?? occupiedFromData ?? 0,
+      }));
+    }
+
+    const weeklyData =
+      weeklyRes?.status === 200 ? weeklyRes.data?.data || weeklyRes.data : null;
+    if (weeklyData) {
+      const labels = weeklyData.labels || [];
+      const values = weeklyData.values || [];
+      setBarData(
+        labels.length
+          ? labels.map((label, index) => ({
+              label,
+              value: values[index] ?? 0,
+            }))
+          : EMPTY_BAR_DATA,
+      );
+    } else {
+      setBarData(EMPTY_BAR_DATA);
+    }
+
+    const recentData =
+      recentRes?.status === 200 ? recentRes.data?.data || recentRes.data : null;
+    if (Array.isArray(recentData)) {
+      setRecentActivity(recentData);
+    } else {
+      setRecentActivity(PLACEHOLDER_RECENT);
+    }
+
+    const avgData =
+      avgRes?.status === 200 ? avgRes.data?.data || avgRes.data : null;
+    if (avgData?.values?.length) {
+      const values = avgData.values || [];
+      const averageMinutes =
+        values.reduce((sum, next) => sum + Number(next || 0), 0) /
+        values.length;
+      setStats((current) => ({
+        ...current,
+        avgDuration: `${(averageMinutes / 60).toFixed(1)}h`,
+      }));
+    }
+
+    setLoadingAnalytics(false);
+  };
+
+  useEffect(() => {
+    let mounted = true;
+
+    if (!user?._id) return;
+
+    if (mounted) {
+      loadAnalytics();
+    }
+
+    const interval = setInterval(() => {
+      if (mounted) loadAnalytics();
+    }, 60000);
+
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+    };
+  }, [user?._id]);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadAnalytics();
+    }, [user?._id]),
+  );
 
   if (user?.role === 'guard' && !user?.permissions?.canViewAnalytics) {
     return (
@@ -267,7 +368,7 @@ export default function Analytics() {
           <StatCard
             icon={Car}
             label='Total Slots'
-            value='48'
+            value={stats.totalSlots}
             iconBg={t.primaryLight}
             iconColor={t.primary}
             t={t}
@@ -275,10 +376,10 @@ export default function Analytics() {
           <StatCard
             icon={CheckCircle}
             label='Available'
-            value='19'
+            value={stats.available}
             iconBg={t.greenBg}
             iconColor={t.green}
-            sub='↑ 3 from yesterday'
+            sub='Live availability'
             subColor={t.green}
             t={t}
           />
@@ -296,20 +397,20 @@ export default function Analytics() {
           <StatCard
             icon={XCircle}
             label='Occupied'
-            value='29'
+            value={stats.occupied}
             iconBg={t.redBg}
             iconColor={t.red}
-            sub='60% occupancy'
+            sub='Live occupancy'
             subColor={t.red}
             t={t}
           />
           <StatCard
             icon={Clock}
             label='Avg. Duration'
-            value='1.4h'
+            value={stats.avgDuration}
             iconBg={t.amberBg}
             iconColor={t.amber}
-            sub='Per session today'
+            sub='Average parked time'
             subColor={t.amber}
             t={t}
           />
@@ -349,7 +450,12 @@ export default function Analytics() {
             >
               <View
                 style={{
-                  width: '60%',
+                  width: `${Math.min(
+                    100,
+                    stats.totalSlots > 0
+                      ? Math.round((stats.occupied / stats.totalSlots) * 100)
+                      : 0,
+                  )}%`,
                   height: '100%',
                   backgroundColor: t.primary,
                   borderRadius: 99,
@@ -363,7 +469,9 @@ export default function Analytics() {
                 color: t.primary,
               }}
             >
-              60%
+              {stats.totalSlots > 0
+                ? `${Math.round((stats.occupied / stats.totalSlots) * 100)}%`
+                : '0%'}
             </Text>
           </View>
           <View
@@ -442,7 +550,21 @@ export default function Analytics() {
             </View>
           </View>
           <View style={{ alignItems: 'center' }}>
-            <BarChart t={t} />
+            {barData.every((item) => item.value === 0) ? (
+              <View style={{ paddingVertical: 30 }}>
+                <Text
+                  style={{
+                    fontFamily: 'Poppins400',
+                    fontSize: 12,
+                    color: t.textMuted,
+                  }}
+                >
+                  No scan activity yet. Data will appear here when scans occur.
+                </Text>
+              </View>
+            ) : (
+              <BarChart t={t} data={barData} />
+            )}
           </View>
         </View>
 
@@ -472,60 +594,80 @@ export default function Analytics() {
               overflow: 'hidden',
             }}
           >
-            {RECENT.map((item, idx) => (
+            {recentActivity.length === 0 ? (
               <View
-                key={idx}
                 style={{
-                  flexDirection: 'row',
+                  paddingVertical: 30,
                   alignItems: 'center',
-                  paddingHorizontal: 16,
-                  paddingVertical: 13,
-                  borderBottomWidth: idx < RECENT.length - 1 ? 1 : 0,
-                  borderBottomColor: t.divider,
                 }}
               >
-                <View
+                <Text
                   style={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: 4,
-                    backgroundColor:
-                      item.status === 'occupied' ? t.red : t.green,
-                    marginRight: 12,
+                    fontFamily: 'Poppins400',
+                    fontSize: 12,
+                    color: t.textMuted,
+                    textAlign: 'center',
                   }}
-                />
-                <View style={{ flex: 1 }}>
-                  <Text
+                >
+                  No recent parking activity found yet.
+                </Text>
+              </View>
+            ) : (
+              recentActivity.map((item, idx) => (
+                <View
+                  key={idx}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    paddingHorizontal: 16,
+                    paddingVertical: 13,
+                    borderBottomWidth: idx < recentActivity.length - 1 ? 1 : 0,
+                    borderBottomColor: t.divider,
+                  }}
+                >
+                  <View
                     style={{
-                      fontFamily: 'Poppins600',
-                      fontSize: 13,
-                      color: t.text,
+                      width: 8,
+                      height: 8,
+                      borderRadius: 4,
+                      backgroundColor:
+                        item.status === 'occupied' ? t.red : t.green,
+                      marginRight: 12,
                     }}
-                  >
-                    {item.label}
-                  </Text>
+                  />
+                  <View style={{ flex: 1 }}>
+                    <Text
+                      style={{
+                        fontFamily: 'Poppins600',
+                        fontSize: 13,
+                        color: t.text,
+                      }}
+                    >
+                      {item.label}
+                    </Text>
+                    <Text
+                      style={{
+                        fontFamily: 'Poppins400',
+                        fontSize: 11,
+                        color: t.textMuted,
+                        marginTop: 1,
+                      }}
+                    >
+                      {item.sub}
+                    </Text>
+                  </View>
                   <Text
                     style={{
                       fontFamily: 'Poppins400',
                       fontSize: 11,
-                      color: t.textMuted,
-                      marginTop: 1,
+                      color: t.textFaint,
                     }}
                   >
-                    {item.sub}
+                    {item.time}
                   </Text>
                 </View>
-                <Text
-                  style={{
-                    fontFamily: 'Poppins400',
-                    fontSize: 11,
-                    color: t.textFaint,
-                  }}
-                >
-                  {item.time}
-                </Text>
-              </View>
-            ))}
+              ))
+            )}
           </View>
         </View>
       </ScrollView>

@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import axios from '../utils/axiosConfig';
 
 export default function useFetch() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const fetchData = async (url, options = {}) => {
+  const fetchData = useCallback(async (url, options = {}) => {
     setLoading(true);
     setError('');
     try {
@@ -32,7 +32,7 @@ export default function useFetch() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   return { error, loading, setError, fetchData, setLoading };
 }

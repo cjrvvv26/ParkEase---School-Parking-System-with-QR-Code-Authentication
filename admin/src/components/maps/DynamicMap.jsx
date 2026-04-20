@@ -66,7 +66,9 @@ export default function DynamicMap({
     if (shape.geometry.shape === 'rect') {
       const cx = shape.geometry.x + shape.geometry.width / 2;
       const cy = shape.geometry.y + shape.geometry.height / 2;
-      const label = shape.metadata?.label || shape.slotNumber || '';
+      const label = shape.assignedStudentId
+        ? shape.assignedName?.firstName || shape.metadata?.label
+        : shape.metadata?.label || shape.slotNumber || '';
       const minDim = Math.min(shape.geometry.width, shape.geometry.height);
       const fontSize = Math.max(9, minDim * 0.3);
       const rotation = shape.geometry.rotation || 0;

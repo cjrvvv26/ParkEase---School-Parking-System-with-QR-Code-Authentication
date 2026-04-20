@@ -1,8 +1,6 @@
 import api from './api';
 
-export const getSemester = () => {
-  const semester = api.get('semester/current');
-  console.log(semester);
-
+export const getSemester = async () => {
+  const semester = await api.get('semester/current');
   return semester;
 };

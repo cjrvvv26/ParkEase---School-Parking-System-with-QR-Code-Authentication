@@ -32,31 +32,64 @@ export default function Home() {
   const { t } = useTheme();
   const { loading, error, execute } = useApiRequest();
 
+  const loadHomeData = async () => {
+    const [semesterData, slotsData] = await Promise.all([
+      execute(getSemester),
+      execute(getAvailableSlots),
+    ]);
+
+    if (semesterData?.status === 200) {
+      setSemester(semesterData.data?.data ?? null);
+    }
+
+    if (slotsData?.status === 200) {
+      setAvailableSlots(slotsData.data ?? []);
+    }
+  };
+
   useEffect(() => {
     if (!user?._id) return;
-    const fetchData = async () => {
-      const [semesterData, slotsData] = await Promise.all([
-        execute(getSemester),
-        execute(getAvailableSlots),
-      ]);
-      if (semesterData?.status === 200) setSemester(semesterData.data?.data ?? null);
-      if (slotsData?.status === 200) setAvailableSlots(slotsData.data ?? []);
-    };
-    fetchData();
+
+    loadHomeData();
+
+    const interval = setInterval(() => {
+      loadHomeData();
+    }, 60000);
+
+    return () => clearInterval(interval);
   }, [user?._id]);
 
   useFocusEffect(
     useCallback(() => {
+      let active = true;
+
       const refreshUser = async () => {
         const token = await AsyncStorage.getItem('token');
         if (!token) return;
+
         const res = await execute(getData, token);
         if (res?.status === 200) {
-          dispatch(login({ user: { ...res.data, termsAccepted: res.data.termsAccepted ?? true } }));
+          dispatch(
+            login({
+              user: {
+                ...res.data,
+                termsAccepted: res.data.termsAccepted ?? true,
+              },
+            }),
+          );
+        }
+
+        if (active) {
+          await loadHomeData();
         }
       };
+
       refreshUser();
-    }, [])
+
+      return () => {
+        active = false;
+      };
+    }, [user?._id]),
   );
 
   if (!user?._id) return null;
@@ -99,7 +132,13 @@ export default function Home() {
                 fontFamily: 'Poppins700',
               }}
             >
-              {(typeof user.name === 'string' ? user.name : user.name?.firstName ?? '')?.split(' ')[0]}!
+              {
+                (typeof user.name === 'string'
+                  ? user.name
+                  : (user.name?.firstName ?? '')
+                )?.split(' ')[0]
+              }
+              !
             </Text>
             <Text
               style={{
@@ -151,15 +190,32 @@ export default function Home() {
                   backgroundColor: user.entryTime ? '#dcfce7' : '#fef3c7',
                 }}
               >
-                {user.entryTime
-                  ? <LogIn color='#16a34a' size={20} strokeWidth={1.5} />
-                  : <LogOut color='#d97706' size={20} strokeWidth={1.5} />}
+                {user.entryTime ? (
+                  <LogIn color='#16a34a' size={20} strokeWidth={1.5} />
+                ) : (
+                  <LogOut color='#d97706' size={20} strokeWidth={1.5} />
+                )}
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={{ fontFamily: 'Poppins600', fontSize: 14, color: user.entryTime ? '#15803d' : '#92400e' }}>
-                  {user.entryTime ? 'You are in school' : 'You are not in school'}
+                <Text
+                  style={{
+                    fontFamily: 'Poppins600',
+                    fontSize: 14,
+                    color: user.entryTime ? '#15803d' : '#92400e',
+                  }}
+                >
+                  {user.entryTime
+                    ? 'You are in school'
+                    : 'You are not in school'}
                 </Text>
-                <Text style={{ fontFamily: 'Poppins400', fontSize: 12, color: user.entryTime ? '#16a34a' : '#d97706', marginTop: 2 }}>
+                <Text
+                  style={{
+                    fontFamily: 'Poppins400',
+                    fontSize: 12,
+                    color: user.entryTime ? '#16a34a' : '#d97706',
+                    marginTop: 2,
+                  }}
+                >
                   {user.entryTime
                     ? `Entry recorded at ${new Date(user.entryTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`
                     : 'Scan your QR code at the gate to enter'}

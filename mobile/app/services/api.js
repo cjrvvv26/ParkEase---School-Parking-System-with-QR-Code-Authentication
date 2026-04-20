@@ -5,7 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LOCAL_BASE_URL =
   Platform.OS === 'android'
-    ? 'http://192.168.24.169:5000/'
+    ? 'http://192.168.1.4:5000/'
     : 'http://localhost:5000/';
 
 export const BASE_URL =
@@ -34,7 +34,15 @@ api.interceptors.request.use(async (config) => {
 });
 
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log('[API RESPONSE]', {
+      url: response.config?.url,
+      method: response.config?.method,
+      status: response.status,
+      data: response.data,
+    });
+    return response;
+  },
   (error) => {
     console.log('[API INTERCEPTOR ERROR]', {
       message: error.message,
@@ -42,6 +50,7 @@ api.interceptors.response.use(
       url: error.config?.url,
       baseURL: error.config?.baseURL,
       status: error.response?.status,
+      data: error.response?.data,
     });
     return Promise.reject(error);
   },

@@ -24,6 +24,7 @@ export default function Scan() {
   const [displayQR, toggleDisplayQR] = useState(false);
   const [scanResult, setScanResult] = useState('');
   const [permission, requestPermission] = useCameraPermissions();
+  const [scanDisabled, setScanDisabled] = useState(false);
   const { user } = useSelector((state) => state.auth);
 
   const { loading, error, execute } = useApiRequest();
@@ -104,18 +105,34 @@ export default function Scan() {
 
   const handleScan = async ({ data }) => {
     setScanned(true);
-    if (user.role === 'guard') {
-      const match = data.match(/PARKEASE_USER:(.+)/);
-      if (!match) return;
-      const res = await execute(guardScan, { qrData: data, guardId: user._id });
-      if (res?.status === 200) setScanResult(res.data.message);
-    } else {
-      const match = data.match(/SLOT:(.+)/);
-      if (!match) return;
-      const res = await execute(verifyScannedSlot, { slotId: match[1], userId: user._id });
-      if (res?.status === 200)
-        return router.replace({ pathname: '/Parking', params: { state: res.data.message } });
-    }
+    setScanDisabled(true);
+
+    setTimeout(async () => {
+      if (user.role === 'guard') {
+        const match = data.match(/PARKEASE_USER:(.+)/);
+        if (!match) return;
+        const res = await execute(guardScan, {
+          qrData: data,
+          guardId: user._id,
+        });
+        if (res?.status === 200) setScanResult(res.data.message);
+      } else {
+        const match = data.match(/SLOT:(.+)/);
+        if (!match) return;
+        const res = await execute(verifyScannedSlot, {
+          slotId: match[1],
+          userId: user._id,
+        });
+        if (res?.status === 200)
+          return router.replace({
+            pathname: '/Parking',
+            params: { state: res.data.message },
+          });
+      }
+
+      // Allow scan again after 10 seconds total (2s delay + 8s)
+      setTimeout(() => setScanDisabled(false), 8000);
+    }, 2000); // 2 second delay before processing
   };
 
   const isGuard = user.role === 'guard';
@@ -336,7 +353,12 @@ export default function Scan() {
           }}
         >
           <Text
-            style={{ fontFamily: 'Poppins600', fontSize: 13, color: '#065f46', textAlign: 'center' }}
+            style={{
+              fontFamily: 'Poppins600',
+              fontSize: 13,
+              color: '#065f46',
+              textAlign: 'center',
+            }}
           >
             {scanResult}
           </Text>
@@ -371,14 +393,18 @@ export default function Scan() {
       <View style={{ marginHorizontal: 20, gap: 12 }}>
         {scanned && (
           <Pressable
-            onPress={() => { setScanned(false); setScanResult(''); }}
+            onPress={() => {
+              setScanned(false);
+              setScanResult('');
+            }}
+            disabled={scanDisabled}
             android_ripple={{ color: '#2563eb' }}
             style={{
               flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'center',
               gap: 10,
-              backgroundColor: PALETTE.primary,
+              backgroundColor: scanDisabled ? '#9ca3af' : PALETTE.primary,
               paddingVertical: 15,
               borderRadius: 14,
               shadowColor: PALETTE.primary,
@@ -392,7 +418,7 @@ export default function Scan() {
             <Text
               style={{ fontFamily: 'Poppins600', fontSize: 14, color: '#fff' }}
             >
-              Scan Again
+              {scanDisabled ? 'Cooldown...' : 'Scan Again'}
             </Text>
           </Pressable>
         )}

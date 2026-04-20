@@ -5,7 +5,7 @@ import Modal from '../Modal';
 import SlotManagement from './SlotManagement';
 import useDark from '../../hooks/useDark';
 
-export default function Details({ selectedShape, loading }) {
+export default function Details({ selectedShape, loading, onUpdateSlot }) {
   const [isOpen, setIsOpen] = useState(false);
   const [updatedSlot, setUpdatedSlot] = useState(selectedShape);
   const { dark, border } = useDark();
@@ -14,7 +14,12 @@ export default function Details({ selectedShape, loading }) {
     setUpdatedSlot(selectedShape);
   }, [selectedShape]);
 
-  const refreshSlot = (slot) => setUpdatedSlot(slot);
+  const refreshSlot = (slot) => {
+    setUpdatedSlot(slot);
+    if (onUpdateSlot) {
+      onUpdateSlot(slot);
+    }
+  };
 
   const statusLabel = updatedSlot?.occupiedBy
     ? 'Occupied'
@@ -42,11 +47,14 @@ export default function Details({ selectedShape, loading }) {
                     src={updatedSlot.metadata.information.picture.url}
                     alt='Building'
                     crossOrigin='anonymous'
-                    onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'flex';
+                    }}
                     className={`w-full h-40 object-cover rounded-xl border ${border}`}
                   />
                 ) : null}
-                {(!updatedSlot.metadata?.information?.picture?.url) && (
+                {!updatedSlot.metadata?.information?.picture?.url && (
                   <div
                     className={`w-full h-40 rounded-xl flex flex-col items-center justify-center gap-2 text-gray-300 ${dark ? 'bg-[#3a3a3a]' : 'bg-gray-100'}`}
                   >
@@ -108,11 +116,14 @@ export default function Details({ selectedShape, loading }) {
                         <Clock size={11} className='text-rose-400' />
                         <span className='text-xs text-rose-500'>
                           Since{' '}
-                          {new Date(updatedSlot.entryTime).toLocaleTimeString([], {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            hour12: true,
-                          })}
+                          {new Date(updatedSlot.entryTime).toLocaleTimeString(
+                            [],
+                            {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                              hour12: true,
+                            },
+                          )}
                         </span>
                       </div>
                     )}

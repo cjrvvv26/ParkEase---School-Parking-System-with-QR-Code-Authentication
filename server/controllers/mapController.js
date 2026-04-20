@@ -2,6 +2,9 @@ const mongoose = require('mongoose');
 const Map = require('../models/mapModel');
 const Shape = require('../models/shapeModel');
 const Slot = require('../models/slotModel');
+const User = require('../models/userModel');
+const Student = require('../models/studentModel');
+const Faculty = require('../models/facultyModel');
 const generateQRCode = require('../utils/generateQRCode');
 const cloudinary = require('../utils/cloudinary');
 const ActivityLogs = require('../models/activityModel');
@@ -151,11 +154,46 @@ exports.getAllMapsWithShapes = async (req, res) => {
         const slots = await Slot.find({ slotId: { $in: shapeIds } }).select(
           'slotId assignedStudentId occupiedBy isOccupied status entryTime',
         );
+        const userIds = [
+          ...new Set(
+            slots.flatMap((s) =>
+              [s.assignedStudentId, s.occupiedBy].filter(Boolean),
+            ),
+          ),
+        ];
+        const nameMap = {};
+        if (userIds.length > 0) {
+          const users = await User.find({ _id: { $in: userIds } }).select(
+            '_id role',
+          );
+          const studentIds = users
+            .filter((u) => u.role === 'student')
+            .map((u) => u._id);
+          const facultyIds = users
+            .filter((u) => u.role === 'faculty')
+            .map((u) => u._id);
+          const students = await Student.find({
+            userId: { $in: studentIds },
+          }).select('userId name');
+          const faculties = await Faculty.find({
+            userId: { $in: facultyIds },
+          }).select('userId name');
+          students.forEach((s) => (nameMap[s.userId.toString()] = s.name));
+          faculties.forEach((f) => (nameMap[f.userId.toString()] = f.name));
+        }
         const slotMap = {};
-        slots.forEach((slot) => { slotMap[slot.slotId.toString()] = slot; });
+        slots.forEach((slot) => {
+          slotMap[slot.slotId.toString()] = slot;
+        });
         const shapesWithSlot = shapes.map((shape) => {
           const slot = slotMap[shape._id.toString()];
           if (!slot) return shape.toObject();
+          const assignedName = slot.assignedStudentId
+            ? nameMap[slot.assignedStudentId.toString()]
+            : null;
+          const occupyingName = slot.occupiedBy
+            ? nameMap[slot.occupiedBy.toString()]
+            : null;
           return {
             ...shape.toObject(),
             assignedStudentId: slot.assignedStudentId,
@@ -163,6 +201,8 @@ exports.getAllMapsWithShapes = async (req, res) => {
             isOccupied: slot.isOccupied,
             slotStatus: slot.status,
             entryTime: slot.entryTime,
+            assignedName,
+            occupyingName,
           };
         });
         return { ...map.toObject(), shapes: shapesWithSlot };
@@ -232,11 +272,26 @@ exports.updateMap = async (req, res) => {
       // --- Step 1: Fetch existing shapes and slots ---
       const oldShapes = await Shape.find({ mapId: id });
       const oldShapeIds = new Set(oldShapes.map((s) => s._id.toString()));
-      const oldSlots = await Slot.find({ slotId: { $in: [...oldShapeIds].map(i => new mongoose.Types.ObjectId(i)) } });
+      const oldSlots = await Slot.find({
+        slotId: {
+          $in: [...oldShapeIds].map((i) => new mongoose.Types.ObjectId(i)),
+        },
+      });
 
       console.log('[updateMap] oldShapeIds:', [...oldShapeIds]);
-      console.log('[updateMap] incoming shape _ids:', shapes.map(s => s._id).filter(Boolean));
-      console.log('[updateMap] exclusive slots before update:', oldSlots.filter(s => s.assignedStudentId).map(s => ({ slotId: s.slotId, assignedStudentId: s.assignedStudentId })));
+      console.log(
+        '[updateMap] incoming shape _ids:',
+        shapes.map((s) => s._id).filter(Boolean),
+      );
+      console.log(
+        '[updateMap] exclusive slots before update:',
+        oldSlots
+          .filter((s) => s.assignedStudentId)
+          .map((s) => ({
+            slotId: s.slotId,
+            assignedStudentId: s.assignedStudentId,
+          })),
+      );
 
       // Build lookup: old shape _id string → old slot
       const oldSlotByShapeId = {};
@@ -246,12 +301,19 @@ exports.updateMap = async (req, res) => {
 
       // Separate incoming shapes into existing (has _id) and new (no _id)
       const incomingExistingIds = new Set(
-        shapes.filter((s) => s._id).map((s) => s._id.toString())
+        shapes.filter((s) => s._id).map((s) => s._id.toString()),
       );
 
       // Check if any incoming _ids actually match DB shapes
-      const matchCount = [...incomingExistingIds].filter(id => oldShapeIds.has(id)).length;
-      console.log('[updateMap] matching shape count:', matchCount, '/', incomingExistingIds.size);
+      const matchCount = [...incomingExistingIds].filter((id) =>
+        oldShapeIds.has(id),
+      ).length;
+      console.log(
+        '[updateMap] matching shape count:',
+        matchCount,
+        '/',
+        incomingExistingIds.size,
+      );
 
       // --- Step 2: Index uploaded Cloudinary files ---
       const imageMap = {};
@@ -261,14 +323,20 @@ exports.updateMap = async (req, res) => {
       });
 
       // --- Step 3: Delete shapes that were removed (not in incoming) ---
-      const removedShapeIds = [...oldShapeIds].filter((sid) => !incomingExistingIds.has(sid));
+      const removedShapeIds = [...oldShapeIds].filter(
+        (sid) => !incomingExistingIds.has(sid),
+      );
       if (removedShapeIds.length) {
-        const removedObjectIds = removedShapeIds.map((sid) => new mongoose.Types.ObjectId(sid));
+        const removedObjectIds = removedShapeIds.map(
+          (sid) => new mongoose.Types.ObjectId(sid),
+        );
         // Delete QR codes for removed slots
         for (const sid of removedShapeIds) {
           const oldSlot = oldSlotByShapeId[sid];
           if (oldSlot?.QRCode?.public_id) {
-            await cloudinary.uploader.destroy(oldSlot.QRCode.public_id).catch(() => {});
+            await cloudinary.uploader
+              .destroy(oldSlot.QRCode.public_id)
+              .catch(() => {});
           }
         }
         await Shape.deleteMany({ _id: { $in: removedObjectIds } });
@@ -291,7 +359,10 @@ exports.updateMap = async (req, res) => {
                 ...shape.metadata,
                 information: {
                   ...shape.metadata?.information,
-                  picture: { url: imageMap[shapeKey].path, public_id: imageMap[shapeKey].filename },
+                  picture: {
+                    url: imageMap[shapeKey].path,
+                    public_id: imageMap[shapeKey].filename,
+                  },
                 },
               };
             } else if (
@@ -302,7 +373,10 @@ exports.updateMap = async (req, res) => {
             } else {
               updateData.metadata = {
                 ...shape.metadata,
-                information: { ...shape.metadata?.information, picture: { url: null, public_id: null } },
+                information: {
+                  ...shape.metadata?.information,
+                  picture: { url: null, public_id: null },
+                },
               };
             }
           }
@@ -310,7 +384,7 @@ exports.updateMap = async (req, res) => {
           const updated = await Shape.findByIdAndUpdate(
             shape._id,
             { $set: updateData },
-            { new: true }
+            { new: true },
           );
           if (updated) savedShapes.push(updated);
         } else {
@@ -320,9 +394,15 @@ exports.updateMap = async (req, res) => {
           if (shape.metadata?.type === 'building') {
             const shapeKey = shape.tempId || shape._id?.toString();
             if (imageMap[shapeKey]) {
-              newShape.metadata.information.picture = { url: imageMap[shapeKey].path, public_id: imageMap[shapeKey].filename };
+              newShape.metadata.information.picture = {
+                url: imageMap[shapeKey].path,
+                public_id: imageMap[shapeKey].filename,
+              };
             } else {
-              newShape.metadata.information.picture = { url: null, public_id: null };
+              newShape.metadata.information.picture = {
+                url: null,
+                public_id: null,
+              };
             }
           }
 
@@ -331,7 +411,9 @@ exports.updateMap = async (req, res) => {
 
           // Create slot for new slot shapes
           if (shape.metadata?.type === 'slot') {
-            const qrCode = await generateQRCode(`MAP:${id}-SLOT:${newShape._id}`);
+            const qrCode = await generateQRCode(
+              `MAP:${id}-SLOT:${newShape._id}`,
+            );
             await Slot.create({
               slotId: newShape._id,
               mapId: id,
@@ -345,7 +427,9 @@ exports.updateMap = async (req, res) => {
       }
 
       // --- Step 5: Log activity ---
-      const totalSlots = savedShapes.filter((s) => s.metadata?.type === 'slot').length;
+      const totalSlots = savedShapes.filter(
+        (s) => s.metadata?.type === 'slot',
+      ).length;
       await ActivityLogs.create({
         userId: req.user._id,
         actionType: 'map',
@@ -394,15 +478,29 @@ exports.deleteMap = async (req, res) => {
       const Faculty = require('../models/facultyModel');
       for (const slot of slots) {
         if (slot.assignedStudentId) {
-          await Student.findOneAndUpdate({ userId: slot.assignedStudentId }, { $unset: { entryTime: 1, outTime: 1 } });
-          await Faculty.findOneAndUpdate({ userId: slot.assignedStudentId }, { $unset: { entryTime: 1, outTime: 1 } });
+          await Student.findOneAndUpdate(
+            { userId: slot.assignedStudentId },
+            { $unset: { entryTime: 1, outTime: 1 } },
+          );
+          await Faculty.findOneAndUpdate(
+            { userId: slot.assignedStudentId },
+            { $unset: { entryTime: 1, outTime: 1 } },
+          );
         }
         if (slot.occupiedBy) {
-          await Student.findOneAndUpdate({ userId: slot.occupiedBy }, { $unset: { entryTime: 1, outTime: 1 } });
-          await Faculty.findOneAndUpdate({ userId: slot.occupiedBy }, { $unset: { entryTime: 1, outTime: 1 } });
+          await Student.findOneAndUpdate(
+            { userId: slot.occupiedBy },
+            { $unset: { entryTime: 1, outTime: 1 } },
+          );
+          await Faculty.findOneAndUpdate(
+            { userId: slot.occupiedBy },
+            { $unset: { entryTime: 1, outTime: 1 } },
+          );
         }
         if (slot.QRCode?.public_id) {
-          await cloudinary.uploader.destroy(slot.QRCode.public_id).catch(() => {});
+          await cloudinary.uploader
+            .destroy(slot.QRCode.public_id)
+            .catch(() => {});
         }
       }
       await Slot.deleteMany({ slotId: { $in: shapeIds } });
@@ -444,16 +542,30 @@ exports.deleteShape = async (req, res) => {
         const Student = require('../models/studentModel');
         const Faculty = require('../models/facultyModel');
         if (slot.assignedStudentId) {
-          await Student.findOneAndUpdate({ userId: slot.assignedStudentId }, { $unset: { entryTime: 1, outTime: 1 } });
-          await Faculty.findOneAndUpdate({ userId: slot.assignedStudentId }, { $unset: { entryTime: 1, outTime: 1 } });
+          await Student.findOneAndUpdate(
+            { userId: slot.assignedStudentId },
+            { $unset: { entryTime: 1, outTime: 1 } },
+          );
+          await Faculty.findOneAndUpdate(
+            { userId: slot.assignedStudentId },
+            { $unset: { entryTime: 1, outTime: 1 } },
+          );
         }
         if (slot.occupiedBy) {
-          await Student.findOneAndUpdate({ userId: slot.occupiedBy }, { $unset: { entryTime: 1, outTime: 1 } });
-          await Faculty.findOneAndUpdate({ userId: slot.occupiedBy }, { $unset: { entryTime: 1, outTime: 1 } });
+          await Student.findOneAndUpdate(
+            { userId: slot.occupiedBy },
+            { $unset: { entryTime: 1, outTime: 1 } },
+          );
+          await Faculty.findOneAndUpdate(
+            { userId: slot.occupiedBy },
+            { $unset: { entryTime: 1, outTime: 1 } },
+          );
         }
         await Slot.deleteOne({ slotId: shapeId });
         if (slot.QRCode?.public_id) {
-          await cloudinary.uploader.destroy(slot.QRCode.public_id).catch(() => {});
+          await cloudinary.uploader
+            .destroy(slot.QRCode.public_id)
+            .catch(() => {});
         }
       }
     }

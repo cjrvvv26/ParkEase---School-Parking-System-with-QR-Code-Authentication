@@ -15,7 +15,9 @@ exports.getSlotDetails = async (req, res) => {
       throw new Error('Invalid slot id');
     let slot = await Slot.findOne({ slotId: req.body._id });
     if (slot.assignedStudentId) {
-      assignedStudent = await slotService.getAssignedStudent(slot.assignedStudentId);
+      assignedStudent = await slotService.getAssignedStudent(
+        slot.assignedStudentId,
+      );
     }
     if (slot.occupiedBy && !slot.occupiedBy.equals(slot.assignedStudentId)) {
       occupyingUser = await slotService.getAssignedStudent(slot.occupiedBy);
@@ -24,7 +26,7 @@ exports.getSlotDetails = async (req, res) => {
     const details = {
       ...(slot ? slot.toObject() : {}),
       ...assignedStudent,
-      occupyingUser: slot.occupiedBy ? (occupyingUser || assignedStudent) : null,
+      occupyingUser: slot.occupiedBy ? occupyingUser || assignedStudent : null,
     };
 
     res
@@ -38,10 +40,28 @@ exports.getSlotDetails = async (req, res) => {
 exports.getYourSlotLocation = async (req, res) => {
   try {
     const { userId } = req.params;
-    const slot = await Slot.findOne({ occupiedBy: userId }).populate({
+    // First try to find assigned slot, then occupied slot
+    let slot = await Slot.findOne({ assignedStudentId: userId }).populate({
       path: 'slotId',
       select: 'metadata.label mapId',
     });
+
+    if (!slot) {
+      // If no assigned slot, check if currently occupying a slot
+      slot = await Slot.findOne({ occupiedBy: userId }).populate({
+        path: 'slotId',
+        select: 'metadata.label mapId',
+      });
+    }
+
+    if (!slot) {
+      return res.status(404).json({ error: 'No slot found for this user' });
+    }
+
+    if (!slot.slotId) {
+      return res.status(404).json({ error: 'Slot shape not found' });
+    }
+
     const map = await Map.findById(slot.slotId.mapId);
 
     if (!map) {

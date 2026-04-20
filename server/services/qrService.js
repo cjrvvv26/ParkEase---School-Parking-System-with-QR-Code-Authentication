@@ -154,10 +154,6 @@ exports.verifySlotData = async (data) => {
     entryTime = faculty?.entryTime;
   }
 
-  if (!entryTime) {
-    throw new Error("You're not in school. You can't occupy a slot");
-  }
-
   const alreadyOccupying = await Slot.findOne({ occupiedBy: userId });
   if (alreadyOccupying && !alreadyOccupying.slotId?.equals(slotId)) {
     throw new Error(
@@ -170,14 +166,31 @@ exports.verifySlotData = async (data) => {
   const slot = await Slot.findOne({ slotId });
   if (!slot) throw new Error('Slot not found');
 
-  if (slot.isOccupied && !slot.occupiedBy?.equals(userId)) {
-    throw new Error('Slot already occupied');
+  const userAssignedSlot = await Slot.findOne({ assignedStudentId: userId });
+  if (!userAssignedSlot) {
+    throw new Error(
+      'You are only allowed to park in your assigned slot. Please contact your administrator if you have not been assigned one.',
+    );
   }
 
-  if (slot.assignedStudentId && !slot.assignedStudentId.equals(userId)) {
+  const isYourAssignedSlot = slot.assignedStudentId?.equals(userId);
+  if (!isYourAssignedSlot) {
+    // For non-assigned slots, require entryTime
+    if (!entryTime) {
+      throw new Error("You're not in school. You can't occupy a slot");
+    }
     throw new Error(
-      'This is an exclusive slot assigned to another user. You cannot park here.',
+      'This slot is not assigned to you. Please park only in your designated slot.',
     );
+  }
+
+  // For assigned slots, require faculty to be on campus before parking
+  if (user.role === 'faculty' && !entryTime) {
+    throw new Error("You're not in school. You can't occupy a slot");
+  }
+
+  if (slot.isOccupied && !slot.occupiedBy?.equals(userId)) {
+    throw new Error('Slot already occupied');
   }
 
   if (

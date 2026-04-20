@@ -3,7 +3,7 @@ import AdminBldg from '../components/maps/AdminBldg';
 import DynamicMap from '../components/maps/DynamicMap';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import Modal from '../components/Modal';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import useFetch from '../hooks/useFetch';
 import Details from '../components/Parking/Details';
 import { QrCode, Eye, X, Pencil } from 'lucide-react';
@@ -29,6 +29,7 @@ export default function Parking() {
   const location = useLocation();
   const { fetchData, loading } = useFetch();
   const { dark, border, input } = useDark();
+  const prevMapsRef = useRef(null);
 
   useEffect(() => {
     const fetchMaps = async () => {
@@ -36,15 +37,23 @@ export default function Parking() {
         const data = await fetchData('map/with-shapes', {
           method: 'GET',
         });
-        setMaps(data || []);
-        setSelectedMap(data[currentIndex]);
+        const mapsData = data || [];
+        const mapsString = JSON.stringify(mapsData);
+        if (mapsString !== prevMapsRef.current) {
+          setMaps(mapsData);
+          setSelectedMap(mapsData ? mapsData[currentIndex] : null);
+          prevMapsRef.current = mapsString;
+        }
       } catch (error) {
         console.error('Error fetching maps:', error);
         setMaps([]);
+        prevMapsRef.current = null;
       }
     };
     fetchMaps();
+  }, [currentIndex, fetchData]);
 
+  useEffect(() => {
     if (location.state?.message) {
       setSuccessMessage(location.state.message);
       setShowMessage(true);
@@ -100,6 +109,26 @@ export default function Parking() {
     setSelectedShape(shape);
   };
 
+  const handleUpdateSlot = (updatedSlot) => {
+    // Update the slot in the maps state
+    setMaps((prevMaps) =>
+      prevMaps.map((map) => ({
+        ...map,
+        shapes: map.shapes.map((shape) =>
+          shape._id === updatedSlot.slotId
+            ? { ...shape, ...updatedSlot }
+            : shape,
+        ),
+      })),
+    );
+    // Also update selectedShape if it's the same slot
+    setSelectedShape((prevShape) =>
+      prevShape && prevShape._id === updatedSlot.slotId
+        ? { ...prevShape, ...updatedSlot }
+        : prevShape,
+    );
+  };
+
   const handleDeleteMap = async () => {
     if (!selectedMap?._id) return;
     try {
@@ -119,13 +148,17 @@ export default function Parking() {
 
   useEffect(() => {
     const parkingSummary = async () => {
-      const res = await fetchData('/report/parking-summary', {
-        method: 'GET',
-      });
+      try {
+        const res = await fetchData('/report/parking-summary', {
+          method: 'GET',
+        });
 
-      if (res) {
-        setReports(res.reports);
-        console.log(res);
+        if (res) {
+          setReports(res.reports);
+        }
+      } catch (error) {
+        console.error('Error fetching parking summary:', error);
+        setReports([]); // set empty to stop loading
       }
     };
     parkingSummary();
@@ -503,7 +536,11 @@ export default function Parking() {
             </div>
           </section>
           {/* Parking Details */}
-          <Details selectedShape={selectedShape} loading={loading} />
+          <Details
+            selectedShape={selectedShape}
+            loading={loading}
+            onUpdateSlot={handleUpdateSlot}
+          />
         </main>
       </div>
       {isPreview && selectedMap && (
