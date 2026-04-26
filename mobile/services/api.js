@@ -5,7 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LOCAL_BASE_URL =
   Platform.OS === 'android'
-    ? 'http://192.168.24.169:5000/'
+    ? 'http://10.74.126.111:5000/'
     : 'http://localhost:5000/';
 
 export const BASE_URL =

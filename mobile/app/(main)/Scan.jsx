@@ -104,35 +104,49 @@ export default function Scan() {
   }
 
   const handleScan = async ({ data }) => {
+    if (scanDisabled) return;
+
     setScanned(true);
     setScanDisabled(true);
+    setScanResult('');
 
-    setTimeout(async () => {
-      if (user.role === 'guard') {
-        const match = data.match(/PARKEASE_USER:(.+)/);
-        if (!match) return;
-        const res = await execute(guardScan, {
-          qrData: data,
-          guardId: user._id,
-        });
-        if (res?.status === 200) setScanResult(res.data.message);
-      } else {
-        const match = data.match(/SLOT:(.+)/);
-        if (!match) return;
-        const res = await execute(verifyScannedSlot, {
-          slotId: match[1],
-          userId: user._id,
-        });
-        if (res?.status === 200)
-          return router.replace({
-            pathname: '/Parking',
-            params: { state: res.data.message },
-          });
-      }
+    const delayMs = 1200;
+    await new Promise((resolve) => setTimeout(resolve, delayMs));
 
-      // Allow scan again after 10 seconds total (2s delay + 8s)
-      setTimeout(() => setScanDisabled(false), 8000);
-    }, 2000); // 2 second delay before processing
+    const pattern = user.role === 'guard' ? /PARKEASE_USER:(.+)/ : /SLOT:(.+)/;
+    const match = data.match(pattern);
+    if (!match) {
+      setScanResult('Invalid QR code. Try again.');
+      setTimeout(() => {
+        setScanned(false);
+        setScanDisabled(false);
+      }, 1200);
+      return;
+    }
+
+    if (user.role === 'guard') {
+      const res = await execute(guardScan, {
+        qrData: data,
+        guardId: user._id,
+      });
+      if (res?.status === 200) setScanResult(res.data.message);
+    } else {
+      const res = await execute(verifyScannedSlot, {
+        slotId: match[1],
+        userId: user._id,
+      });
+      if (res?.status === 200)
+        return router.replace({
+          pathname: '/Parking',
+          params: { state: res.data.message },
+        });
+    }
+
+    const cooldownMs = 3000;
+    setTimeout(() => {
+      setScanned(false);
+      setScanDisabled(false);
+    }, cooldownMs);
   };
 
   const isGuard = user.role === 'guard';

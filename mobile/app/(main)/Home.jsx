@@ -474,7 +474,7 @@ export default function Home() {
                   fontFamily: 'Poppins600',
                 }}
               >
-                {availableSlots.length} open
+                {availableSlots.length} available
               </Text>
             </View>
           </View>
@@ -592,7 +592,7 @@ export default function Home() {
                         fontFamily: 'Poppins600',
                       }}
                     >
-                      Open
+                      Available
                     </Text>
                   </View>
                 </View>

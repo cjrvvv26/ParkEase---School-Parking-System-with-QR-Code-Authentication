@@ -20,7 +20,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import useTheme from '../hooks/useTheme';
 import * as WebBrowser from 'expo-web-browser';
 import * as AuthSession from 'expo-auth-session';
-import * as Crypto from 'expo-crypto';
 import { useDispatch } from 'react-redux';
 import { login as loginAction } from '../features/authSlicer';
 import api from '../services/api';
@@ -32,6 +31,7 @@ const GOOGLE_CLIENT_ID =
 const REDIRECT_URI = AuthSession.makeRedirectUri({
   scheme: 'parkease',
   path: 'auth',
+  useProxy: true,
 });
 
 export default function SignIn() {
@@ -49,58 +49,49 @@ export default function SignIn() {
     platform: 'mobile',
   });
 
+  const discovery = AuthSession.useAutoDiscovery('https://accounts.google.com');
+  const [request, , promptAsync] = AuthSession.useAuthRequest(
+    {
+      clientId: GOOGLE_CLIENT_ID,
+      redirectUri: REDIRECT_URI,
+      responseType: 'code',
+      scopes: ['openid', 'profile', 'email'],
+      extraParams: {
+        access_type: 'offline',
+        prompt: 'consent',
+      },
+    },
+    discovery,
+  );
+
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
     try {
-      // Generate PKCE code verifier + challenge
-      const codeVerifier = AuthSession.generateRandomBytes(32)
-        .map((b) => b.toString(16).padStart(2, '0'))
-        .join('');
-      const digest = await Crypto.digestStringAsync(
-        Crypto.CryptoDigestAlgorithm.SHA256,
-        codeVerifier,
-        { encoding: Crypto.CryptoEncoding.BASE64 },
-      );
-      const codeChallenge = digest
-        .replace(/\+/g, '-')
-        .replace(/\//g, '_')
-        .replace(/=/g, '');
+      if (!request) {
+        throw new Error('Google auth request not ready');
+      }
 
-      const authUrl =
-        `https://accounts.google.com/o/oauth2/v2/auth?` +
-        `client_id=${GOOGLE_CLIENT_ID}` +
-        `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}` +
-        `&response_type=code` +
-        `&scope=${encodeURIComponent('openid profile email')}` +
-        `&code_challenge=${codeChallenge}` +
-        `&code_challenge_method=S256`;
+      const result = await promptAsync();
+      if (result.type !== 'success' || !result.params?.code) {
+        return;
+      }
 
-      console.log('[GOOGLE] redirect_uri:', REDIRECT_URI);
-
-      const result = await WebBrowser.openAuthSessionAsync(
-        authUrl,
-        REDIRECT_URI,
-      );
-      if (result.type !== 'success') return;
-
-      const match = result.url.match(/code=([^&]+)/);
-      if (!match) return setError('Google sign in failed');
-
-      const code = decodeURIComponent(match[1]);
+      const code = result.params.code;
       const res = await api.post('auth/google', {
         code,
-        code_verifier: codeVerifier,
-        redirect_uri: REDIRECT_URI,
+        code_verifier: request.codeVerifier,
+        redirect_uri: request.redirectUri || REDIRECT_URI,
         type: 'login',
         platform: 'mobile',
       });
+
       if (res?.status === 200) {
         await AsyncStorage.setItem('email', res.data.email);
         await AsyncStorage.setItem('hasVerification', 'true');
-        router.replace('/OTPVerification');
+        return router.replace('/OTPVerification');
       }
     } catch (e) {
-      setError(e.response?.data?.error || 'Google sign in failed');
+      setError(e.response?.data?.error || e.message || 'Google sign in failed');
     } finally {
       setGoogleLoading(false);
     }

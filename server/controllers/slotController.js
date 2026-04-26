@@ -5,6 +5,7 @@ const User = require('../models/userModel');
 const Map = require('../models/mapModel');
 const qrService = require('../services/qrService');
 const slotService = require('../services/slotService');
+const { broadcastSlotUpdate } = require('../socket/socketHandler');
 
 exports.getSlotDetails = async (req, res) => {
   try {
@@ -128,12 +129,26 @@ exports.assignStudentSlot = async (req, res) => {
 
     const details = {
       ...updatedSlot,
+      slotId: updatedSlot.slotId || req.body.slot?._id,
       ...student,
     };
 
     await session.commitTransaction();
     committed = true;
     session.endSession();
+
+    const io = req.app.locals.io;
+    const shapeId = details.slotId?.toString();
+    if (io && shapeId) {
+      broadcastSlotUpdate(io, {
+        shapeId,
+        assignedStudentId: details.assignedStudentId,
+        assignedName: student,
+        occupiedBy: details.occupiedBy,
+        slotStatus: 'exclusive',
+        status: 'exclusive',
+      });
+    }
 
     res
       .status(200)
@@ -166,9 +181,22 @@ exports.removeAssignment = async (req, res) => {
     await session.commitTransaction();
     session.endSession();
 
+    const shapeId = id.toString();
+    const io = req.app.locals.io;
+    if (io && shapeId) {
+      broadcastSlotUpdate(io, {
+        shapeId,
+        assignedStudentId: null,
+        assignedName: null,
+        occupiedBy: null,
+        slotStatus: 'available',
+        status: 'available',
+      });
+    }
+
     res.status(200).json({
       message: 'Successfully removed student',
-      slot, // ⚡ safe, plain object
+      slot: { ...slot, slotId: shapeId },
     });
   } catch (error) {
     // Only abort if the transaction hasn't been committed

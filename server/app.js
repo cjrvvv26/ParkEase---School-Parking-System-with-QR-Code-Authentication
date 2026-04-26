@@ -34,6 +34,9 @@ const io = new Server(server, {
 
 socketHandler(io);
 
+// Store io instance in app.locals for access in controllers
+app.locals.io = io;
+
 //Middlewares
 //CORS it allows HTTP requests from its origin
 app.use(

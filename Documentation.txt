@@ -95,3 +95,9 @@ Errors:
 
 Need to be fix
 - QR Codes need to be store in Cloudinary because its too long
+
+RECOMMENDATION:
+- Pending status of user registration.
+- Security guard, student information modal or screen once the QR code of user scans.
+- lock in of building shape.
+- available status of slot in mobile is not working real time.

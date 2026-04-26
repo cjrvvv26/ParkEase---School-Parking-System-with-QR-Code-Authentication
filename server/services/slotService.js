@@ -144,8 +144,23 @@ exports.assignStudent = async (data, session, reassign = false) => {
 
   if (!slot || !student) throw new Error('Information error. Please try again');
 
-  const assignee = await User.findById(student._id).select('name').lean();
-  const label = `${assignee?.name?.firstName || 'User'}'s slot`;
+  const assigneeInfo = await User.findById(student._id).select('role');
+  if (!assigneeInfo) throw new Error('Assignee user not found');
+  if (assigneeInfo.role !== 'student' && assigneeInfo.role !== 'faculty') {
+    throw new Error('Assignee user role is not eligible for slot assignment');
+  }
+
+  let assignee = 'User';
+  if (assigneeInfo.role === 'student') {
+    const studentRecord = await Student.findOne({ userId: student._id });
+    assignee = studentRecord?.name?.firstName;
+  }
+  if (assigneeInfo.role === 'faculty') {
+    const facultyRecord = await Faculty.findOne({ userId: student._id });
+    assignee = facultyRecord?.name?.firstName;
+  }
+
+  const label = `${assignee}'s slot`;
 
   const currentSlot = await Slot.findOne({ slotId: slot._id }).session(session);
   if (!currentSlot) throw new Error('Slot not found');
@@ -161,7 +176,7 @@ exports.assignStudent = async (data, session, reassign = false) => {
     { new: true, session },
   ).populate({
     path: 'slotId',
-    select: 'metadata -_id',
+    select: 'metadata',
   });
 
   if (!register) {
@@ -189,6 +204,7 @@ exports.assignStudent = async (data, session, reassign = false) => {
 
   const plainSlot = {
     _id: register._id,
+    slotId: register.slotId?._id || slot._id,
     assignedStudentId: register.assignedStudentId,
     status: register.status,
     metadata: register.slotId?.metadata || {},
@@ -223,13 +239,14 @@ exports.removeAssignment = async (id, session) => {
     { new: true, session },
   ).populate({
     path: 'slotId',
-    select: 'metadata -_id',
+    select: 'metadata',
   });
 
   if (!slot) throw new Error('Failed to remove user from slot');
 
   return {
     _id: slot._id,
+    slotId: slot.slotId?._id || id,
     assignedStudentId: slot.assignedStudentId,
     status: slot.status,
     isOccupied: slot.isOccupied,

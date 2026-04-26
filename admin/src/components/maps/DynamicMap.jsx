@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import useFetch from '../../hooks/useFetch';
 import useDark from '../../hooks/useDark';
+import { connectSocket } from '../../services/socketService';
 
 const SLOT_COLORS = {
   exclusive: { light: '#dbeafe', dark: '#1e3a5f' },
@@ -23,7 +24,7 @@ function getSlotFill(shape, dark) {
 }
 
 export default function DynamicMap({
-  shapes,
+  shapes: shapesProp,
   width = 800,
   height = 600,
   onShapeClick,
@@ -31,6 +32,54 @@ export default function DynamicMap({
   const { fetchData } = useFetch();
   const { dark, canvasBg } = useDark();
   const [selectedId, setSelectedId] = useState(null);
+  const [shapes, setShapes] = useState(shapesProp);
+
+  // Initialize shapes from props
+  useEffect(() => {
+    setShapes(shapesProp);
+  }, [shapesProp]);
+
+  // Setup socket listener for real-time slot updates
+  useEffect(() => {
+    let socketInstance;
+
+    const setupSocketListener = async () => {
+      try {
+        const socket = await connectSocket();
+        socketInstance = socket;
+
+        const handleSlotUpdate = (updatedSlot) => {
+          setShapes(
+            (prevShapes) =>
+              prevShapes?.map((shape) =>
+                shape._id === updatedSlot.shapeId
+                  ? {
+                      ...shape,
+                      assignedStudentId: updatedSlot.assignedStudentId,
+                      assignedName: updatedSlot.assignedName,
+                      occupiedBy: updatedSlot.occupiedBy,
+                      slotStatus: updatedSlot.slotStatus,
+                      status: updatedSlot.status,
+                    }
+                  : shape,
+              ) || prevShapes,
+          );
+        };
+
+        socket.on('slot:updated', handleSlotUpdate);
+      } catch (error) {
+        console.error('Socket connection failed:', error);
+      }
+    };
+
+    setupSocketListener();
+
+    return () => {
+      if (socketInstance) {
+        socketInstance.off('slot:updated');
+      }
+    };
+  }, []);
 
   const handleSlotDetails = async (shape) => {
     const id = shape._id || shape.tempId;
