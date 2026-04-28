@@ -5,8 +5,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LOCAL_BASE_URL =
   Platform.OS === 'android'
-    ? 'http://10.74.126.111:5000/'
-    : 'http://localhost:5000/';
+    ? 'https://parkease-school-parking-system-with-qr-nn18.onrender.com'
+    : 'http://localhost:5000';
 
 export const BASE_URL =
   Constants.expoConfig?.extra?.API_URL ||

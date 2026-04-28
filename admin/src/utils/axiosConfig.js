@@ -1,7 +1,9 @@
 import axios from 'axios';
 
 const axiosConfig = axios.create({
-  baseURL: 'http://localhost:5000',
+  baseURL:
+    import.meta.env.VITE_API_URL ||
+    'https://parkease-school-parking-system-with-qr-nn18.onrender.com/',
   withCredentials: true,
   timeout: 60000,
 });

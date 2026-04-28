@@ -5,10 +5,10 @@
     "scheme": "parkease",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./app/assets/images/new-logo.png",
+    "icon": "./app/assets/images/urs-logo.jpg",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./app/assets/images/new-logo.png",
+      "image": "./app/assets/images/urs-logo.jpg",
       "resizeMode": "contain",
       "backgroundColor": "#8e51ff"
     },
@@ -30,8 +30,9 @@
     },
     "extra": {
       "eas": {
-        "projectId": "46af8dd8-56b9-4814-a39d-a6d8c80b52fb"
-      }
+        "projectId": "75a3627c-4553-48dd-b311-c52742b6c463"
+      },
+      "API_URL": "https://parkease-school-parking-system-with-qr-nn18.onrender.com"
     }
   }
 }
