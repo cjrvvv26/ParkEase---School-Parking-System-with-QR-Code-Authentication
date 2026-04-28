@@ -25,11 +25,7 @@ exports.localSignIn = async (req, res) => {
       type: 'login',
     });
 
-    try {
-      await sendOtp(payload.email, otp);
-    } catch (emailError) {
-      console.error('[OTP EMAIL ERROR]', emailError.message);
-    }
+    await sendOtp(payload.email, otp);
 
     res
       .status(200)
@@ -57,11 +53,7 @@ exports.localSignUp = async (req, res) => {
       type: 'register',
     });
 
-    try {
-      await sendOtp(payload.email, otp);
-    } catch (emailError) {
-      console.error('[OTP EMAIL ERROR]', emailError.message);
-    }
+    await sendOtp(payload.email, otp);
 
     res
       .status(200)
@@ -108,11 +100,7 @@ exports.authWithGoogle = async (req, res) => {
       type,
     });
 
-    try {
-      await sendOtp(payload.email, otp);
-    } catch (emailError) {
-      console.error('[OTP EMAIL ERROR]', emailError.message);
-    }
+    await sendOtp(payload.email, otp);
 
     res
       .status(200)
@@ -134,7 +122,9 @@ exports.verifyUserOtp = async (req, res) => {
     if (type === 'login') {
       viewModel = await otpService.verifyOtp(email, inputOtp, type);
       if (platform === 'website' && viewModel?.role !== 'super admin') {
-        return res.status(403).json({ error: 'Only super admin accounts are allowed to sign in here.' });
+        return res.status(403).json({
+          error: 'Only super admin accounts are allowed to sign in here.',
+        });
       }
     } else if (type === 'register') {
       const result = await otpService.verifyOtp(email, inputOtp, type);
@@ -203,11 +193,7 @@ exports.resendOtp = async (req, res) => {
 
     await otpService.updateOtpRecord({ id: oldRecord._id, otp });
 
-    try {
-      await sendOtp(oldRecord.email, otp);
-    } catch (emailError) {
-      console.error('[OTP EMAIL ERROR]', emailError.message);
-    }
+    await sendOtp(oldRecord.email, otp);
 
     res.status(200).json({ message: 'OTP was successfully resend' });
   } catch (error) {

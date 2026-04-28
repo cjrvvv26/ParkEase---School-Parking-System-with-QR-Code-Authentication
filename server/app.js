@@ -77,8 +77,25 @@ app.get('/test-email', async (req, res) => {
     const testEmail = req.query.email || 'cjrv026.work@gmail.com';
     console.log(`[TEST EMAIL] To: ${testEmail}`);
 
+    let from =
+      process.env.RESEND_FROM ||
+      process.env.EMAIL_FROM ||
+      'School Parking System <onboarding@resend.dev>';
+    if (
+      from.includes('.local') ||
+      from.includes('.localhost') ||
+      from.includes('.test') ||
+      from.includes('.invalid') ||
+      from.includes('.example')
+    ) {
+      console.warn(
+        '[TEST EMAIL] Invalid sender detected in ENV. Falling back to default onboarding@resend.dev',
+      );
+      from = 'School Parking System <onboarding@resend.dev>';
+    }
+
     const result = await resend.emails.send({
-      from: 'School Parking System <onboarding@resend.dev>',
+      from,
       to: [testEmail],
       subject: 'School Parking System - Test Email',
       html: `
@@ -153,9 +170,9 @@ app.use('/notifications', notificationRouters);
 const initializeServer = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI);
-    server.listen(process.env.PORT, () => {
+    server.listen(process.env.PORT || 5000, () => {
       console.log(
-        `The server is running on port: http://localhost:${process.env.PORT}`,
+        `The server is running on port: http://localhost:${process.env.PORT || 5000}`,
       );
     });
   } catch (error) {
