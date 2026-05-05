@@ -1,6 +1,9 @@
 import React from 'react';
+import Chart from 'chart.js/auto';
 import { Bar } from 'react-chartjs-2';
 import useDark from '../../hooks/useDark';
+
+Chart.register();
 
 export default function AvgParkingDurationChart({
   chartData = null,

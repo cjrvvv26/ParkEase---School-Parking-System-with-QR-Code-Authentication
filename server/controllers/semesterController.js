@@ -261,62 +261,48 @@ exports.expireSemester = async (req, res) => {
 // Get semester statistics
 exports.getSemesterStats = async (req, res) => {
   try {
-    // Get all semesters
     const allSemesters = await Semester.find();
 
-    // Calculate total revenue - use stored revenue for expired semesters, calculate for active
     let totalRevenue = 0;
-    let highestEarningSemester = null;
     let highestRevenue = 0;
 
     for (const semester of allSemesters) {
       let semesterRevenue = semester.revenue || 0;
-
-      // If semester is active, calculate revenue in real-time since stored revenue might be stale
       if (semester.status === 'active') {
-        const paidStudentsCount = await Student.countDocuments({
+        const paidCount = await Student.countDocuments({
           'payment.isPaid': true,
           'payment.semesterId': semester._id,
         });
-        semesterRevenue = paidStudentsCount * semester.slotPrice;
+        semesterRevenue = paidCount * semester.slotPrice;
       }
-
       totalRevenue += semesterRevenue;
-
-      if (semesterRevenue > highestRevenue) {
-        highestRevenue = semesterRevenue;
-        highestEarningSemester = {
-          id: semester._id,
-          name: semester.name,
-          revenue: semesterRevenue,
-        };
-      }
+      if (semesterRevenue > highestRevenue) highestRevenue = semesterRevenue;
     }
 
     const totalSemesters = allSemesters.length;
     const averageRevenue =
-      totalSemesters > 0 ? (totalRevenue / totalSemesters).toFixed(2) : 0;
+      totalSemesters > 0
+        ? parseFloat((totalRevenue / totalSemesters).toFixed(2))
+        : 0;
+
+    // Projected Revenue = total assigned slots × slotPrice (full capacity of active semester)
+    let projectedRevenue = 0;
+    const activeSemester = allSemesters.find((s) => s.status === 'active');
+    if (activeSemester) {
+      const totalSlots = await Slot.countDocuments();
+      projectedRevenue = totalSlots * activeSemester.slotPrice;
+    }
 
     const stats = [
       { title: 'Total Revenue', data: totalRevenue },
       { title: 'Total Semesters', data: totalSemesters },
-      { title: 'Average Revenue', data: parseFloat(averageRevenue) },
-
-      {
-        title: 'Projected Revenue',
-        data: highestEarningSemester?.revenue || 'N/A',
-      },
+      { title: 'Average Revenue', data: averageRevenue },
+      { title: 'Projected Revenue', data: projectedRevenue },
     ];
 
-    res.status(200).json({
-      success: true,
-      data: stats,
-    });
+    res.status(200).json({ success: true, data: stats });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error.message,
-    });
+    res.status(500).json({ success: false, error: error.message });
   }
 };
 
