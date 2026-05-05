@@ -13,7 +13,11 @@ export const getSocket = () => {
 export const connectSocket = () =>
   new Promise((resolve) => {
     const s = getSocket();
-    if (s.connected) return resolve(s);
+    if (s.connected) return resolve(s);  // already connected — resolve immediately
+    if (s.connecting) {
+      s.once('connect', () => resolve(s));
+      return;
+    }
     s.once('connect', () => resolve(s));
     s.connect();
   });

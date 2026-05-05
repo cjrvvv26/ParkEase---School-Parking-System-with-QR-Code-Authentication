@@ -71,6 +71,7 @@ export default function Chat() {
       const history = await getChatMessages(id);
       if (history?.data) setMessages(history.data);
 
+      // connectSocket resolves immediately if already connected
       await connectSocket();
       socket.emit('join room', id);
     };

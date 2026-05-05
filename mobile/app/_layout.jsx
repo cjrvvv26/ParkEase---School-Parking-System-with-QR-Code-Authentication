@@ -1,15 +1,21 @@
-import { Stack } from 'expo-router';
+import { Stack, usePathname } from 'expo-router';
 import { Provider } from 'react-redux';
 import store from './store';
 import './global.css';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { getSocket, connectSocket } from './services/socketService';
 import usePushNotifications, { scheduleLocalNotification } from './hooks/usePushNotifications';
 
 function AppContent() {
   const { user } = useSelector((state) => state.auth);
+  const pathname = usePathname();
+  const pathnameRef = useRef(pathname);
   usePushNotifications();
+
+  useEffect(() => {
+    pathnameRef.current = pathname;
+  }, [pathname]);
 
   useEffect(() => {
     if (!user?._id) return;
@@ -24,8 +30,9 @@ function AppContent() {
 
     const handleMessage = (msg) => {
       if (!mounted) return;
-      // Only fire push if the message is FROM the other person (not the user themselves)
       if (msg.sender?.toString() === user._id?.toString()) return;
+      // Don't push if user is already on the Chat screen
+      if (pathnameRef.current?.includes('Chat')) return;
       scheduleLocalNotification('New Message', msg.message, { type: 'chat' });
     };
 
