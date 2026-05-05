@@ -2,15 +2,6 @@ import React from 'react';
 import { Bar } from 'react-chartjs-2';
 import useDark from '../../hooks/useDark';
 
-function formatMinutes(mins) {
-  if (!mins) return '0m';
-  const h = Math.floor(mins / 60);
-  const m = mins % 60;
-  if (h > 0 && m > 0) return `${h}h ${m}m`;
-  if (h > 0) return `${h}h`;
-  return `${m}m`;
-}
-
 export default function AvgParkingDurationChart({
   chartData = null,
   loading = false,
@@ -18,6 +9,7 @@ export default function AvgParkingDurationChart({
   const { dark } = useDark();
   const labels = chartData?.labels || ['5-8 AM', '9-11 AM', '12-2 PM', '3-5 PM'];
   const values = chartData?.values || [0, 0, 0, 0];
+  const totalActive = chartData?.totalActive || 0;
 
   const hasData = values.some((v) => v > 0);
 
@@ -25,7 +17,7 @@ export default function AvgParkingDurationChart({
     labels,
     datasets: [
       {
-        label: 'Avg Duration (mins)',
+        label: '% of Active Users',
         data: values,
         backgroundColor: 'rgba(59,130,246,0.7)',
         borderColor: '#2563eb',
@@ -45,7 +37,11 @@ export default function AvgParkingDurationChart({
       legend: { display: false },
       tooltip: {
         callbacks: {
-          label: (ctx) => `Avg: ${formatMinutes(ctx.parsed.y)}`,
+          label: (ctx) => {
+            const pct = ctx.parsed.y;
+            const count = totalActive > 0 ? Math.round((pct / 100) * totalActive) : 0;
+            return `${pct}% of active users (≈${count} users)`;
+          },
         },
       },
     },
@@ -57,9 +53,10 @@ export default function AvgParkingDurationChart({
       y: {
         grid: { color: gridColor },
         beginAtZero: true,
+        max: 100,
         ticks: {
           color: tickColor,
-          callback: (v) => formatMinutes(v),
+          callback: (v) => `${v}%`,
         },
       },
     },
@@ -76,7 +73,7 @@ export default function AvgParkingDurationChart({
   if (!hasData) {
     return (
       <div className='h-full w-full flex items-center justify-center'>
-        <p className='text-gray-400 text-sm'>No parking duration data yet</p>
+        <p className='text-gray-400 text-sm'>No parking data yet</p>
       </div>
     );
   }

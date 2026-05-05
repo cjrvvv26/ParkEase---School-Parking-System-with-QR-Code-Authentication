@@ -236,6 +236,8 @@ exports.calculateOccupancyByHour = async () => {
 
 exports.calculateAvgParkingByHour = async () => {
   const ActivityLog = require('../models/activityModel');
+  const User = require('../models/userModel');
+
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
@@ -246,25 +248,41 @@ exports.calculateAvgParkingByHour = async () => {
     { label: '3-5 PM', start: 15, end: 17 },
   ];
 
-  // Use UNPARKED logs which have metadata.duration set
-  const logs = await ActivityLog.find({
-    actionType: 'parking',
-    action: 'UNPARKED',
-    createdAt: { $gte: thirtyDaysAgo },
-    'metadata.duration': { $gt: 0 },
-  }).lean();
-
-  const values = timeSlots.map(({ start, end }) => {
-    const slotLogs = logs.filter((l) => {
-      const h = new Date(l.createdAt).getHours();
-      return h >= start && h < end;
-    });
-    if (!slotLogs.length) return 0;
-    const total = slotLogs.reduce((s, l) => s + (l.metadata?.duration || 0), 0);
-    return Math.round(total / slotLogs.length);
+  // Total active students + faculty as denominator
+  const totalActive = await User.countDocuments({
+    role: { $in: ['student', 'faculty'] },
+    status: 'active',
   });
 
-  return { labels: timeSlots.map((s) => s.label), values };
+  // PARKED logs tell us when each session started
+  const logs = await ActivityLog.find({
+    actionType: 'parking',
+    action: 'PARKED',
+    createdAt: { $gte: thirtyDaysAgo },
+  })
+    .select('createdAt')
+    .lean();
+
+  // For each time slot: count total sessions over 30 days,
+  // average per day, then express as % of active users
+  const values = timeSlots.map(({ start, end }) => {
+    const slotSessions = logs.filter((l) => {
+      const h = new Date(l.createdAt).getHours();
+      return h >= start && h < end;
+    }).length;
+
+    const avgPerDay = slotSessions / 30;
+
+    return totalActive > 0
+      ? Math.min(100, Math.round((avgPerDay / totalActive) * 100))
+      : 0;
+  });
+
+  return {
+    labels: timeSlots.map((s) => s.label),
+    values,
+    totalActive,
+  };
 };
 
 exports.calculatePreferredAreas = async () => {
@@ -294,6 +312,7 @@ exports.calculateTopParkingDuration = async () => {
   const ActivityLog = require('../models/activityModel');
   const User = require('../models/userModel');
   const Student = require('../models/studentModel');
+  const Faculty = require('../models/facultyModel');
 
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -324,13 +343,17 @@ exports.calculateTopParkingDuration = async () => {
   for (const log of logs) {
     const user = await User.findById(log._id).select('role').lean();
     if (!user) continue;
+
     let name = 'Unknown';
+
     if (user.role === 'student') {
-      const s = await Student.findOne({ userId: log._id })
-        .select('name')
-        .lean();
+      const s = await Student.findOne({ userId: log._id }).select('name').lean();
       if (s?.name) name = `${s.name.firstName.charAt(0)}. ${s.name.lastName}`;
+    } else if (user.role === 'faculty') {
+      const f = await Faculty.findOne({ userId: log._id }).select('name').lean();
+      if (f?.name) name = `${f.name.firstName.charAt(0)}. ${f.name.lastName}`;
     }
+
     results.push({
       name,
       duration: log.totalDuration,
