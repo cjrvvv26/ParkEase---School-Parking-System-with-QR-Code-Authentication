@@ -239,31 +239,32 @@ exports.calculateAvgParkingByHour = async () => {
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-  const slots = [
+  const timeSlots = [
     { label: '5-8 AM', start: 5, end: 8 },
     { label: '9-11 AM', start: 9, end: 11 },
     { label: '12-2 PM', start: 12, end: 14 },
     { label: '3-5 PM', start: 15, end: 17 },
   ];
 
+  // Use UNPARKED logs which have metadata.duration set
   const logs = await ActivityLog.find({
     actionType: 'parking',
+    action: 'UNPARKED',
     createdAt: { $gte: thirtyDaysAgo },
-    duration: { $gt: 0 },
-  });
+    'metadata.duration': { $gt: 0 },
+  }).lean();
 
-  const values = slots.map(({ start, end }) => {
+  const values = timeSlots.map(({ start, end }) => {
     const slotLogs = logs.filter((l) => {
       const h = new Date(l.createdAt).getHours();
       return h >= start && h < end;
     });
     if (!slotLogs.length) return 0;
-    return Math.round(
-      slotLogs.reduce((s, l) => s + (l.duration || 0), 0) / slotLogs.length,
-    );
+    const total = slotLogs.reduce((s, l) => s + (l.metadata?.duration || 0), 0);
+    return Math.round(total / slotLogs.length);
   });
 
-  return { labels: slots.map((s) => s.label), values };
+  return { labels: timeSlots.map((s) => s.label), values };
 };
 
 exports.calculatePreferredAreas = async () => {

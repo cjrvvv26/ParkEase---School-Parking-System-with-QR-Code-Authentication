@@ -41,19 +41,11 @@ exports.getSlotDetails = async (req, res) => {
 exports.getYourSlotLocation = async (req, res) => {
   try {
     const { userId } = req.params;
-    // First try to find assigned slot, then occupied slot
-    let slot = await Slot.findOne({ assignedStudentId: userId }).populate({
+    // Only show slot when user is actively occupying it (not just assigned)
+    const slot = await Slot.findOne({ occupiedBy: userId }).populate({
       path: 'slotId',
       select: 'metadata.label mapId',
     });
-
-    if (!slot) {
-      // If no assigned slot, check if currently occupying a slot
-      slot = await Slot.findOne({ occupiedBy: userId }).populate({
-        path: 'slotId',
-        select: 'metadata.label mapId',
-      });
-    }
 
     if (!slot) {
       return res.status(404).json({ error: 'No slot found for this user' });
