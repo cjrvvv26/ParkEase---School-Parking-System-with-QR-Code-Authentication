@@ -316,7 +316,7 @@ export default function SignIn() {
                 <TextInput
                   value={credentials.password}
                   onChangeText={(text) =>
-                    setCredentials((prev) => ({ ...prev, password: text }))
+                    setCredentials((prev) => ({ ...prev, password: text.replace(/ /g, '') }))
                   }
                   secureTextEntry={!showPassword}
                   placeholder='••••••••'

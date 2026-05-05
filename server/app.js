@@ -20,6 +20,7 @@ const superAdminRouters = require('./routers/superAdminRouter');
 const socketHandler = require('./socket/socketHandler');
 const courseRouter = require('./routers/courseRouter');
 const notificationRouters = require('./routers/notificationRouter');
+const notificationService = require('./services/notificationService');
 const app = express();
 const server = http.createServer(app);
 
@@ -33,6 +34,7 @@ const io = new Server(server, {
 });
 
 socketHandler(io);
+notificationService.setIo(io);
 
 // Store io instance in app.locals for access in controllers
 app.locals.io = io;

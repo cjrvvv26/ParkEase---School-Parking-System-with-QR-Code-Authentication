@@ -8,6 +8,11 @@ const socketHandler = (io) => {
       socket.join(chatId);
     });
 
+    // Each user joins their own personal room for targeted notifications
+    socket.on('join_user', (userId) => {
+      socket.join(`user:${userId}`);
+    });
+
     socket.on('send_message', async (data) => {
       try {
         const saveMessage = await chatService.saveMessage(data);

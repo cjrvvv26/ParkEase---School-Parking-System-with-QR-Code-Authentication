@@ -12,6 +12,16 @@
       "resizeMode": "contain",
       "backgroundColor": "#8e51ff"
     },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./app/assets/images/urs-logo.jpg",
+          "color": "#3b82f6",
+          "defaultChannel": "default"
+        }
+      ]
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.parkease.mobile",
@@ -23,7 +33,12 @@
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE"
       },
-      "package": "com.parkease.mobile"
+      "package": "com.parkease.mobile",
+      "permissions": [
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.VIBRATE",
+        "android.permission.POST_NOTIFICATIONS"
+      ]
     },
     "web": {
       "bundler": "metro"

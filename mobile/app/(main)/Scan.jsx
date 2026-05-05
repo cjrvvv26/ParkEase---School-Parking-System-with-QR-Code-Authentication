@@ -7,16 +7,7 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { guardScan, verifyScannedSlot } from '../services/slotService';
 import useApiRequest from '../hooks/useApiRequest';
-
-const PALETTE = {
-  primary: '#3b82f6',
-  primaryLight: '#dbeafe',
-  primaryBorder: '#93c5fd',
-  dark: '#0e0e11',
-  muted: '#71717a',
-  border: '#e5e7eb',
-  white: '#fff',
-};
+import useTheme from '../hooks/useTheme';
 
 export default function Scan() {
   const router = useRouter();
@@ -28,6 +19,7 @@ export default function Scan() {
   const { user } = useSelector((state) => state.auth);
 
   const { loading, error, execute } = useApiRequest();
+  const { t } = useTheme();
 
   if (!permission) return <View />;
 
@@ -37,7 +29,7 @@ export default function Scan() {
         edges={['top']}
         style={{
           flex: 1,
-          backgroundColor: '#f0f7ff',
+          backgroundColor: t.bg,
           alignItems: 'center',
           justifyContent: 'center',
           paddingHorizontal: 32,
@@ -45,19 +37,19 @@ export default function Scan() {
       >
         <View
           style={{
-            backgroundColor: PALETTE.primaryLight,
+            backgroundColor: t.primaryLight,
             padding: 20,
             borderRadius: 24,
             marginBottom: 20,
           }}
         >
-          <ScanLine color={PALETTE.primary} size={48} />
+          <ScanLine color={t.primary} size={48} />
         </View>
         <Text
           style={{
             fontFamily: 'Poppins700',
             fontSize: 18,
-            color: PALETTE.dark,
+            color: t.text,
             textAlign: 'center',
             marginBottom: 8,
           }}
@@ -68,7 +60,7 @@ export default function Scan() {
           style={{
             fontFamily: 'Poppins400',
             fontSize: 13,
-            color: PALETTE.muted,
+            color: t.textMuted,
             textAlign: 'center',
             marginBottom: 28,
           }}
@@ -78,11 +70,11 @@ export default function Scan() {
         <Pressable
           onPress={requestPermission}
           style={{
-            backgroundColor: PALETTE.primary,
+            backgroundColor: t.primary,
             paddingHorizontal: 32,
             paddingVertical: 14,
             borderRadius: 14,
-            shadowColor: PALETTE.primary,
+            shadowColor: t.primary,
             shadowOffset: { width: 0, height: 4 },
             shadowOpacity: 0.3,
             shadowRadius: 8,
@@ -93,7 +85,7 @@ export default function Scan() {
             style={{
               fontFamily: 'Poppins600',
               fontSize: 14,
-              color: PALETTE.white,
+              color: '#fff',
             }}
           >
             Grant Permission
@@ -158,7 +150,7 @@ export default function Scan() {
   return (
     <SafeAreaView
       edges={['top']}
-      style={{ flex: 1, backgroundColor: '#f0f7ff' }}
+      style={{ flex: 1, backgroundColor: t.bg }}
     >
       {/* Header */}
       <View
@@ -174,21 +166,21 @@ export default function Scan() {
         <Pressable
           onPress={() => router.push('/Home')}
           style={{
-            backgroundColor: PALETTE.white,
+            backgroundColor: t.headerBtn,
             padding: 10,
             borderRadius: 12,
             borderWidth: 1,
-            borderColor: PALETTE.border,
+            borderColor: t.headerBtnBorder,
           }}
         >
-          <ChevronLeft color={PALETTE.dark} size={20} />
+          <ChevronLeft color={t.text} size={20} />
         </Pressable>
         <View>
           <Text
             style={{
               fontFamily: 'Poppins700',
               fontSize: 18,
-              color: PALETTE.dark,
+              color: t.text,
             }}
           >
             {title}
@@ -197,7 +189,7 @@ export default function Scan() {
             style={{
               fontFamily: 'Poppins400',
               fontSize: 12,
-              color: PALETTE.muted,
+              color: t.textMuted,
             }}
           >
             {subtitle}
@@ -211,10 +203,10 @@ export default function Scan() {
           <View
             style={{
               height: 340,
-              backgroundColor: PALETTE.white,
+              backgroundColor: t.card,
               borderRadius: 24,
               borderWidth: 1,
-              borderColor: PALETTE.border,
+              borderColor: t.cardBorder,
               alignItems: 'center',
               justifyContent: 'center',
               overflow: 'hidden',
@@ -230,18 +222,18 @@ export default function Scan() {
               <View style={{ alignItems: 'center', gap: 12 }}>
                 <View
                   style={{
-                    backgroundColor: PALETTE.primaryLight,
+                    backgroundColor: t.primaryLight,
                     padding: 16,
                     borderRadius: 20,
                   }}
                 >
-                  <QrCode color={PALETTE.primary} size={36} />
+                  <QrCode color={t.primary} size={36} />
                 </View>
                 <Text
                   style={{
                     fontFamily: 'Poppins500',
                     fontSize: 13,
-                    color: PALETTE.muted,
+                    color: t.textMuted,
                   }}
                 >
                   Account not yet verified
@@ -256,7 +248,7 @@ export default function Scan() {
               borderRadius: 24,
               overflow: 'hidden',
               borderWidth: 2,
-              borderColor: scanned ? PALETTE.primary : PALETTE.primaryBorder,
+              borderColor: scanned ? t.primary : t.primaryBorder,
             }}
           >
             <CameraView
@@ -296,14 +288,14 @@ export default function Scan() {
                     position: 'absolute',
                     width: 28,
                     height: 28,
-                    borderColor: scanned ? PALETTE.primary : '#fff',
+                    borderColor: scanned ? t.primary : '#fff',
                     borderRadius: 3,
                     ...style,
                   }}
                 />
               ))}
               <ScanLine
-                color={scanned ? PALETTE.primary : 'rgba(255,255,255,0.6)'}
+                color={scanned ? t.primary : 'rgba(255,255,255,0.6)'}
                 size={180}
                 strokeWidth={0.8}
               />
@@ -314,7 +306,7 @@ export default function Scan() {
                 position: 'absolute',
                 bottom: 16,
                 alignSelf: 'center',
-                backgroundColor: scanned ? PALETTE.primary : 'rgba(0,0,0,0.45)',
+                backgroundColor: scanned ? t.primary : 'rgba(0,0,0,0.45)',
                 paddingHorizontal: 16,
                 paddingVertical: 6,
                 borderRadius: 99,
@@ -390,17 +382,17 @@ export default function Scan() {
           gap: 12,
         }}
       >
-        <View style={{ flex: 1, height: 1, backgroundColor: PALETTE.border }} />
+        <View style={{ flex: 1, height: 1, backgroundColor: t.divider }} />
         <Text
           style={{
             fontFamily: 'Poppins400',
             fontSize: 12,
-            color: PALETTE.muted,
+            color: t.textMuted,
           }}
         >
           OR
         </Text>
-        <View style={{ flex: 1, height: 1, backgroundColor: PALETTE.border }} />
+        <View style={{ flex: 1, height: 1, backgroundColor: t.divider }} />
       </View>
 
       {/* Action Buttons */}
@@ -418,10 +410,10 @@ export default function Scan() {
               alignItems: 'center',
               justifyContent: 'center',
               gap: 10,
-              backgroundColor: scanDisabled ? '#9ca3af' : PALETTE.primary,
+              backgroundColor: scanDisabled ? '#9ca3af' : t.primary,
               paddingVertical: 15,
               borderRadius: 14,
-              shadowColor: PALETTE.primary,
+              shadowColor: t.primary,
               shadowOffset: { width: 0, height: 4 },
               shadowOpacity: 0.3,
               shadowRadius: 8,
@@ -440,27 +432,27 @@ export default function Scan() {
         {!isGuard && (
           <Pressable
             onPress={() => toggleDisplayQR((v) => !v)}
-            android_ripple={{ color: PALETTE.primaryBorder }}
+            android_ripple={{ color: t.primaryBorder }}
             style={{
               flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'center',
               gap: 10,
-              backgroundColor: PALETTE.primaryLight,
+              backgroundColor: t.primaryLight,
               paddingVertical: 15,
               borderRadius: 14,
               borderWidth: 1.5,
-              borderColor: PALETTE.primaryBorder,
+              borderColor: t.primaryBorder,
             }}
           >
             {displayQR ? (
               <>
-                <ScanLine color={PALETTE.primary} size={18} />
+                <ScanLine color={t.primary} size={18} />
                 <Text
                   style={{
                     fontFamily: 'Poppins600',
                     fontSize: 14,
-                    color: PALETTE.primary,
+                    color: t.primary,
                   }}
                 >
                   Scan QR Code
@@ -468,12 +460,12 @@ export default function Scan() {
               </>
             ) : (
               <>
-                <QrCode color={PALETTE.primary} size={18} />
+                <QrCode color={t.primary} size={18} />
                 <Text
                   style={{
                     fontFamily: 'Poppins600',
                     fontSize: 14,
-                    color: PALETTE.primary,
+                    color: t.primary,
                   }}
                 >
                   Display My QR

@@ -73,7 +73,7 @@ export default function ResetPassword() {
               <input
                 type={showPassword.new ? 'text' : 'password'}
                 value={password}
-                onChange={(e) => { setPassword(e.target.value); setTouched(true); }}
+                onChange={(e) => { setPassword(e.target.value.replace(/ /g, '')); setTouched(true); }}
                 className='w-full p-4 pr-12 rounded-xl ring ring-gray-300 hover:ring-blue-400 focus:ring-2 focus:ring-blue-500 outline-none text-sm'
                 placeholder='Enter new password'
               />
@@ -108,7 +108,7 @@ export default function ResetPassword() {
               <input
                 type={showPassword.confirm ? 'text' : 'password'}
                 value={confirm}
-                onChange={(e) => setConfirm(e.target.value)}
+                onChange={(e) => setConfirm(e.target.value.replace(/ /g, ''))}
                 className={`w-full p-4 pr-12 rounded-xl ring outline-none text-sm transition-colors ${
                   touched && confirm
                     ? passwordsMatch

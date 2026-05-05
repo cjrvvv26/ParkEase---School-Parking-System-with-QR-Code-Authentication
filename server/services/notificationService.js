@@ -1,23 +1,30 @@
 const mongoose = require("mongoose");
 const Notification = require("../models/notificationModel");
 
+let _io = null;
+exports.setIo = (io) => { _io = io; };
+
 exports.createNotification = async (data, session) => {
   const { userId, title, message } = data;
+  let notification;
   if (session) {
-    const notification = new Notification({
-      userId,
-      title,
-      message,
-    });
-
-    return await notification.save({ session });
+    notification = new Notification({ userId, title, message });
+    await notification.save({ session });
+  } else {
+    notification = await Notification.create({ userId, message, title });
   }
 
-  const notification = await Notification.create({
-    userId,
-    message,
-    title,
-  });
+  if (_io) {
+    _io.to(`user:${userId.toString()}`).emit('new_notification', {
+      _id: notification._id.toString(),
+      userId: userId.toString(),
+      title,
+      message,
+      read: false,
+      createdAt: notification.createdAt,
+    });
+  }
+
   return notification;
 };
 

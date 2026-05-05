@@ -202,7 +202,7 @@ export default function ResetPassword() {
               <TextInput
                 value={password}
                 onChangeText={(v) => {
-                  setPassword(v);
+                  setPassword(v.replace(/ /g, ''));
                   setTouched(true);
                 }}
                 secureTextEntry={!showPassword.new}
@@ -297,7 +297,7 @@ export default function ResetPassword() {
             >
               <TextInput
                 value={confirm}
-                onChangeText={setConfirm}
+                onChangeText={(v) => setConfirm(v.replace(/ /g, ''))}
                 secureTextEntry={!showPassword.confirm}
                 placeholder='Confirm new password'
                 placeholderTextColor={t.textFaint}

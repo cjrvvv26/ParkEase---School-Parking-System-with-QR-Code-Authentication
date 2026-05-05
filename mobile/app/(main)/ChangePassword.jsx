@@ -208,7 +208,7 @@ export default function ChangePassword() {
               <PasswordInput
                 label='Current Password'
                 value={current}
-                onChangeText={(v) => { setCurrent(v); setFieldErrors((p) => ({ ...p, current: '' })); }}
+                onChangeText={(v) => { setCurrent(v.replace(/ /g, '')); setFieldErrors((p) => ({ ...p, current: '' })); }}
                 show={showCurrent}
                 onToggle={() => setShowCurrent(!showCurrent)}
                 t={t}
@@ -222,7 +222,7 @@ export default function ChangePassword() {
               <PasswordInput
                 label='New Password'
                 value={newPass}
-                onChangeText={(v) => { setNewPass(v); setFieldErrors((p) => ({ ...p, new: '' })); }}
+                onChangeText={(v) => { setNewPass(v.replace(/ /g, '')); setFieldErrors((p) => ({ ...p, new: '' })); }}
                 show={showNew}
                 onToggle={() => setShowNew(!showNew)}
                 t={t}
@@ -294,7 +294,7 @@ export default function ChangePassword() {
                   />
                   <TextInput
                     value={confirm}
-                    onChangeText={setConfirm}
+                    onChangeText={(v) => setConfirm(v.replace(/ /g, ''))}
                     secureTextEntry={!showConfirm}
                     style={{
                       flex: 1,

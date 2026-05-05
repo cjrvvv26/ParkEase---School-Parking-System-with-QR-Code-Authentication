@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 import useTheme from '../hooks/useTheme';
 import { getNotifications, markAsRead, deleteNotification } from '../services/notificationService';
+import { getSocket } from '../services/socketService';
 
 const FILTERS = ['All', 'Unread', 'Read'];
 const TYPE_MAP = { All: 'all', Unread: 'unread', Read: 'read' };
@@ -51,6 +52,18 @@ export default function Notification() {
   useEffect(() => {
     fetchNotifications();
   }, [fetchNotifications]);
+
+  // Prepend new notifications arriving via socket in real-time
+  useEffect(() => {
+    const socket = getSocket();
+    const handler = (notif) => {
+      setNotifications((prev) =>
+        prev.some((n) => n._id === notif._id) ? prev : [notif, ...prev]
+      );
+    };
+    socket.on('new_notification', handler);
+    return () => socket.off('new_notification', handler);
+  }, []);
 
   const handlePress = async (notif) => {
     if (notif.read) return;
