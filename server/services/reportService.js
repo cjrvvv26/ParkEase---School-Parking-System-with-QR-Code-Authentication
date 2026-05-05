@@ -236,6 +236,7 @@ exports.calculateOccupancyByHour = async () => {
 
 exports.calculateAvgParkingByHour = async () => {
   const ActivityLog = require('../models/activityModel');
+  const User = require('../models/userModel');
 
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -247,42 +248,41 @@ exports.calculateAvgParkingByHour = async () => {
     { label: '3-5 PM', start: 15, end: 17 },
   ];
 
-  // UNPARKED logs have metadata.duration (minutes) recorded when user exits
-  const logs = await ActivityLog.find({
-    actionType: 'parking',
-    action: 'UNPARKED',
-    createdAt: { $gte: thirtyDaysAgo },
-    'metadata.duration': { $gt: 0 },
-  })
-    .select('createdAt metadata.duration')
-    .lean();
-
-  // Back-calculate entry hour: exitTime - duration = entryTime
-  // Then bucket by entry hour to show when users typically start parking
-  const values = timeSlots.map(({ start, end }) => {
-    const slotLogs = logs.filter((l) => {
-      const exitMs = new Date(l.createdAt).getTime();
-      const entryMs = exitMs - (l.metadata.duration * 60 * 1000);
-      const entryHour = new Date(entryMs).getHours();
-      return entryHour >= start && entryHour < end;
-    });
-
-    if (!slotLogs.length) return 0;
-
-    const avgDuration = Math.round(
-      slotLogs.reduce((sum, l) => sum + l.metadata.duration, 0) / slotLogs.length
-    );
-    return avgDuration;
+  const totalActive = await User.countDocuments({
+    role: { $in: ['student', 'faculty'] },
+    status: 'active',
   });
 
-  const activeDays = new Set(
-    logs.map((l) => new Date(l.createdAt).toDateString())
-  ).size;
+  // Use PARKED logs — createdAt is when the user started parking
+  const logs = await ActivityLog.find({
+    actionType: 'parking',
+    action: 'PARKED',
+    createdAt: { $gte: thirtyDaysAgo },
+  })
+    .select('userId createdAt')
+    .lean();
+
+  // For each time slot: count distinct users who ever parked in that slot
+  // then express as % of total active students+faculty
+  const values = timeSlots.map(({ start, end }) => {
+    const uniqueUsers = new Set(
+      logs
+        .filter((l) => {
+          const h = new Date(l.createdAt).getHours();
+          return h >= start && h < end;
+        })
+        .map((l) => l.userId.toString())
+    ).size;
+
+    return totalActive > 0
+      ? Math.min(100, Math.round((uniqueUsers / totalActive) * 100))
+      : 0;
+  });
 
   return {
     labels: timeSlots.map((s) => s.label),
     values,
-    activeDays,
+    totalActive,
     totalSessions: logs.length,
   };
 };
