@@ -37,12 +37,13 @@ export default function Chat() {
   const [chatId, setChatId] = useState(null);
   const scrollRef = useRef(null);
 
+  const currentRoomRef = useRef(null);
+
   // Build deterministic chatId from two user IDs sorted
   const buildChatId = (a, b) => [a, b].sort().join('_');
 
   useEffect(() => {
     const socket = getSocket();
-    let currentRoomId = null;
 
     const handler = (msg) => {
       setMessages((prev) =>
@@ -52,7 +53,7 @@ export default function Chat() {
     };
 
     const rejoin = () => {
-      if (currentRoomId) socket.emit('join room', currentRoomId);
+      if (currentRoomRef.current) socket.emit('join room', currentRoomRef.current);
     };
 
     socket.on('received_message', handler);
@@ -66,7 +67,7 @@ export default function Chat() {
       setAdminId(saId);
       const id = buildChatId(user._id, saId);
       setChatId(id);
-      currentRoomId = id;
+      currentRoomRef.current = id;
 
       const history = await getChatMessages(id);
       if (history?.data) setMessages(history.data);

@@ -15,14 +15,23 @@ const socketHandler = (io) => {
 
     socket.on('send_message', async (data) => {
       try {
-        const saveMessage = await chatService.saveMessage(data);
+        const { chatId, sender, receiver, message } = data;
+        if (!chatId || !sender || !receiver || !message) return;
+
+        const saveMessage = await chatService.saveMessage({
+          chatId,
+          sender,
+          receiver,
+          message,
+        });
         const plain = saveMessage.toObject();
         plain._id = plain._id.toString();
         plain.sender = plain.sender.toString();
         plain.receiver = plain.receiver.toString();
-        io.to(data.chatId).emit('received_message', plain);
+        io.to(chatId).emit('received_message', plain);
       } catch (error) {
-        console.log(error.message);
+        console.log('[send_message error]', error.message);
+        socket.emit('message_error', { error: error.message });
       }
     });
 

@@ -5,7 +5,10 @@ import axiosConfig from '../utils/axiosConfig';
 import { Search, Send } from 'lucide-react';
 import useDark from '../hooks/useDark';
 
-const BASE_URL = 'http://localhost:5000';
+const BASE_URL =
+  import.meta.env.VITE_API_URL ||
+  'https://parkease-school-parking-system-with-qr-nn18.onrender.com';
+
 let socket = null;
 const getSocket = () => {
   if (!socket)
@@ -16,6 +19,7 @@ const connectSocket = () =>
   new Promise((resolve) => {
     const s = getSocket();
     if (s.connected) return resolve(s);
+    if (s.connecting) { s.once('connect', () => resolve(s)); return; }
     s.once('connect', () => resolve(s));
     s.connect();
   });
@@ -71,6 +75,7 @@ export default function Chats() {
   useEffect(() => {
     if (!adminId) return;
     const s = getSocket();
+
     const handler = (msg) => {
       appendMessage(msg);
       // Bubble the sender to the top of the user list
@@ -85,16 +90,31 @@ export default function Chats() {
         });
       }
     };
+
+    const rejoin = () => {
+      socket.emit('join_user', adminId);
+    };
+
     s.on('received_message', handler);
-    connectSocket();
-    return () => s.off('received_message', handler);
+    s.on('connect', rejoin);
+
+    connectSocket().then((s) => {
+      s.emit('join_user', adminId);
+    });
+
+    return () => {
+      s.off('received_message', handler);
+      s.off('connect', rejoin);
+    };
   }, [adminId]);
 
   // When a user is selected: join their room + load history if not cached
   useEffect(() => {
     if (!selected || !adminId) return;
     const chatId = getChatId(selected._id);
-    connectSocket().then((s) => s.emit('join room', chatId));
+    connectSocket().then((s) => {
+      s.emit('join room', chatId);
+    });
     if (!msgMap[chatId]) {
       axiosConfig
         .get(`/super-admin/chat/${chatId}`)
