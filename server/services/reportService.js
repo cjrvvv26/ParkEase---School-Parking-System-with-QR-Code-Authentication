@@ -236,7 +236,6 @@ exports.calculateOccupancyByHour = async () => {
 
 exports.calculateAvgParkingByHour = async () => {
   const ActivityLog = require('../models/activityModel');
-  const User = require('../models/userModel');
 
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -248,40 +247,43 @@ exports.calculateAvgParkingByHour = async () => {
     { label: '3-5 PM', start: 15, end: 17 },
   ];
 
-  // Total active students + faculty as denominator
-  const totalActive = await User.countDocuments({
-    role: { $in: ['student', 'faculty'] },
-    status: 'active',
-  });
-
-  // PARKED logs tell us when each session started
+  // UNPARKED logs have metadata.duration (minutes) recorded when user exits
   const logs = await ActivityLog.find({
     actionType: 'parking',
-    action: 'PARKED',
+    action: 'UNPARKED',
     createdAt: { $gte: thirtyDaysAgo },
+    'metadata.duration': { $gt: 0 },
   })
-    .select('createdAt')
+    .select('createdAt metadata.duration')
     .lean();
 
-  // For each time slot: count total sessions over 30 days,
-  // average per day, then express as % of active users
+  // Back-calculate entry hour: exitTime - duration = entryTime
+  // Then bucket by entry hour to show when users typically start parking
   const values = timeSlots.map(({ start, end }) => {
-    const slotSessions = logs.filter((l) => {
-      const h = new Date(l.createdAt).getHours();
-      return h >= start && h < end;
-    }).length;
+    const slotLogs = logs.filter((l) => {
+      const exitMs = new Date(l.createdAt).getTime();
+      const entryMs = exitMs - (l.metadata.duration * 60 * 1000);
+      const entryHour = new Date(entryMs).getHours();
+      return entryHour >= start && entryHour < end;
+    });
 
-    const avgPerDay = slotSessions / 30;
+    if (!slotLogs.length) return 0;
 
-    return totalActive > 0
-      ? Math.min(100, Math.round((avgPerDay / totalActive) * 100))
-      : 0;
+    const avgDuration = Math.round(
+      slotLogs.reduce((sum, l) => sum + l.metadata.duration, 0) / slotLogs.length
+    );
+    return avgDuration;
   });
+
+  const activeDays = new Set(
+    logs.map((l) => new Date(l.createdAt).toDateString())
+  ).size;
 
   return {
     labels: timeSlots.map((s) => s.label),
     values,
-    totalActive,
+    activeDays,
+    totalSessions: logs.length,
   };
 };
 
