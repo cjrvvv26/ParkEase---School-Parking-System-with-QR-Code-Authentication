@@ -28,6 +28,7 @@ export default function DynamicMap({
   width = 800,
   height = 600,
   onShapeClick,
+  selectedShape,
 }) {
   const { fetchData } = useFetch();
   const { dark, canvasBg } = useDark();
@@ -38,6 +39,13 @@ export default function DynamicMap({
   useEffect(() => {
     setShapes(shapesProp);
   }, [shapesProp]);
+
+  // Update selectedId when selectedShape changes
+  useEffect(() => {
+    if (selectedShape) {
+      setSelectedId(selectedShape._id);
+    }
+  }, [selectedShape]);
 
   // Setup socket listener for real-time slot updates
   useEffect(() => {

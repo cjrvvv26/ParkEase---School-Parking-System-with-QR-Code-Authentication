@@ -44,10 +44,10 @@
       "bundler": "metro"
     },
     "extra": {
+      "API_URL": "https://parkease-school-parking-system-with-qr-nn18.onrender.com",
       "eas": {
-        "projectId": "75a3627c-4553-48dd-b311-c52742b6c463"
-      },
-      "API_URL": "https://parkease-school-parking-system-with-qr-nn18.onrender.com"
+        "projectId": "bd0e6380-a086-428d-97eb-f13979e0af13"
+      }
     }
   }
 }

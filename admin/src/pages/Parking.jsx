@@ -25,6 +25,9 @@ export default function Parking() {
   const [slotQRBtn, toggleSlotQRBtn] = useState(false);
   const [confirmDeleteMap, setConfirmDeleteMap] = useState(false);
   const [isPreview, setIsPreview] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { fetchData, loading } = useFetch();
@@ -143,6 +146,109 @@ export default function Parking() {
       setTimeout(() => setShowMessage(false), 4000);
     } catch (e) {
       console.error(e);
+    }
+  };
+
+  const fetchUsers = async (query) => {
+    try {
+      const data = await fetchData(
+        `user/search?q=${encodeURIComponent(query)}`,
+        { method: 'GET' },
+      );
+      console.log('Search results:', data);
+      setSearchResults(data || []);
+      setShowDropdown(true);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      setSearchResults([]);
+    }
+  };
+
+  const handleUserSelect = async (user) => {
+    console.log('Selected user:', user);
+    const firstName =
+      user.name?.firstName || user.profileDetails?.firstName || '';
+    const lastName = user.name?.lastName || user.profileDetails?.lastName || '';
+    setSearchQuery(`${firstName} ${lastName}`.trim());
+    setShowDropdown(false);
+
+    // Find the slot
+    let foundSlot = null;
+    let foundMapIndex = -1;
+
+    maps.forEach((map, index) => {
+      map.shapes.forEach((shape) => {
+        if (
+          shape.metadata?.type === 'slot' &&
+          (shape.occupiedBy === user._id ||
+            shape.assignedStudentId === user._id)
+        ) {
+          console.log('Found slot for user:', shape);
+          foundSlot = shape;
+          foundMapIndex = index;
+        }
+      });
+    });
+
+    console.log(
+      'Final - foundSlot:',
+      foundSlot,
+      'foundMapIndex:',
+      foundMapIndex,
+    );
+
+    if (foundSlot) {
+      // Critical: switching maps triggers an effect that will overwrite selectedShape.
+      // So set the map index first, and then set the slot after the map is selected.
+      if (foundMapIndex !== -1) {
+        setCurrentIndex(foundMapIndex);
+        // Set on next tick so the [maps,currentIndex] effect has run.
+        setTimeout(async () => {
+          try {
+            // Fetch the full slot details from the backend (like DynamicMap does)
+            const data = await fetchData('slot', {
+              method: 'POST',
+              data: { _id: foundSlot._id },
+            });
+            console.log('Fetched slot data:', data);
+            if (data?.slot) {
+              const { createdAt, updatedAt, __v, _id, slotId, ...slotData } =
+                data.slot;
+              setSelectedShape({ ...foundSlot, ...slotData });
+            } else {
+              setSelectedShape(foundSlot);
+            }
+          } catch (error) {
+            console.error('Error fetching slot details:', error);
+            setSelectedShape(foundSlot);
+          }
+        }, 0);
+      } else {
+        try {
+          // Fetch the full slot details from the backend
+          const data = await fetchData('slot', {
+            method: 'POST',
+            data: { _id: foundSlot._id },
+          });
+          console.log('Fetched slot data:', data);
+          if (data?.slot) {
+            const { createdAt, updatedAt, __v, _id, slotId, ...slotData } =
+              data.slot;
+            setSelectedShape({ ...foundSlot, ...slotData });
+          } else {
+            setSelectedShape(foundSlot);
+          }
+        } catch (error) {
+          console.error('Error fetching slot details:', error);
+          setSelectedShape(foundSlot);
+        }
+      }
+    } else {
+      setSuccessMessage(
+        'User not currently occupying or assigned to any slot.',
+      );
+      setShowMessage(true);
+      setTimeout(() => setShowMessage(false), 4000);
     }
   };
 
@@ -481,6 +587,48 @@ export default function Parking() {
                 d='M15.75 19.5 8.25 12l7.5-7.5'
               />
             </svg>
+            {/* Search bar */}
+            <div className='absolute top-5 left-5'>
+              <input
+                type='text'
+                placeholder="Search user's name"
+                value={searchQuery}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setSearchQuery(value);
+                  if (value.trim().length > 0) {
+                    fetchUsers(value);
+                  } else {
+                    setSearchResults([]);
+                    setShowDropdown(false);
+                  }
+                }}
+                onFocus={() => {
+                  if (searchResults.length > 0) setShowDropdown(true);
+                }}
+                onBlur={() => {
+                  setTimeout(() => setShowDropdown(false), 200);
+                }}
+                className='p-2 px-4 min-w-64 rounded-md border-none outline-none hover:ring-blue-500 ring-gray-200 focus:ring-blue-500 ring hover:ring-2 focus:ring-2 text-gray-700'
+              />
+              {showDropdown && searchResults.length > 0 && (
+                <div
+                  className={`absolute left-0 top-10 w-64 ${dark ? 'bg-[#242424] border-[#3a3a3a] text-gray-200' : 'bg-white border-gray-200 text-gray-700'} border rounded-md shadow-lg z-10`}
+                >
+                  {searchResults.map((user) => (
+                    <div
+                      key={user._id}
+                      className={`p-2 cursor-pointer ${dark ? 'hover:bg-[#3a3a3a]' : 'hover:bg-gray-100'}`}
+                      onClick={() => handleUserSelect(user)}
+                    >
+                      {user.name?.firstName || user.profileDetails?.firstName}{' '}
+                      {user.name?.lastName || user.profileDetails?.lastName} (
+                      {user.role})
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
             {/* Legends */}
             <div className='flex items-center justify-between absolute top-5 right-5'>
               <div className='flex gap-3'>
@@ -527,6 +675,7 @@ export default function Parking() {
                   width={maps[currentIndex].width}
                   height={maps[currentIndex].height}
                   onShapeClick={handleShapeClick}
+                  selectedShape={selectedShape}
                 />
               ) : (
                 <div className='text-center text-gray-400'>
@@ -597,6 +746,7 @@ export default function Parking() {
                 shapes={selectedMap.shapes}
                 width={selectedMap.width}
                 height={selectedMap.height}
+                selectedShape={selectedShape}
               />
             </div>
           </div>

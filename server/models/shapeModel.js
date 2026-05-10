@@ -1,8 +1,8 @@
 // models/shapeModel.js
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const geometrySchema = new mongoose.Schema({
-  shape: { type: String, enum: ["rect", "parallelogram", "polygon"] },
+  shape: { type: String, enum: ['rect', 'parallelogram', 'polygon', 'arrow'] },
   x: { type: Number }, // top-left x (for rect/parallelogram)
   y: { type: Number }, // top-left y
   width: { type: Number }, // width (for rect/parallelogram)
@@ -13,7 +13,7 @@ const geometrySchema = new mongoose.Schema({
 
 const metadataSchema = new mongoose.Schema({
   label: { type: String }, // e.g., A-01
-  type: { type: String, enum: ["slot", "building"] },
+  type: { type: String, enum: ['slot', 'building', 'arrow'] },
   area: { type: String },
   locked: { type: Boolean, default: false },
   information: {
@@ -31,7 +31,7 @@ const shapeSchema = new mongoose.Schema(
     mapId: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
-      ref: "map",
+      ref: 'map',
     },
     geometry: geometrySchema,
     metadata: metadataSchema,
@@ -39,4 +39,4 @@ const shapeSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-module.exports = mongoose.model("shape", shapeSchema);
+module.exports = mongoose.model('shape', shapeSchema);

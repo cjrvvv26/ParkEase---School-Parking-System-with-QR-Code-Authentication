@@ -1,15 +1,23 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import ToolBox from "../components/maps/ToolBox";
-import PropertiesPanel from "../components/maps/PropertiesPanel";
-import Header from "../components/maps/Header";
-import Modal from "../components/Modal";
-import useFetch from "../hooks/useFetch";
-import useDark from "../hooks/useDark";
+import React, { useState, useEffect, useRef } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import ToolBox from '../components/maps/ToolBox';
+import PropertiesPanel from '../components/maps/PropertiesPanel';
+import Header from '../components/maps/Header';
+import Modal from '../components/Modal';
+import useFetch from '../hooks/useFetch';
+import useDark from '../hooks/useDark';
 import DynamicMap from '../components/maps/DynamicMap';
 import { Building2, ImagePlus, AlignLeft, Tag, X } from 'lucide-react';
 
-function BuildingModal({ building, onChange, onSave, onClose, dark, border, input }) {
+function BuildingModal({
+  building,
+  onChange,
+  onSave,
+  onClose,
+  dark,
+  border,
+  input,
+}) {
   const fileRef = useRef();
   const [dragOver, setDragOver] = useState(false);
 
@@ -41,29 +49,47 @@ function BuildingModal({ building, onChange, onSave, onClose, dark, border, inpu
     });
 
   return (
-    <div className="w-[420px] flex flex-col">
+    <div className='w-[420px] flex flex-col'>
       {/* Modal header */}
-      <div className={`flex items-center justify-between px-5 pt-5 pb-4 border-b ${border}`}>
-        <div className="flex items-center gap-2.5">
-          <div className="p-1.5 rounded-lg bg-emerald-50">
-            <Building2 size={16} className="text-emerald-500" strokeWidth={1.8} />
+      <div
+        className={`flex items-center justify-between px-5 pt-5 pb-4 border-b ${border}`}
+      >
+        <div className='flex items-center gap-2.5'>
+          <div className='p-1.5 rounded-lg bg-emerald-50'>
+            <Building2
+              size={16}
+              className='text-emerald-500'
+              strokeWidth={1.8}
+            />
           </div>
           <div>
-            <h2 className={`text-sm font-semibold ${dark ? 'text-gray-200' : 'text-gray-800'}`}>Edit Building</h2>
-            <p className="text-[11px] text-gray-400">{info.name || "Unnamed building"}</p>
+            <h2
+              className={`text-sm font-semibold ${dark ? 'text-gray-200' : 'text-gray-800'}`}
+            >
+              Edit Building
+            </h2>
+            <p className='text-[11px] text-gray-400'>
+              {info.name || 'Unnamed building'}
+            </p>
           </div>
         </div>
-        <button onClick={onClose} className={`p-1.5 rounded-lg text-gray-400 transition ${dark ? 'hover:bg-[#3a3a3a]' : 'hover:bg-gray-100'}`}>
+        <button
+          onClick={onClose}
+          className={`p-1.5 rounded-lg text-gray-400 transition ${dark ? 'hover:bg-[#3a3a3a]' : 'hover:bg-gray-100'}`}
+        >
           <X size={15} />
         </button>
       </div>
 
       {/* Body */}
-      <div className="px-5 py-4 flex flex-col gap-4">
+      <div className='px-5 py-4 flex flex-col gap-4'>
         {/* Image upload zone */}
         <div
           onClick={() => fileRef.current?.click()}
-          onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDragOver(true);
+          }}
           onDragLeave={() => setDragOver(false)}
           onDrop={(e) => {
             e.preventDefault();
@@ -72,55 +98,71 @@ function BuildingModal({ building, onChange, onSave, onClose, dark, border, inpu
           }}
           className={`relative w-full h-44 rounded-2xl border-2 border-dashed cursor-pointer overflow-hidden flex items-center justify-center transition group ${
             dragOver
-              ? "border-blue-400 bg-blue-50"
-              : dark ? "border-[#4a4a4a] bg-[#3a3a3a] hover:border-blue-400" : "border-gray-200 bg-gray-50 hover:border-blue-300 hover:bg-blue-50/30"
+              ? 'border-blue-400 bg-blue-50'
+              : dark
+                ? 'border-[#4a4a4a] bg-[#3a3a3a] hover:border-blue-400'
+                : 'border-gray-200 bg-gray-50 hover:border-blue-300 hover:bg-blue-50/30'
           }`}
         >
           {previewUrl ? (
             <>
-              <img src={previewUrl} alt="Building" className="w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex flex-col items-center justify-center gap-1.5">
-                <ImagePlus size={22} className="text-white" />
-                <span className="text-white text-xs">Change photo</span>
+              <img
+                src={previewUrl}
+                alt='Building'
+                className='w-full h-full object-cover'
+              />
+              <div className='absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex flex-col items-center justify-center gap-1.5'>
+                <ImagePlus size={22} className='text-white' />
+                <span className='text-white text-xs'>Change photo</span>
               </div>
             </>
           ) : (
-            <div className="flex flex-col items-center gap-2 text-gray-300 group-hover:text-blue-400 transition">
+            <div className='flex flex-col items-center gap-2 text-gray-300 group-hover:text-blue-400 transition'>
               <ImagePlus size={28} strokeWidth={1.3} />
-              <div className="text-center">
-                <p className="text-xs font-medium">Click or drag to upload</p>
-                <p className="text-[11px] mt-0.5">PNG, JPG, WEBP up to 10MB</p>
+              <div className='text-center'>
+                <p className='text-xs font-medium'>Click or drag to upload</p>
+                <p className='text-[11px] mt-0.5'>PNG, JPG, WEBP up to 10MB</p>
               </div>
             </div>
           )}
-          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => handleFile(e.target.files[0])} />
+          <input
+            ref={fileRef}
+            type='file'
+            accept='image/*'
+            className='hidden'
+            onChange={(e) => handleFile(e.target.files[0])}
+          />
         </div>
 
         {/* Name */}
-        <div className="flex flex-col gap-1.5">
-          <div className="flex items-center gap-1.5">
-            <Tag size={11} className="text-gray-400" strokeWidth={1.8} />
-            <label className="text-[11px] uppercase tracking-wide font-medium text-gray-400">Name</label>
+        <div className='flex flex-col gap-1.5'>
+          <div className='flex items-center gap-1.5'>
+            <Tag size={11} className='text-gray-400' strokeWidth={1.8} />
+            <label className='text-[11px] uppercase tracking-wide font-medium text-gray-400'>
+              Name
+            </label>
           </div>
           <input
-            type="text"
-            value={info.name || ""}
-            onChange={(e) => setField("name", e.target.value)}
-            placeholder="e.g. Main Building"
+            type='text'
+            value={info.name || ''}
+            onChange={(e) => setField('name', e.target.value)}
+            placeholder='e.g. Main Building'
             className={`w-full border text-xs rounded-xl px-3 py-2 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition ${input}`}
           />
         </div>
 
         {/* Description */}
-        <div className="flex flex-col gap-1.5">
-          <div className="flex items-center gap-1.5">
-            <AlignLeft size={11} className="text-gray-400" strokeWidth={1.8} />
-            <label className="text-[11px] uppercase tracking-wide font-medium text-gray-400">Description</label>
+        <div className='flex flex-col gap-1.5'>
+          <div className='flex items-center gap-1.5'>
+            <AlignLeft size={11} className='text-gray-400' strokeWidth={1.8} />
+            <label className='text-[11px] uppercase tracking-wide font-medium text-gray-400'>
+              Description
+            </label>
           </div>
           <textarea
-            value={info.description || ""}
-            onChange={(e) => setField("description", e.target.value)}
-            placeholder="Brief description of this building..."
+            value={info.description || ''}
+            onChange={(e) => setField('description', e.target.value)}
+            placeholder='Brief description of this building...'
             rows={3}
             className={`w-full border text-xs rounded-xl px-3 py-2 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition resize-none ${input}`}
           />
@@ -128,14 +170,23 @@ function BuildingModal({ building, onChange, onSave, onClose, dark, border, inpu
       </div>
 
       {/* Footer */}
-      <div className="px-5 pb-5 flex gap-3">
-        <button onClick={onClose} className={`flex-1 py-2.5 rounded-xl border text-xs transition ${dark ? 'border-[#4a4a4a] text-gray-400 hover:bg-[#3a3a3a]' : 'border-gray-200 text-gray-500 hover:bg-gray-50'}`}>Cancel</button>
-        <button onClick={onSave} className="flex-1 py-2.5 rounded-xl bg-blue-500 hover:bg-blue-600 text-xs text-white font-medium transition">Save Changes</button>
+      <div className='px-5 pb-5 flex gap-3'>
+        <button
+          onClick={onClose}
+          className={`flex-1 py-2.5 rounded-xl border text-xs transition ${dark ? 'border-[#4a4a4a] text-gray-400 hover:bg-[#3a3a3a]' : 'border-gray-200 text-gray-500 hover:bg-gray-50'}`}
+        >
+          Cancel
+        </button>
+        <button
+          onClick={onSave}
+          className='flex-1 py-2.5 rounded-xl bg-blue-500 hover:bg-blue-600 text-xs text-white font-medium transition'
+        >
+          Save Changes
+        </button>
       </div>
     </div>
   );
 }
-
 
 function SlotShape({
   shape,
@@ -150,7 +201,11 @@ function SlotShape({
   shapeColor,
 }) {
   const renderShape = () => {
-    const cursorClass = isDragging ? 'cursor-grabbing' : isHovering ? 'cursor-grab' : 'cursor-default';
+    const cursorClass = isDragging
+      ? 'cursor-grabbing'
+      : isHovering
+        ? 'cursor-grab'
+        : 'cursor-default';
     const active = isSelected || isDragging;
     const stroke = active ? '#3b82f6' : 'none';
     const strokeWidth = active ? '2' : '0';
@@ -168,7 +223,9 @@ function SlotShape({
         />
       );
     } else if (shape.geometry.shape === 'polygon') {
-      const pointsStr = shape.geometry.points.map((p) => `${p.x},${p.y}`).join(' ');
+      const pointsStr = shape.geometry.points
+        .map((p) => `${p.x},${p.y}`)
+        .join(' ');
       return (
         <polygon
           points={pointsStr}
@@ -179,14 +236,77 @@ function SlotShape({
           className={cursorClass}
         />
       );
+    } else if (shape.geometry.shape === 'arrow') {
+      const points = shape.geometry.points;
+      if (!points || points.length < 2) return null;
+      const start = points[0];
+      const end = points[points.length - 1];
+      const headlen = 15;
+      const angle = Math.atan2(end.y - start.y, end.x - start.x);
+      const arrowPoints = [
+        {
+          x: end.x - headlen * Math.cos(angle - Math.PI / 6),
+          y: end.y - headlen * Math.sin(angle - Math.PI / 6),
+        },
+        end,
+        {
+          x: end.x - headlen * Math.cos(angle + Math.PI / 6),
+          y: end.y - headlen * Math.sin(angle + Math.PI / 6),
+        },
+      ];
+      return (
+        <g>
+          <line
+            x1={start.x}
+            y1={start.y}
+            x2={end.x}
+            y2={end.y}
+            stroke={active ? '#3b82f6' : '#000000'}
+            strokeWidth={active ? '2' : '1.5'}
+            className={cursorClass}
+          />
+          <polygon
+            points={arrowPoints.map((p) => `${p.x},${p.y}`).join(' ')}
+            fill={active ? '#3b82f6' : '#000000'}
+            className={cursorClass}
+          />
+        </g>
+      );
+    } else if (shape.geometry.shape === 'text') {
+      return (
+        <g>
+          <rect
+            x={0}
+            y={0}
+            width={shape.geometry.width}
+            height={shape.geometry.height}
+            fill='none'
+            stroke={stroke}
+            strokeWidth={strokeWidth}
+            strokeDasharray={strokeDasharray}
+            className={cursorClass}
+          />
+          <text
+            x={shape.geometry.width / 2}
+            y={shape.geometry.height / 2}
+            textAnchor='middle'
+            dominantBaseline='middle'
+            fill={shape.metadata?.fontColor || '#000000'}
+            fontSize={shape.metadata?.fontSize || 16}
+            className={cursorClass}
+          >
+            {shape.metadata?.textContent || 'Text'}
+          </text>
+        </g>
+      );
     }
     return null;
   };
 
   const getLabelPosition = () => {
-    if (shape.geometry.shape === "rect") {
+    if (shape.geometry.shape === 'rect') {
       return { x: shape.geometry.width / 2, y: -5 };
-    } else if (shape.geometry.shape === "polygon") {
+    } else if (shape.geometry.shape === 'polygon') {
       const points = shape.geometry.points;
       const cx = points.reduce((sum, p) => sum + p.x, 0) / points.length;
       const cy = points.reduce((sum, p) => sum + p.y, 0) / points.length;
@@ -207,31 +327,28 @@ function SlotShape({
     >
       <g
         transform={
-          shape.geometry.shape === "rect"
+          shape.geometry.shape === 'rect'
             ? `rotate(${shape.geometry.rotation || 0} ${shape.geometry.width / 2} ${shape.geometry.height / 2})`
-            : ""
+            : ''
         }
       >
         {renderShape()}
       </g>
       {(isSelected || isDragging) && (
-        <text
-          x={labelPos.x}
-          y={labelPos.y}
-          fill="#3b82f6"
-          fontSize="12"
-        >
-          {typeof shape.metadata?.label === 'string' ? shape.metadata.label : 'No Label'}
+        <text x={labelPos.x} y={labelPos.y} fill='#3b82f6' fontSize='12'>
+          {typeof shape.metadata?.label === 'string'
+            ? shape.metadata.label
+            : 'No Label'}
         </text>
       )}
-      {shape.geometry.shape === "polygon" && (
+      {shape.geometry.shape === 'polygon' && (
         <g>
           <circle
             cx={labelPos.x}
             cy={labelPos.y + 10}
-            r="5"
-            fill="#05df72"
-            className="animate-pulse hover:cursor-pointer"
+            r='5'
+            fill='#05df72'
+            className='animate-pulse hover:cursor-pointer'
             onClick={(e) => {
               e.stopPropagation();
               onBuildingClick(shape);
@@ -240,10 +357,10 @@ function SlotShape({
           <circle
             cx={labelPos.x}
             cy={labelPos.y + 10}
-            r="8"
+            r='8'
             opacity={50}
-            fill="#b9f8cf"
-            className="animate-pulse"
+            fill='#b9f8cf'
+            className='animate-pulse'
             onClick={(e) => {
               e.stopPropagation();
               onBuildingClick(shape);
@@ -265,7 +382,7 @@ export default function MapEditor() {
     mapId,
     isUpdate,
   } = location.state || {};
-  const [currentAreaName, setCurrentAreaName] = useState(initialAreaName || "");
+  const [currentAreaName, setCurrentAreaName] = useState(initialAreaName || '');
   const [currentSvgSize, setCurrentSvgSize] = useState(
     initialSvgSize || { width: 1200, height: 300 },
   );
@@ -280,11 +397,11 @@ export default function MapEditor() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const isFromHistoryRef = useRef(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [newAreaName, setNewAreaName] = useState("");
-  const [newWidth, setNewWidth] = useState("");
-  const [newHeight, setNewHeight] = useState("");
-  const [mode, setMode] = useState("select");
-  const [errorMessage, setErrorMessage] = useState("");
+  const [newAreaName, setNewAreaName] = useState('');
+  const [newWidth, setNewWidth] = useState('');
+  const [newHeight, setNewHeight] = useState('');
+  const [mode, setMode] = useState('select');
+  const [errorMessage, setErrorMessage] = useState('');
   const [isBuildingModalOpen, setIsBuildingModalOpen] = useState(false);
   const [selectedBuilding, setSelectedBuilding] = useState(null);
   const [isUpdateMode, setIsUpdateMode] = useState(isUpdate || false);
@@ -296,10 +413,18 @@ export default function MapEditor() {
   const [confirmDeleteMap, setConfirmDeleteMap] = useState(false);
   const [isPreview, setIsPreview] = useState(false);
   const { fetchData } = useFetch();
-  const { dark, border, input, canvasBg, canvasOuterBg, canvasGridStroke, shapeColor } = useDark();
+  const {
+    dark,
+    border,
+    input,
+    canvasBg,
+    canvasOuterBg,
+    canvasGridStroke,
+    shapeColor,
+  } = useDark();
 
   useEffect(() => {
-    setCurrentAreaName(initialAreaName || "");
+    setCurrentAreaName(initialAreaName || '');
     setCurrentSvgSize(initialSvgSize || { width: 1200, height: 300 });
     if (initialShapes && isUpdate) {
       setShapes(initialShapes);
@@ -322,14 +447,14 @@ export default function MapEditor() {
   useEffect(() => {
     if (errorMessage) {
       const timer = setTimeout(() => {
-        setErrorMessage("");
+        setErrorMessage('');
       }, 3000);
       return () => clearTimeout(timer);
     }
   }, [errorMessage]);
 
   const startDrag = (e, shape) => {
-    if (mode !== "select") return;
+    if (mode !== 'select') return;
     e.stopPropagation();
 
     const svg = e.currentTarget.ownerSVGElement || e.currentTarget;
@@ -339,10 +464,10 @@ export default function MapEditor() {
     const matrix = svg.getScreenCTM().inverse();
     const transformed = pt.matrixTransform(matrix);
 
-    if (shape.geometry.shape === "polygon") {
+    if (shape.geometry.shape === 'polygon') {
       setDragging({
         id: shape._id || shape.tempId,
-        type: "polygon",
+        type: 'polygon',
         initialPoints: shape.geometry.points,
         startX: transformed.x,
         startY: transformed.y,
@@ -350,7 +475,7 @@ export default function MapEditor() {
     } else {
       setDragging({
         id: shape._id || shape.tempId,
-        type: "rect",
+        type: 'rect',
         initialX: shape.geometry.x,
         initialY: shape.geometry.y,
         startX: transformed.x,
@@ -376,7 +501,7 @@ export default function MapEditor() {
       const dx = transformed.x - dragging.startX;
       const dy = transformed.y - dragging.startY;
 
-      if (dragging.type === "rect") {
+      if (dragging.type === 'rect') {
         setShapes((prev) =>
           prev.map((s) =>
             (s._id || s.tempId) === dragging.id
@@ -391,7 +516,7 @@ export default function MapEditor() {
               : s,
           ),
         );
-      } else if (dragging.type === "polygon") {
+      } else if (dragging.type === 'polygon') {
         setShapes((prev) =>
           prev.map((s) =>
             (s._id || s.tempId) === dragging.id
@@ -413,7 +538,7 @@ export default function MapEditor() {
   };
 
   const handleMouseDown = (e) => {
-    if (mode === "draw") {
+    if (mode === 'draw' || mode === 'arrow') {
       const svg = e.currentTarget;
       const pt = svg.createSVGPoint();
       pt.x = e.clientX;
@@ -434,7 +559,8 @@ export default function MapEditor() {
   const handleUpdateShape = (updatedShape) => {
     setShapes((prev) =>
       prev.map((s) =>
-        (s._id && s._id === updatedShape._id) || (s.tempId && s.tempId === updatedShape.tempId)
+        (s._id && s._id === updatedShape._id) ||
+        (s.tempId && s.tempId === updatedShape.tempId)
           ? updatedShape
           : s,
       ),
@@ -478,7 +604,9 @@ export default function MapEditor() {
       const prevIndex = currentIndex - 1;
       setCurrentIndex(prevIndex);
       setShapes(history[prevIndex]);
-      setTimeout(() => { isFromHistoryRef.current = false; }, 0);
+      setTimeout(() => {
+        isFromHistoryRef.current = false;
+      }, 0);
     }
   };
 
@@ -488,7 +616,9 @@ export default function MapEditor() {
       const nextIndex = currentIndex + 1;
       setCurrentIndex(nextIndex);
       setShapes(history[nextIndex]);
-      setTimeout(() => { isFromHistoryRef.current = false; }, 0);
+      setTimeout(() => {
+        isFromHistoryRef.current = false;
+      }, 0);
     }
   };
 
@@ -515,24 +645,47 @@ export default function MapEditor() {
   const handleSave = async () => {
     try {
       setIsSaving(true);
-      setErrorMessage("");
+      setErrorMessage('');
 
       const { height, width } = currentSvgSize;
 
       if (!currentAreaName.trim()) {
-        setErrorMessage("Please enter an area name.");
+        setErrorMessage('Please enter an area name.');
         setIsSaving(false);
         return;
       }
 
       // Detect no changes in update mode
       if (isUpdateMode) {
-        const nameUnchanged = currentAreaName.trim() === (initialAreaName || '').trim();
-        const shapesUnchanged = JSON.stringify(
-          shapes.map(({ imageFile, slotStatus, assignedStudentId, occupiedBy, isOccupied, entryTime, ...rest }) => rest)
-        ) === JSON.stringify(
-          (initialShapes || []).map(({ imageFile, slotStatus, assignedStudentId, occupiedBy, isOccupied, entryTime, ...rest }) => rest)
-        );
+        const nameUnchanged =
+          currentAreaName.trim() === (initialAreaName || '').trim();
+        const shapesUnchanged =
+          JSON.stringify(
+            shapes.map(
+              ({
+                imageFile,
+                slotStatus,
+                assignedStudentId,
+                occupiedBy,
+                isOccupied,
+                entryTime,
+                ...rest
+              }) => rest,
+            ),
+          ) ===
+          JSON.stringify(
+            (initialShapes || []).map(
+              ({
+                imageFile,
+                slotStatus,
+                assignedStudentId,
+                occupiedBy,
+                isOccupied,
+                entryTime,
+                ...rest
+              }) => rest,
+            ),
+          );
         const hasNewImages = shapes.some((s) => s.imageFile);
         if (nameUnchanged && shapesUnchanged && !hasNewImages) {
           setErrorMessage('No changes detected.');
@@ -542,22 +695,26 @@ export default function MapEditor() {
       }
 
       const formData = new FormData();
-      formData.append("name", currentAreaName);
-      formData.append("height", height);
-      formData.append("width", width);
+      formData.append('name', currentAreaName);
+      formData.append('height', height);
+      formData.append('width', width);
 
       const cleanedShapes = shapes.map(({ imageFile, ...rest }) => rest);
-      formData.append("shapes", JSON.stringify(cleanedShapes));
+      formData.append('shapes', JSON.stringify(cleanedShapes));
 
       shapes.forEach((shape) => {
         const shapeKey = shape.tempId || shape._id;
-        if (shape.metadata?.type === "building" && shape.imageFile && shapeKey) {
+        if (
+          shape.metadata?.type === 'building' &&
+          shape.imageFile &&
+          shapeKey
+        ) {
           formData.append(`building[${shapeKey}]`, shape.imageFile);
         }
       });
 
-      const endpoint = isUpdateMode ? `/map/${currentMapId}` : "/map";
-      const method = isUpdateMode ? "PUT" : "POST";
+      const endpoint = isUpdateMode ? `/map/${currentMapId}` : '/map';
+      const method = isUpdateMode ? 'PUT' : 'POST';
 
       console.log(`Sending ${method} request to ${endpoint}`, {
         currentAreaName,
@@ -571,41 +728,45 @@ export default function MapEditor() {
         data: formData,
       });
 
-      console.log("Save response:", response);
+      console.log('Save response:', response);
 
       if (response) {
         // Redirect to parking page with success message
-        navigate("/parking", {
+        navigate('/parking', {
           state: {
             message: isUpdateMode
-              ? "Map updated successfully!"
-              : "Map created successfully!",
-            type: "success",
+              ? 'Map updated successfully!'
+              : 'Map created successfully!',
+            type: 'success',
           },
         });
       } else {
-        setErrorMessage("Unexpected response from server. Please try again.");
+        setErrorMessage('Unexpected response from server. Please try again.');
         setIsSaving(false);
       }
     } catch (error) {
-      console.error("Error saving map:", error);
-      console.error("Error response:", error.response?.data);
+      console.error('Error saving map:', error);
+      console.error('Error response:', error.response?.data);
       setErrorMessage(
         error.response?.data?.error ||
           error.message ||
-          "Failed to save map. Please try again.",
+          'Failed to save map. Please try again.',
       );
       setIsSaving(false);
     }
   };
 
-const handleNewSubmit = (e) => {
+  const handleNewSubmit = (e) => {
     e.preventDefault();
     if (!newAreaName.trim()) return setErrorMessage('Area name is required.');
-    if (newAreaName.length > 30) return setErrorMessage('Maximum name length is 30.');
-    if (!newHeight || !newWidth) return setErrorMessage('Height and width are required.');
-    if (Number(newHeight) > 500) return setErrorMessage('Maximum height allowed is 500px.');
-    if (Number(newWidth) > 1200) return setErrorMessage('Maximum width allowed is 1200px.');
+    if (newAreaName.length > 30)
+      return setErrorMessage('Maximum name length is 30.');
+    if (!newHeight || !newWidth)
+      return setErrorMessage('Height and width are required.');
+    if (Number(newHeight) > 500)
+      return setErrorMessage('Maximum height allowed is 500px.');
+    if (Number(newWidth) > 1200)
+      return setErrorMessage('Maximum width allowed is 1200px.');
     setCurrentAreaName(newAreaName);
     setCurrentSvgSize({ width: Number(newWidth), height: Number(newHeight) });
     setShapes([]);
@@ -626,7 +787,7 @@ const handleNewSubmit = (e) => {
     setDragging(null);
   };
   return (
-    <div className="min-h-screen flex flex-col select-none">
+    <div className='min-h-screen flex flex-col select-none'>
       <Header
         areaName={currentAreaName}
         onNew={handleNew}
@@ -641,38 +802,38 @@ const handleNewSubmit = (e) => {
         isSaving={isSaving}
       />
 
-      <main className="flex-1 relative flex">
+      <main className='flex-1 relative flex'>
         {/* Main */}
         <section
           className={`flex-1 relative flex items-end ${dark ? 'bg-[#1a1a1a]' : 'bg-gray-50'}`}
-          style={{ height: "600px" }}
+          style={{ height: '600px' }}
         >
           {errorMessage && (
-            <div className="absolute top-2 left-1/2 transform -translate-x-1/2 text-xs bg-rose-500 text-white px-4 py-2 rounded">
+            <div className='absolute top-2 left-1/2 transform -translate-x-1/2 text-xs bg-rose-500 text-white px-4 py-2 rounded'>
               {errorMessage}
             </div>
           )}
           <div
             style={{
-              height: "100%",
-              width: "100%",
-              overflow: "auto",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
+              height: '100%',
+              width: '100%',
+              overflow: 'auto',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
             }}
           >
             <svg
               viewBox={`${panOffset.x} ${panOffset.y} ${currentSvgSize.width / zoom} ${currentSvgSize.height / zoom}`}
-              width="100%"
-              height="100%"
+              width='100%'
+              height='100%'
               style={{
-                border: "0.1px solid #f3f4f6",
+                border: '0.1px solid #f3f4f6',
                 cursor: isPanning
-                  ? "grabbing"
-                  : mode === "draw"
-                    ? "crosshair"
-                    : "default",
+                  ? 'grabbing'
+                  : mode === 'draw' || mode === 'arrow'
+                    ? 'crosshair'
+                    : 'default',
               }}
               onMouseMove={(e) => {
                 if (isPanning) {
@@ -715,16 +876,16 @@ const handleNewSubmit = (e) => {
             >
               <defs>
                 <pattern
-                  id="grid"
-                  width="50"
-                  height="50"
-                  patternUnits="userSpaceOnUse"
+                  id='grid'
+                  width='50'
+                  height='50'
+                  patternUnits='userSpaceOnUse'
                 >
                   <path
-                    d="M 50 0 L 0 0 0 50"
-                    fill="none"
+                    d='M 50 0 L 0 0 0 50'
+                    fill='none'
                     stroke={canvasGridStroke}
-                    strokeWidth="0.8"
+                    strokeWidth='0.8'
                   />
                 </pattern>
               </defs>
@@ -736,7 +897,7 @@ const handleNewSubmit = (e) => {
                 width={(currentSvgSize.width * 4) / zoom}
                 height={(currentSvgSize.height * 4) / zoom}
                 fill={canvasOuterBg}
-                pointerEvents="auto"
+                pointerEvents='auto'
               />
 
               {/* Grid background */}
@@ -744,25 +905,25 @@ const handleNewSubmit = (e) => {
                 width={currentSvgSize.width / zoom}
                 height={currentSvgSize.height / zoom}
                 fill={canvasBg}
-                pointerEvents="none"
+                pointerEvents='none'
               />
 
               {/* Grid pattern overlay */}
               <rect
                 width={currentSvgSize.width / zoom}
                 height={currentSvgSize.height / zoom}
-                fill="url(#grid)"
-                pointerEvents="none"
+                fill='url(#grid)'
+                pointerEvents='none'
               />
 
               {/* Border around canvas grid area */}
               <rect
                 width={currentSvgSize.width / zoom}
                 height={currentSvgSize.height / zoom}
-                fill="none"
-                stroke="#9ca3af"
-                strokeWidth="0.5"
-                pointerEvents="none"
+                fill='none'
+                stroke='#9ca3af'
+                strokeWidth='0.5'
+                pointerEvents='none'
               />
 
               {shapes.map((shape) => (
@@ -771,7 +932,7 @@ const handleNewSubmit = (e) => {
                   shape={shape}
                   onMouseDown={startDrag}
                   onClick={() => {
-                    if (mode === "select") {
+                    if (mode === 'select') {
                       setClickedShapeId(shape._id || shape.tempId);
                     }
                   }}
@@ -786,18 +947,35 @@ const handleNewSubmit = (e) => {
                   shapeColor={shapeColor}
                 />
               ))}
-              {isDrawing && points.length > 1 && (
+              {isDrawing && points.length > 1 && mode === 'draw' && (
                 <polygon
-                  points={points.map((p) => `${p.x},${p.y}`).join(" ")}
-                  fill="none"
-                  stroke="blue"
-                  strokeWidth="2"
-                  strokeDasharray="5,5"
+                  points={points.map((p) => `${p.x},${p.y}`).join(' ')}
+                  fill='none'
+                  stroke='blue'
+                  strokeWidth='2'
+                  strokeDasharray='5,5'
                 />
               )}
+              {isDrawing && points.length > 1 && mode === 'arrow' && (
+                <g>
+                  <line
+                    x1={points[0].x}
+                    y1={points[0].y}
+                    x2={points[points.length - 1].x}
+                    y2={points[points.length - 1].y}
+                    stroke='blue'
+                    strokeWidth='2'
+                    strokeDasharray='5,5'
+                  />
+                  {points.map((p, i) => (
+                    <circle key={i} cx={p.x} cy={p.y} r='3' fill='red' />
+                  ))}
+                </g>
+              )}
               {isDrawing &&
+                mode === 'draw' &&
                 points.map((p, i) => (
-                  <circle key={i} cx={p.x} cy={p.y} r="3" fill="red" />
+                  <circle key={i} cx={p.x} cy={p.y} r='3' fill='red' />
                 ))}
             </svg>
           </div>
@@ -822,32 +1000,85 @@ const handleNewSubmit = (e) => {
       {isOpen && (
         <Modal onClose={() => setIsOpen(false)}>
           <div className='text-xs w-[450px] flex flex-col gap-5'>
-            <h1 className={`text-base font-semibold ${dark ? 'text-gray-200' : 'text-gray-700'}`}>Create New Area</h1>
+            <h1
+              className={`text-base font-semibold ${dark ? 'text-gray-200' : 'text-gray-700'}`}
+            >
+              Create New Area
+            </h1>
             <form onSubmit={handleNewSubmit} className='flex flex-col gap-5'>
               <div className='flex flex-col gap-1'>
-                <label htmlFor='name' className='self-start text-xs text-gray-400'>Area name</label>
-                <input id='name' type='text' value={newAreaName} placeholder='Admin Bldg (FRONT)' onChange={(e) => setNewAreaName(e.target.value)} className={`outline-none p-4 w-full rounded-md border ${input}`} />
+                <label
+                  htmlFor='name'
+                  className='self-start text-xs text-gray-400'
+                >
+                  Area name
+                </label>
+                <input
+                  id='name'
+                  type='text'
+                  value={newAreaName}
+                  placeholder='Admin Bldg (FRONT)'
+                  onChange={(e) => setNewAreaName(e.target.value)}
+                  className={`outline-none p-4 w-full rounded-md border ${input}`}
+                />
               </div>
               <div className='flex gap-3 items-center'>
                 <div className='flex flex-1 flex-col gap-1'>
-                  <label htmlFor='height' className='self-start text-xs text-gray-400'>Height</label>
+                  <label
+                    htmlFor='height'
+                    className='self-start text-xs text-gray-400'
+                  >
+                    Height
+                  </label>
                   <div className='flex gap-1 items-end'>
-                    <input id='height' type='number' placeholder='Recommended: 350px' value={newHeight} onChange={(e) => setNewHeight(e.target.value)} className={`outline-none p-4 w-full rounded-md border ${input}`} />
+                    <input
+                      id='height'
+                      type='number'
+                      placeholder='Recommended: 350px'
+                      value={newHeight}
+                      onChange={(e) => setNewHeight(e.target.value)}
+                      className={`outline-none p-4 w-full rounded-md border ${input}`}
+                    />
                     <span className='text-gray-400'>px</span>
                   </div>
                 </div>
                 <div className='flex flex-1 flex-col gap-1'>
-                  <label htmlFor='width' className='self-start text-xs text-gray-400'>Width</label>
+                  <label
+                    htmlFor='width'
+                    className='self-start text-xs text-gray-400'
+                  >
+                    Width
+                  </label>
                   <div className='flex gap-1 items-end'>
-                    <input id='width' type='number' placeholder='Recommended: 1000px' value={newWidth} onChange={(e) => setNewWidth(e.target.value)} className={`outline-none p-4 w-full rounded-md border ${input}`} />
+                    <input
+                      id='width'
+                      type='number'
+                      placeholder='Recommended: 1000px'
+                      value={newWidth}
+                      onChange={(e) => setNewWidth(e.target.value)}
+                      className={`outline-none p-4 w-full rounded-md border ${input}`}
+                    />
                     <span className='text-gray-400'>px</span>
                   </div>
                 </div>
               </div>
-              {errorMessage && <p className='text-xs text-red-500'>{errorMessage}</p>}
+              {errorMessage && (
+                <p className='text-xs text-red-500'>{errorMessage}</p>
+              )}
               <div className='flex items-center gap-5 w-full'>
-                <button type='button' onClick={() => setIsOpen(false)} className={`border w-full py-2 px-4 rounded ${dark ? 'border-[#4a4a4a] text-gray-300' : 'border-gray-200 text-gray-700'}`}>Close</button>
-                <button type='submit' className='bg-blue-500 w-full text-white py-2 px-4 rounded'>Create</button>
+                <button
+                  type='button'
+                  onClick={() => setIsOpen(false)}
+                  className={`border w-full py-2 px-4 rounded ${dark ? 'border-[#4a4a4a] text-gray-300' : 'border-gray-200 text-gray-700'}`}
+                >
+                  Close
+                </button>
+                <button
+                  type='submit'
+                  className='bg-blue-500 w-full text-white py-2 px-4 rounded'
+                >
+                  Create
+                </button>
               </div>
             </form>
           </div>
@@ -855,19 +1086,48 @@ const handleNewSubmit = (e) => {
       )}
       {confirmDeleteMap && (
         <Modal onClose={() => setConfirmDeleteMap(false)}>
-          <div className="flex flex-col gap-4 w-[360px]">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-full bg-rose-50">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-5 text-rose-500">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+          <div className='flex flex-col gap-4 w-[360px]'>
+            <div className='flex items-center gap-3'>
+              <div className='p-2 rounded-full bg-rose-50'>
+                <svg
+                  xmlns='http://www.w3.org/2000/svg'
+                  fill='none'
+                  viewBox='0 0 24 24'
+                  strokeWidth={1.5}
+                  stroke='currentColor'
+                  className='size-5 text-rose-500'
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    d='M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z'
+                  />
                 </svg>
               </div>
-              <h2 className={`font-semibold ${dark ? 'text-gray-200' : 'text-gray-800'}`}>Delete Map</h2>
+              <h2
+                className={`font-semibold ${dark ? 'text-gray-200' : 'text-gray-800'}`}
+              >
+                Delete Map
+              </h2>
             </div>
-            <p className="text-sm text-gray-500">Are you sure you want to delete <strong>{currentAreaName}</strong>? All shapes, slots, and user assignments will be permanently removed.</p>
-            <div className="flex gap-3">
-              <button onClick={() => setConfirmDeleteMap(false)} className={`flex-1 py-2 rounded-xl border text-sm transition ${dark ? 'border-[#4a4a4a] text-gray-400 hover:bg-[#3a3a3a]' : 'border-gray-200 text-gray-500 hover:bg-gray-50'}`}>Cancel</button>
-              <button onClick={handleDeleteMap} className="flex-1 py-2 rounded-xl bg-rose-500 hover:bg-rose-600 text-sm text-white transition">Yes, Delete</button>
+            <p className='text-sm text-gray-500'>
+              Are you sure you want to delete <strong>{currentAreaName}</strong>
+              ? All shapes, slots, and user assignments will be permanently
+              removed.
+            </p>
+            <div className='flex gap-3'>
+              <button
+                onClick={() => setConfirmDeleteMap(false)}
+                className={`flex-1 py-2 rounded-xl border text-sm transition ${dark ? 'border-[#4a4a4a] text-gray-400 hover:bg-[#3a3a3a]' : 'border-gray-200 text-gray-500 hover:bg-gray-50'}`}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteMap}
+                className='flex-1 py-2 rounded-xl bg-rose-500 hover:bg-rose-600 text-sm text-white transition'
+              >
+                Yes, Delete
+              </button>
             </div>
           </div>
         </Modal>
@@ -886,23 +1146,47 @@ const handleNewSubmit = (e) => {
         </Modal>
       )}
       {isPreview && (
-        <div className='fixed inset-0 z-50 flex flex-col' style={{ background: dark ? '#1a1a1a' : '#f3f4f6' }}>
+        <div
+          className='fixed inset-0 z-50 flex flex-col'
+          style={{ background: dark ? '#1a1a1a' : '#f3f4f6' }}
+        >
           {/* Top bar */}
-          <div className={`flex items-center justify-between px-6 py-3 border-b shrink-0 ${dark ? 'bg-[#242424] border-[#3a3a3a]' : 'bg-white border-gray-200'}`}>
+          <div
+            className={`flex items-center justify-between px-6 py-3 border-b shrink-0 ${dark ? 'bg-[#242424] border-[#3a3a3a]' : 'bg-white border-gray-200'}`}
+          >
             <div className='flex items-center gap-3'>
-              <span className={`font-semibold text-sm ${dark ? 'text-gray-200' : 'text-gray-700'}`}>{currentAreaName || 'Preview'}</span>
-              <span className='text-[11px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-600 border border-blue-200'>Preview</span>
+              <span
+                className={`font-semibold text-sm ${dark ? 'text-gray-200' : 'text-gray-700'}`}
+              >
+                {currentAreaName || 'Preview'}
+              </span>
+              <span className='text-[11px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-600 border border-blue-200'>
+                Preview
+              </span>
             </div>
             <div className='flex items-center gap-4'>
               <div className='flex items-center gap-4'>
-                {[['#22c55e', 'Available'], ['#f43f5e', 'Occupied'], ['#3b82f6', 'Exclusive']].map(([color, label]) => (
-                  <div key={label} className={`flex items-center gap-1.5 text-xs ${dark ? 'text-gray-400' : 'text-gray-500'}`}>
-                    <div className='w-2.5 h-2.5 rounded-full' style={{ background: color }} />
+                {[
+                  ['#22c55e', 'Available'],
+                  ['#f43f5e', 'Occupied'],
+                  ['#3b82f6', 'Exclusive'],
+                ].map(([color, label]) => (
+                  <div
+                    key={label}
+                    className={`flex items-center gap-1.5 text-xs ${dark ? 'text-gray-400' : 'text-gray-500'}`}
+                  >
+                    <div
+                      className='w-2.5 h-2.5 rounded-full'
+                      style={{ background: color }}
+                    />
                     <span>{label}</span>
                   </div>
                 ))}
               </div>
-              <button onClick={() => setIsPreview(false)} className={`p-1.5 rounded-lg text-gray-400 transition ${dark ? 'hover:bg-[#3a3a3a]' : 'hover:bg-gray-100'}`}>
+              <button
+                onClick={() => setIsPreview(false)}
+                className={`p-1.5 rounded-lg text-gray-400 transition ${dark ? 'hover:bg-[#3a3a3a]' : 'hover:bg-gray-100'}`}
+              >
                 <X size={18} />
               </button>
             </div>
