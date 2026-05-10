@@ -233,8 +233,77 @@ export default function DynamicMap({
           )}
         </g>
       );
+    } else if (shape.geometry.shape === 'arrow') {
+      const points = shape.geometry.points;
+      if (!points || points.length < 2) return null;
+      const start = points[0];
+      const end = points[points.length - 1];
+      const headlen = 15;
+      const angle = Math.atan2(end.y - start.y, end.x - start.x);
+      const arrowPoints = [
+        {
+          x: end.x - headlen * Math.cos(angle - Math.PI / 6),
+          y: end.y - headlen * Math.sin(angle - Math.PI / 6),
+        },
+        end,
+        {
+          x: end.x - headlen * Math.cos(angle + Math.PI / 6),
+          y: end.y - headlen * Math.sin(angle + Math.PI / 6),
+        },
+      ];
+      return (
+        <g
+          key={id}
+          onClick={() => handleSlotDetails(shape)}
+          className='cursor-pointer'
+        >
+          <line
+            x1={start.x}
+            y1={start.y}
+            x2={end.x}
+            y2={end.y}
+            stroke={isSelected ? '#3b82f6' : '#000000'}
+            strokeWidth={isSelected ? '2' : '1.5'}
+          />
+          <polygon
+            points={arrowPoints.map((p) => `${p.x},${p.y}`).join(' ')}
+            fill={isSelected ? '#3b82f6' : '#000000'}
+          />
+        </g>
+      );
+    } else if (shape.geometry.shape === 'text') {
+      return (
+        <g
+          key={id}
+          onClick={() => handleSlotDetails(shape)}
+          className='cursor-pointer'
+        >
+          <rect
+            x={shape.geometry.x}
+            y={shape.geometry.y}
+            width={shape.geometry.width}
+            height={shape.geometry.height}
+            fill='none'
+            stroke={stroke}
+            strokeWidth={strokeWidth}
+            pointerEvents='auto'
+          />
+          <text
+            x={shape.geometry.x + shape.geometry.width / 2}
+            y={shape.geometry.y + shape.geometry.height / 2}
+            textAnchor='middle'
+            dominantBaseline='middle'
+            fill={shape.metadata?.fontColor || '#000000'}
+            fontSize={shape.metadata?.fontSize || 16}
+            fontFamily='system-ui, sans-serif'
+            pointerEvents='none'
+            style={{ userSelect: 'none' }}
+          >
+            {shape.metadata?.textContent || 'Text'}
+          </text>
+        </g>
+      );
     }
-    return null;
   };
 
   if (!shapes) return <div>No shapes</div>;

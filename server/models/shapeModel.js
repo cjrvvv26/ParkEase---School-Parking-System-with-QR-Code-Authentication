@@ -2,7 +2,10 @@
 const mongoose = require('mongoose');
 
 const geometrySchema = new mongoose.Schema({
-  shape: { type: String, enum: ['rect', 'parallelogram', 'polygon', 'arrow'] },
+  shape: {
+    type: String,
+    enum: ['rect', 'parallelogram', 'polygon', 'arrow', 'text'],
+  },
   x: { type: Number }, // top-left x (for rect/parallelogram)
   y: { type: Number }, // top-left y
   width: { type: Number }, // width (for rect/parallelogram)
@@ -13,7 +16,7 @@ const geometrySchema = new mongoose.Schema({
 
 const metadataSchema = new mongoose.Schema({
   label: { type: String }, // e.g., A-01
-  type: { type: String, enum: ['slot', 'building', 'arrow'] },
+  type: { type: String, enum: ['slot', 'building', 'arrow', 'text'] },
   area: { type: String },
   locked: { type: Boolean, default: false },
   information: {
