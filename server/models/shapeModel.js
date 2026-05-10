@@ -19,6 +19,14 @@ const metadataSchema = new mongoose.Schema({
   type: { type: String, enum: ['slot', 'building', 'arrow', 'text'] },
   area: { type: String },
   locked: { type: Boolean, default: false },
+
+  // Text shape fields (used by MapEditor/ToolBox/PropertiesPanel)
+  // NOTE: These must exist in schema; otherwise Mongo will drop them when saving.
+  textContent: { type: String },
+  text: { type: String },
+  fontColor: { type: String },
+  fontSize: { type: Number },
+
   information: {
     picture: {
       url: String,

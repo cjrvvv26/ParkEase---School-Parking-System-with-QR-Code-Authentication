@@ -299,7 +299,7 @@ export default function DynamicMap({
             pointerEvents='none'
             style={{ userSelect: 'none' }}
           >
-            {shape.metadata?.textContent || 'Text'}
+            {shape.metadata?.textContent ?? shape.metadata?.text ?? ''}
           </text>
         </g>
       );
