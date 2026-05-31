@@ -1,6 +1,7 @@
 const Semester = require('../models/semesterModel');
 const Student = require('../models/studentModel');
 const Slot = require('../models/slotModel');
+const Shape = require('../models/shapeModel');
 
 // Get all semesters with pagination
 exports.getAllSemesters = async (req, res) => {
@@ -217,14 +218,7 @@ exports.expireSemester = async (req, res) => {
     semester.revenue = finalRevenue;
     await semester.save();
 
-    // Get all students from this semester to unassign from slots
-    const studentsToUnassign = await Student.find({
-      'payment.semesterId': semester._id,
-    }).select('userId');
-
-    const studentUserIds = studentsToUnassign.map((s) => s.userId);
-
-    // Reset all students' paid status, payment amount, and semesterId for this semester
+    // Reset all paid student records for this semester
     await Student.updateMany(
       {
         'payment.isPaid': true,
@@ -239,15 +233,51 @@ exports.expireSemester = async (req, res) => {
       },
     );
 
-    // Remove these students from their assigned slots
+    // Clear any slot assignment or occupancy for all users, including faculty
+    const slotsToReset = await Slot.find({
+      $or: [
+        { assignedStudentId: { $ne: null } },
+        { occupiedBy: { $ne: null } },
+      ],
+    }).select('slotId slotNumber');
+
     await Slot.updateMany(
-      { assignedStudentId: { $in: studentUserIds } },
-      { $set: { assignedStudentId: null, status: 'available' } },
+      {
+        $or: [
+          { assignedStudentId: { $ne: null } },
+          { occupiedBy: { $ne: null } },
+        ],
+      },
+      {
+        $set: {
+          assignedStudentId: null,
+          status: 'available',
+          isOccupied: false,
+          occupiedBy: null,
+          entryTime: null,
+          endTime: null,
+        },
+      },
     );
+
+    if (slotsToReset.length > 0) {
+      const bulkShapeOps = slotsToReset
+        .filter((slot) => slot.slotId)
+        .map((slot) => ({
+          updateOne: {
+            filter: { _id: slot.slotId },
+            update: { 'metadata.label': slot.slotNumber || 'Slot' },
+          },
+        }));
+
+      if (bulkShapeOps.length > 0) {
+        await Shape.bulkWrite(bulkShapeOps);
+      }
+    }
 
     res.status(200).json({
       success: true,
-      message: 'Semester expired and students reset for new semester',
+      message: 'Semester expired and all slot assignments were cleared',
       data: semester,
     });
   } catch (error) {

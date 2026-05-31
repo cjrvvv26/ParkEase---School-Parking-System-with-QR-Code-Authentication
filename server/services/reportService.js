@@ -271,7 +271,7 @@ exports.calculateAvgParkingByHour = async () => {
           const h = new Date(l.createdAt).getHours();
           return h >= start && h < end;
         })
-        .map((l) => l.userId.toString())
+        .map((l) => l.userId.toString()),
     ).size;
 
     return totalActive > 0
@@ -349,10 +349,14 @@ exports.calculateTopParkingDuration = async () => {
     let name = 'Unknown';
 
     if (user.role === 'student') {
-      const s = await Student.findOne({ userId: log._id }).select('name').lean();
+      const s = await Student.findOne({ userId: log._id })
+        .select('name')
+        .lean();
       if (s?.name) name = `${s.name.firstName.charAt(0)}. ${s.name.lastName}`;
     } else if (user.role === 'faculty') {
-      const f = await Faculty.findOne({ userId: log._id }).select('name').lean();
+      const f = await Faculty.findOne({ userId: log._id })
+        .select('name')
+        .lean();
       if (f?.name) name = `${f.name.firstName.charAt(0)}. ${f.name.lastName}`;
     }
 
